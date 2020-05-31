@@ -1254,7 +1254,7 @@ module.exports = {
 	},
 	performance: false,
 	output: {
-		path: path.resolve(__dirname, '../dist')
+		path: path.resolve(__dirname, '../dist')//这里代表上一层目录。因为我们将配置文件统一放在了根目录的build文件夹下
 	}
 }
 ```
@@ -1392,6 +1392,8 @@ module.exports = merge(commonConfig, prodConfig);
 ```
 
 注：将webpack的所有配置文件统一放在`build`目录下。方便管理。
+
+## 3.3
 
 # 四.实战配置
 
