@@ -1232,8 +1232,8 @@ module.exports = {
 		new HtmlWebpackPlugin({
 			template: 'src/index.html'
 		}), 
-		new CleanWebpackPlugin(['dist'], {
-			root: path.resolve(__dirname, '../')
+		new CleanWebpackPlugin(['dist'], {//这个插件的默认的根路径就是代表的当前目录
+			root: path.resolve(__dirname, '../')//配置根路径位置。表示清除上一层的dist目录
 		})
 	],
 	optimization: {
@@ -1393,7 +1393,107 @@ module.exports = merge(commonConfig, prodConfig);
 
 注：将webpack的所有配置文件统一放在`build`目录下。方便管理。
 
-## 3.3
+## 3.3代码分离
+
+此特性能够把代码分离到不同的 bundle 中，然后可以按需加载或并行加载这些文件。代码分离可以用于获取更小的 bundle，以及控制资源加载优先级，如果使用合理，会极大影响加载时间。
+
+有三种常用的代码分离方法：
+
+- 入口起点：使用 [`entry`](https://www.webpackjs.com/configuration/entry-context) 配置手动地分离代码。
+- 防止重复：使用 [`CommonsChunkPlugin`](https://www.webpackjs.com/plugins/commons-chunk-plugin) 去重和分离 chunk。
+- 动态导入：通过模块的内联函数调用来分离代码。
+
+### 3.3.1入口起点
+
+
+
+```js
+//webpack.config.js
+const path = require('path');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: {//增加两个入口起点
+    index: './src/index.js',
+    another: './src/another-module.js'
+  },
+  plugins: [
+    new HTMLWebpackPlugin({
+      title: 'Code Splitting'
+    })
+  ],
+  output: {//打包输出两个文件
+    filename: '[name].bundle.js',
+    path: path.resolve(__dirname, 'dist')
+  }
+};
+```
+
+此时会打包输出两个文件：another.bundle.js和index.bundle.js文件。在html中自动引入的先后顺序与入口文件的先后顺序有关。
+
+存在问题：
+
+- 如果入口 chunks 之间包含重复的模块，那些重复模块都会被引入到各个 bundle 中。
+- 这种方法不够灵活，并且不能将核心应用程序逻辑进行动态拆分代码。
+
+### 3.3.2防止重复
+
+[`CommonsChunkPlugin`](https://www.webpackjs.com/plugins/commons-chunk-plugin) 插件可以将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。
+
+使用以下配置，将重复的模块去除，并打包到单独的。
+
+```js
+//webpack.config.js
+ const path = require('path');
++ const webpack = require('webpack');
+  const HTMLWebpackPlugin = require('html-webpack-plugin');
+
+  module.exports = {
+    entry: {
+      index: './src/index.js',
+      another: './src/another-module.js'
+    },
+    plugins: [
+      new HTMLWebpackPlugin({
+        title: 'Code Splitting'
+-     })
++     }),
++     new webpack.optimize.CommonsChunkPlugin({
++       name: 'common' // 指定公共 bundle 的名称。
++     })
+    ],
+    output: {
+      filename: '[name].bundle.js',
+      path: path.resolve(__dirname, 'dist')
+    }
+  };
+```
+
+
+
+
+
+### 3.3.3动态导入
+
+
+
+## 3.4懒加载
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 四.实战配置
 
