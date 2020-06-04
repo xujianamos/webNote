@@ -1483,9 +1483,38 @@ module.exports = {
 
 
 
+## 3.5缓存
+
+在输出中配置
+
+```js
+//webpack.prod.js
+{
+  output:{
+    filename:'[name].[contenthash].js',
+    chunkFilename:'[name].[contenthash].js'
+      
+  }
+}
+```
+
+## 3.6shimming
 
 
 
+## 3.7环境变量
+
+不推荐使用环境变量的方式进行打包配置
+
+```json
+//package.json
+{
+  scripts:{
+    "dev":'',
+    "build":''
+  }
+}
+```
 
 
 
