@@ -1,11 +1,15 @@
 # 一.webpack基本使用
 
+在开始之前，请确保安装了 [Node.js](https://nodejs.org/en/) 的最新版本。使用 Node.js 最新的长期支持版本(LTS - Long Term Support)。
+
 ## 1.webpack安装
+
+如果使用 webpack 4+ 版本，还需要安装 `webpack-cli`。
 
 ### 1.1全局安装webpack
 
 ```bash
-# 初始化项目
+# 初始化项目（初始化 npm）
 $ npm init -y
 # 全局安装webpack
 $ npm install webpack webpack-cli -g
@@ -23,9 +27,9 @@ $ webpack -v
 npm uninstall webpack webpack-cli -g
 ```
 
-### 1.3局部安装
+### 1.3本地安装
 
-在项目根目录下安装
+在项目中安装。这可以使我们在引入破坏式变更(breaking change)的依赖时，更容易分别升级项目。
 
 ```bash
 # 进入项目根目录
@@ -41,6 +45,33 @@ $ npx webpack -v
 注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行webpack命令时，`nodejs`会尝试去全局环境去找webpack，而我们安装webpack到项目中的，因此找不到。
 
 > *在安装一个要打包到生产环境的安装包时，你应该使用* `npm install --save`*，如果你在安装一个用于开发环境的安装包（例如，linter, 测试库等），你应该使用* `npm install --save-dev`
+
+### 1.4修改package.json文件
+
+我们还需要调整 `package.json` 文件，以便确保我们安装包是`私有的(private)`，并且移除 `main` 入口。这可以防止意外发布你的代码。
+
+```json
+{
+    "name": "webpack-demo",
+    "version": "1.0.0",
+    "description": "",
++   "private": true,//增加为私有的
+-   //"main": "index.js",这一行删除
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "webpack": "^4.0.1",
+      "webpack-cli": "^2.0.9"
+    },
+    "dependencies": {}
+  }
+```
+
+
 
 ## 2.webpack配置文件
 
@@ -68,7 +99,7 @@ module.exports={
 }
 ```
 
-注意：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会去找`webpack.config.js`文件。
+注意：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。
 
 #### 2.1.2配置打包命令
 
@@ -85,7 +116,7 @@ module.exports={
 
 此时只需执行`npm run bundle`命令即可打包成功。
 
-### 2.1.3webpack-cli作用
+## 2.2webpack-cli作用
 
 如果没有安装`webpack-cli`这个文件，就无法在命令行下执行全局安装的`webpack`命令和局部安装的`npx webpack`命令
 
@@ -567,9 +598,7 @@ style.类名 添加到需要使用的上面
 
 ### 4.1HtmlWebpackPlugin
 
-该插件将为你生成一个 HTML5 文件， 其中包括使用 `script` 标签的 body 中的所有 webpack 包。
-
-HtmlWebpackPlugin会在打包结束后，自动生成一个html文件，并把打包生成的js文件自动引入到这个html文件中
+HtmlWebpackPlugin会在打包结束后，自动生成一个html文件，并把打包生成的js文件自动引入到这个html文件中。
 
 安装：
 
@@ -581,7 +610,7 @@ npm install --save-dev html-webpack-plugin
 
 ```js
 //webpack.config.js
-//导入插件
+//1. 导入插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 
@@ -591,7 +620,7 @@ const webpackConfig = {
     path: path.resolve(__dirname, './dist'),
     filename: 'index_bundle.js'
   },
-  //实列化插件
+  //2. 实列化插件
   plugins: [
     //打包之后运行
     //这个插件默认生成的html文件不含任何html标签（也就是不含vue绑定的id标签），因此需要添加相应的配置项
@@ -619,8 +648,9 @@ npm install clean-webpack-plugin -D
 
 ```js
 //webpack.config.js
-//导入插件
+
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+//1. 导入插件
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const path = require('path');
 
@@ -638,6 +668,7 @@ const webpackConfig = {
       //指定打包的模板文件路径
       template:'src/index.html'
     }),
+    //2. 使用插件
     //打包之前先被运行
     //打包之前先删除dist目录下的所有文件
     new CleanWebpackPlugin(['dist'])
@@ -645,11 +676,98 @@ const webpackConfig = {
 };
 ```
 
-### 4.3WebpackDevServer
+
+
+## 5.sourceMap
+
+作用：当我们打包的代码出错的时候，如果不用`sourceMap`，我们只能知道打包出来的代码第一行出错了，但是我们并不知道对应的源代码哪里出错了，所以我们需要使用`sourceMap`帮我们做一个源代码和目标生成之间的一个映射。就能知道源代码的第几行出错了。
+
+### 5.1基础配置
+
+```js
+module.exports={
+  //打包模式
+  mode:'development',
+  //1. 配置sourcemap
+  devtool:'source-map'
+}
+```
+
+此时打包后生成一个`main.js`文件，并且还会有一个`main.js.map`文件,这个文件是源代码与打包的main.js之间的映射关系。
+
+![image-20200518231523736](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200518231523736.png)
+
+此时就会显示源代码的第一行出错了，而不是打包后的文件第几行出错。
+
+### 5.2inline-source-map
+
+```js
+module.exports={
+  //打包模式
+  mode:'development',
+  //配置sourcemap
+  devtool:'inline-source-map'
+}
+```
+
+此时打包后的文件只有一个`main.js`,而之前的`main.js.map`映射文件没有了。这个文件此时被打包到了`main.js`的最后一行。
+
+### 5.3cheap-inline-source-map
+
+当代码量很大时，如果我们的代码出了错误，而我们devtool前面又没有加cheap，那么这个sourcemap会告诉我们代码第几行第几个字符出错了，会精确到第几行的第几列出了问题。这样的提示比较耗费性能。
+
+我们代码出错了，我们只希望sourcemap告诉我们第几行出错了就可以了。
+
+添加cheap意思就是只需告诉我们行，不需要告诉我们第几列。
+
+```js
+module.exports={
+  //打包模式
+  mode:'development',
+  //配置sourcemap
+  devtool:'cheap-inline-source-map'
+}
+```
+
+### 5.4cheap-module-source-map
+
+这个module意思是不仅管我们业务代码的出错，还会管其他loader或者第三方插件的错误
+
+### 5.5eval
+
+打包速度最快的方式。并且一样有提示。但是针对复杂代码不建议使用这种，因为提示不全面。
+
+### 5.6最佳实践
+
+开发环境：
+
+```js
+module.exports={
+  //打包模式
+  mode:'development',
+  //配置sourcemap
+  //这种在开发模式下提示的错误比较全面，同时打包速度也是比较快的
+  devtool:'cheap-module-eval-source-map'
+}
+```
+
+生产环境:
+
+```js
+module.exports={
+  //打包模式
+  mode:'production',
+  //配置sourcemap
+  //出错时，代码提示会更好些
+  devtool:'cheap-module-source-map'
+}
+```
+
+## 6.WebpackDevServer
 
 修改源代码并保存后自动执行打包命令进行打包输出文件。
 
-#### 4.3.1使用观察模式
+### 6.1使用观察模式
 
 可以指示 webpack "watch" 依赖图中的所有文件以进行更改。如果其中一个文件被更新，代码将被重新编译，所以你不必手动运行整个构建。
 
@@ -670,7 +788,7 @@ const webpackConfig = {
 
 > 缺点：为了看到修改后的实际效果，你需要刷新浏览器
 
-#### 4.3.2使用webpackdevserver
+### 6.2使用webpackdevserver
 
 `webpack-dev-server` 为你提供了一个简单的 web 服务器，并且能够实时重新加载(live reloading)。
 
@@ -692,7 +810,10 @@ module.exports={
     //打包后自动打开浏览器
     open:true,
     //指定端口号
-    port:8080
+    port:8080,
+    //开启模块热替换
+    hot:true,
+    hotonly:true
   }
 }
 ```
@@ -712,7 +833,7 @@ module.exports={
 
 ```
 
-#### 4.3.3使用 webpack-dev-middleware
+### 6.3使用 webpack-dev-middleware
 
 `webpack-dev-middleware` 是一个容器(wrapper)，它可以把 webpack 处理后的文件传递给一个服务器(server)。 `webpack-dev-server` 在内部使用了它，同时，它也可以作为一个单独的包来使用，以便进行更多自定义设置来实现更多的需求。
 
@@ -784,110 +905,6 @@ app.listen(3000, function () {
 终端执行 `npm run server`
 
 打开浏览器，跳转到 `http://localhost:3000`，你应该看到你的webpack 应用程序已经运行！
-
-## 5.sourceMap
-
-作用：当我们打包的代码出错的时候，如果不用`sourceMap`，我们只能知道打包出来的代码第一行出错了，但是我们并不知道对应的源代码哪里出错了，所以我们需要使用`sourceMap`帮我们做一个源代码和目标生成之间的一个映射。就能知道源代码的第几行出错了。
-
-### 5.1基础配置
-
-```js
-module.exports={
-  //打包模式
-  mode:'development',
-  //配置sourcemap
-  devtool:'source-map'
-}
-```
-
-此时打包后生成一个`main.js`文件，并且还会有一个`main.js.map`文件,这个文件是源代码与打包的main.js之间的映射关系。
-
-![image-20200518231523736](E:%5CwebNote%5Cwebpack%5Cwebpack%E6%95%99%E7%A8%8B.assets%5Cimage-20200518231523736.png)
-
-此时就会显示源代码的第一行出错了，而不是打包后的文件第几行出错。
-
-### 5.2inline-source-map
-
-```js
-module.exports={
-  //打包模式
-  mode:'development',
-  //配置sourcemap
-  devtool:'inline-source-map'
-}
-```
-
-此时打包后的文件只有一个`main.js`,而之前的`main.js.map`映射文件没有了。这个文件此时被打包到了`main.js`的最后一行。
-
-### 5.3cheap-inline-source-map
-
-当代码量很大时，如果我们的代码出了错误，而我们devtool前面又没有加cheap，那么这个sourcemap会告诉我们代码第几行第几个字符出错了，会精确到第几行的第几列出了问题。这样的提示比较耗费性能。
-
-我们代码出错了，我们只希望sourcemap告诉我们第几行出错了就可以了。
-
-添加cheap意思就是只需告诉我们行，不需要告诉我们第几列。
-
-```js
-module.exports={
-  //打包模式
-  mode:'development',
-  //配置sourcemap
-  devtool:'cheap-inline-source-map'
-}
-```
-
-### 5.4cheap-module-source-map
-
-这个module意思是不仅管我们业务代码的出错，还会管其他loader或者第三方插件的错误
-
-### 5.5eval
-
-打包速度最快的方式。并且一样有提示。但是针对复杂代码不建议使用这种，因为提示不全面。
-
-### 5.6最佳实践
-
-开发环境：
-
-```js
-module.exports={
-  //打包模式
-  mode:'development',
-  //配置sourcemap
-  //这种在开发模式下提示的错误比较全面，同时打包速度也是比较快的
-  devtool:'cheap-module-eval-source-map'
-}
-```
-
-生产环境:
-
-```js
-module.exports={
-  //打包模式
-  mode:'production',
-  //配置sourcemap
-  //出错时，代码提示会更好些
-  devtool:'cheap-module-source-map'
-}
-```
-
-## 6.热模块更新
-
-```js
-module.exports={
-  //配置服务器
-  devServer:{
-    //在哪个目录开启服务器
-    //将 dist 目录下的文件，作为可访问文件。
-    contentBase:'./dist',
-    //打包后自动打开浏览器
-    open:true,
-    //指定端口号
-    port:8080,
-    hot:true,
-    hotonly:true
-  }
-}
-```
 
 ## 7.使用Babel处理ES6语法
 
@@ -1109,6 +1126,8 @@ module.exports={
 
 把一个模块中无用的代码都不打包到最后的文件下。比如`main.js`导出两个方法`add`和`minus`,但是在`index.js`中只引入add方法，此时`minus`方法没使用，但是打包时会默认打包所有。此时就需要借助`tree shaking`来打包。
 
+通过 `package.json` 的 `"sideEffects"` 属性作为标记，向 compiler 提供提示，表明项目中的哪些文件是 "pure(纯的 ES2015 模块)"，由此可以安全地删除文件中未使用的部分。
+
 注意：
 
 - 只支持ES Module的引入。`import`的引入形式（静态引入）。`require`的形式不支持（动态引入）
@@ -1190,9 +1209,19 @@ module.exports={
 
 ## 3.2打包模式区分
 
+*开发环境(development)*和*生产环境(production)*的构建目标差异很大。在*开发环境*中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 source map 和 localhost server。而在*生产环境*中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
+
 开发环境和生产环境打包的配置是不同的，因此我们将开发环境与生产环境的配置区分开。而不用每次手动去改。
 
-### 3.2.1抽取开发环境与生产环境公共代码
+我们还是会遵循不重复原则(Don't repeat yourself - DRY)，保留一个“通用”配置。为了将这些配置合并在一起，我们将使用一个名为 [`webpack-merge`](https://github.com/survivejs/webpack-merge) 的工具。通过“通用”配置，我们不必在环境特定(environment-specific)的配置中重复代码。
+
+安装 `webpack-merge` ：
+
+```shell
+npm install --save-dev webpack-merge
+```
+
+### 3.2.1webpack.common.js
 
 ```js
 //webpack.common.js
@@ -1405,8 +1434,6 @@ module.exports = merge(commonConfig, prodConfig);
 
 ### 3.3.1入口起点
 
-
-
 ```js
 //webpack.config.js
 const path = require('path');
@@ -1436,6 +1463,8 @@ module.exports = {
 - 如果入口 chunks 之间包含重复的模块，那些重复模块都会被引入到各个 bundle 中。
 - 这种方法不够灵活，并且不能将核心应用程序逻辑进行动态拆分代码。
 
+我们通过使用 `CommonsChunkPlugin` 来移除重复的模块。
+
 ### 3.3.2防止重复
 
 [`CommonsChunkPlugin`](https://www.webpackjs.com/plugins/commons-chunk-plugin) 插件可以将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。
@@ -1444,9 +1473,10 @@ module.exports = {
 
 ```js
 //webpack.config.js
- const path = require('path');
-+ const webpack = require('webpack');
-  const HTMLWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+//1. 引入webpack
+const webpack = require('webpack');
+const HTMLWebpackPlugin = require('html-webpack-plugin');
 
   module.exports = {
     entry: {
@@ -1456,11 +1486,11 @@ module.exports = {
     plugins: [
       new HTMLWebpackPlugin({
         title: 'Code Splitting'
--     })
-+     }),
-+     new webpack.optimize.CommonsChunkPlugin({
-+       name: 'common' // 指定公共 bundle 的名称。
-+     })
+     }),
+      //2. 使用CommonsChunkPlugin插件
+     new webpack.optimize.CommonsChunkPlugin({
+       name: 'common' // 指定公共 bundle 的名称。
+     })
     ],
     output: {
       filename: '[name].bundle.js',
@@ -1469,15 +1499,36 @@ module.exports = {
   };
 ```
 
-
-
-
-
 ### 3.3.3动态导入
 
+```js
+////webpack.config.js 
+	const path = require('path');
+  const HTMLWebpackPlugin = require('html-webpack-plugin');
 
+  module.exports = {
+    entry: {
+      index: './src/index.js'
+    },
+    plugins: [
+      new HTMLWebpackPlugin({
+        title: 'Code Splitting'
+      })
+    ],
+    output: {
+      filename: '[name].bundle.js',
+      //使用chunkFilename配置
+      chunkFilename: '[name].bundle.js',
+      path: path.resolve(__dirname, 'dist')
+    }
+  };
+```
+
+注意：这里使用了 `chunkFilename`，它决定非入口 chunk 的名称。
 
 ## 3.4懒加载
+
+懒加载或者按需加载，是一种很好的优化网页或应用的方式。这种方式实际上是先把你的代码在一些逻辑断点处分离开，然后在一些代码块中完成某些操作后，立即引用或即将引用另外一些新的代码块。这样加快了应用的初始加载速度，减轻了它的总体体积，因为某些代码块可能永远不会被加载。
 
 
 
@@ -1485,18 +1536,99 @@ module.exports = {
 
 ## 3.5缓存
 
-在输出中配置
+可以通过命中缓存，以降低网络流量，使网站加载速度更快，然而，如果我们在部署新版本时不更改资源的文件名，浏览器可能会认为它没有被更新，就会使用它的缓存版本。由于缓存的存在，当你需要获取新的代码时，就会显得很棘手。
+
+### 3.5.1输出文件的文件名
+
+通过使用 `output.filename` 进行[文件名替换](https://www.webpackjs.com/configuration/output#output-filename)，可以确保浏览器获取到修改后的文件。`[hash]` 替换可以用于在文件名中包含一个构建相关(build-specific)的 hash，但是更好的方式是使用 `[chunkhash]` 替换，在文件名中包含一个 chunk 相关(chunk-specific)的哈希。
 
 ```js
 //webpack.prod.js
 {
   output:{
+    //这里使用contenthash
     filename:'[name].[contenthash].js',
-    chunkFilename:'[name].[contenthash].js'
-      
+    chunkFilename:'[name].[contenthash].js'  
   }
 }
 ```
+
+### 3.5.2提取模板
+
+就像我们之前从[代码分离](https://www.webpackjs.com/guides/code-splitting)了解到的，[`CommonsChunkPlugin`](https://www.webpackjs.com/plugins/commons-chunk-plugin) 可以用于将模块分离到单独的文件中。然而 `CommonsChunkPlugin` 有一个较少有人知道的功能是，能够在每次修改后的构建结果中，将 webpack 的样板(boilerplate)和 manifest 提取出来。通过指定 `entry` 配置中未用到的名称，此插件会自动将我们需要的内容提取到单独的包中：
+
+```js
+//webpack.config.js
+ const path = require('path');
+// 1. 引入webpack
+ const webpack = require('webpack');
+  const CleanWebpackPlugin = require('clean-webpack-plugin');
+  const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+  module.exports = {
+    entry: './src/index.js',
+    plugins: [
+      new CleanWebpackPlugin(['dist']),
+      new HtmlWebpackPlugin({
+        title: 'Caching'
+      }),
+      //2. 配置manifest
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'manifest'
+      })
+    ],
+    output: {
+      filename: '[name].[chunkhash].js',
+      path: path.resolve(__dirname, 'dist')
+    }
+  };
+```
+
+将第三方库(library)（例如 `lodash` 或 `react`）提取到单独的 `vendor` chunk 文件中，是比较推荐的做法，这是因为，它们很少像本地的源代码那样频繁修改。因此通过实现以上步骤，利用客户端的长效缓存机制，可以通过命中缓存来消除请求，并减少向服务器获取资源，同时还能保证客户端代码和服务器端代码版本一致。这可以通过使用新的 `entry(入口)` 起点，以及再额外配置一个 `CommonsChunkPlugin` 实例的组合方式来实现：
+
+```js
+ var path = require('path');
+  const webpack = require('webpack');
+  const CleanWebpackPlugin = require('clean-webpack-plugin');
+  const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+  module.exports = {
+    //1.配置入口文件
+    entry: {
+      main: './src/index.js',
+      vendor: [
+        'lodash'
+      ]
+    },
+    plugins: [
+      new CleanWebpackPlugin(['dist']),
+      new HtmlWebpackPlugin({
+        title: 'Caching'
+      }),
+      //2. 配置vendor
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'vendor'
+      }),
+      new webpack.optimize.CommonsChunkPlugin({
+        name: 'manifest'
+      })
+    ],
+    output: {
+      filename: '[name].[chunkhash].js',
+      path: path.resolve(__dirname, 'dist')
+    }
+  };
+```
+
+> *注意，引入顺序在这里很重要。*`CommonsChunkPlugin` *的* `'vendor'` *实例，必须在* `'manifest'` *实例之前引入。*
+
+### 3.5.3模块标识符
+
+
+
+
+
+
 
 ## 3.6shimming
 
