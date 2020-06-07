@@ -1740,6 +1740,68 @@ Package.json配置
 npm install workbox-webpack-plugin --save-dev
 ```
 
+## 4.3使用webpackdevserver实现请求转发
+
+发送请求：
+
+```js
+//配置请求转发时不需要全局配置axios的根路径
+axios.get('/api/header.json').then((res)=>{
+  console.log(res)
+})
+```
+
+
+
+
+
+请求转发配置：
+
+```js
+//webpack.config.js
+module.exports={
+  devserver:{
+    proxy:{
+      //当访问/api路径时，就会在target配置的路径下去访问（http://192.168.3.208/api）。
+      '/api':{
+        target:'http://192.168.3.208',//转发的地址
+        pathRewrite:{
+          'header.json':'demo.json'//当访问header.json文件时，转发去访问demo.json文件
+        }
+      }
+    }
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
