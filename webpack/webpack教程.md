@@ -1662,11 +1662,83 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 
 对编写的库代码或者工具函数进行打包。
 
+文件结构
+
 ```js
-//webpack.config.js
+-src
+	--index.js//统一出口文件
+	--math.js//按需导出数学库函数
+	--string.js//按需导出字符串函数
+-webpack.config.js
 ```
 
 
+
+```js
+//math.js
+```
+
+
+
+```js
+//string.js
+```
+
+
+
+```js
+//index.js
+```
+
+
+
+
+
+```js
+//webpack.config.js
+const path = require('path');
+
+  module.exports = {
+    mode:'production',
+    //1.配置入口文件
+    entry: {
+      main: './src/index.js',
+    },
+    output: {
+      filename: 'library.js',
+      path: path.resolve(__dirname, 'dist'),
+      library:'library',//使用script方式引入的配置
+      libraryTarget:'umd'//使用import，require方式导入项目使用时的配置
+    }
+  };
+```
+
+
+
+## 4.2PWA的打包配置
+
+安装http-server
+
+```shell
+npm install http-server --save-dev
+```
+
+Package.json配置
+
+```json
+{
+  "script":{
+    //表示在dist目录下开启一个http-server服务器
+    "start":"http-server dist"
+  }
+}
+```
+
+安装插件:实现pwa
+
+```shell
+npm install workbox-webpack-plugin --save-dev
+```
 
 
 
