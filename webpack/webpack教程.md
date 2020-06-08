@@ -1776,11 +1776,92 @@ module.exports={
 
 
 
+## 4.4eslint在webpack中的配置
+
+
+
+项目中安装：
+
+```shell
+npm install eslint --save-dev
+```
+
+新建eslint配置文件：
+
+```shell
+npx eslint --init
+
+#执行上面命令后，就会出现配置项
+#1.怎么配置eslint
+use a popular style guide
+#2.使用哪种规范
+Airbnd
+#3.是否项目中使用react
+n
+#4.配置文件是一种什么形式
+javascript
+#5.是否安装依赖
+y
+```
+
+此时安装完成依赖，项目中就会多一个`.eslintrc.js`文件。
+
+```js
+//.eslintrc.js
+module.exports={
+  "extends":"airbnd",
+  "parser":"babel-eslint",
+  "rules":{
+    "规则名字":0//0代表不遵守这个规则
+  },
+  globals:{
+    document:false
+  }
+}
+```
+
+注意：此时使用vscode编辑器安装一个eslint的插件进行检测。
+
+这样借用编辑器插件来校验代码规范在团队中会存在问题。比如有些成员没有使用vscode，而是使用其他编辑器，并且没有类似的插件，那么代码就不会进行校验，从而这个成员就不会按照eslint规范进行编写代码。因此需要讲eslint在webpack中进行配置，保证每个成员都遵循此规范，而不受编辑器的约束。
+
+安装eslint-loader：
+
+```shell
+npm install eslint-loader --save-dev
+```
+
+使用：
+
+```js
+//webpack.config.js
+module.exports={
+  devServer:{
+    //当进行eslint有错误时，会在浏览器打开的页面上弹层显示哪些规范错误。如果不配置这个属性，则错误只能在控制台显示。
+    overlay:true
+  },
+  module:{
+    rules:[
+      {
+        test:/\.js$/,
+        exclude:/node_modules/,
+        use:['babel-loader','eslint-loader']//执行顺序：从右到左  
+      }
+    ]
+  }
+}
+```
+
+> 注意：此时不需要编辑器再安装eslint相关插件。但是会降低打包的速度。可以使用git钩子，在提交到仓库之前进行eslint检测，检测通过才让提交仓库。
+
+
+
+## 4.5webpack性能优化
 
 
 
 
 
+## 4.6多页面打包配置
 
 
 
@@ -1824,3 +1905,12 @@ module.exports={
 
 # 五.底层原理
 
+5.1编写loader
+
+
+
+5.2编写plugin
+
+
+
+5.3Bundler源码编写
