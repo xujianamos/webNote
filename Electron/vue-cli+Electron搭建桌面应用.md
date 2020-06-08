@@ -82,6 +82,8 @@ vue add electron-builder
 
 如提示信息1：
 
+![image-20200423140829394](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200423140829394.png)
+
 ![image-20200423140829394](E:%5CwebNote%5CElectron%5Cvue-cli+Electron%E6%90%AD%E5%BB%BA%E6%A1%8C%E9%9D%A2%E5%BA%94%E7%94%A8.assets%5Cimage-20200423140829394.png)
 
 则执行命令：图中标注部分
