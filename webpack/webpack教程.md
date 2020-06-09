@@ -1857,7 +1857,91 @@ module.exports={
 
 ## 4.5webpack性能优化
 
+### 4.5.1使用最新的Node,Npm等工具
 
+
+
+### 4.5.2在尽可能少的模块上应用Loader
+
+减少loader 的使用。
+
+比如打包js文件时，推荐使用excluded排除不需要进行打包的模块。
+
+```js
+
+```
+
+
+
+### 4.5.3plugin尽可能精简并确保可靠
+
+
+
+### 4.5.4resolve参数合理配置
+
+使用import引入逻辑文件时省略后缀的配置：
+
+```js
+//webpack.config.js
+module.exports={
+  resolve:{
+    extensions:['.vue','.js','.jsx']//从前往后执行
+  }
+}
+```
+
+使用：
+
+```js
+//index.js
+//此时可以省略后缀名
+import index from './index'
+//此时会先去文件找当前文件夹下是否有index.vue文件，没有就继续查找是否有index.js文件，如果没有就查找index,jsx文件。如果所有的都没找的，则报错。
+```
+
+注：`.jpg`和`.css`等非逻辑文件，不建议配置此项。因为会对打包性能造成一定影响。
+
+修改默认引入的index.js配置：
+
+```js
+//webpack.config.js
+module.exports={
+  resolve:{
+    extensions:['.vue','.js','.jsx'],//从前往后执行
+    mainFiles:['index','child']//不建议配置此项
+  }
+}
+```
+
+使用：
+
+```js
+//如果不配置上面的mainFiles，则默认会去找child文件夹下的index
+import child from './child/'
+//当配置了上面的，则依次会去找child文件夹下的index.vue,index.js.index.jsx,child.vue,child.js.child.jsx
+```
+
+注：也会对性能造成影响
+
+配置路径别名：
+
+```js
+//webpack.config.js
+module.exports={
+  resolve:{
+    alias:{
+      @:path.resolve(__dirname,'../src')
+    }
+  }
+}
+```
+
+使用：
+
+```js
+//此时表示引入../src/view/home
+import home from '@/view/home'
+```
 
 
 
