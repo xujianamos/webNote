@@ -1943,6 +1943,120 @@ module.exports={
 import home from '@/view/home'
 ```
 
+### 4.5.5使用DllPlugin提高打包速度
+
+单独对依赖的第三方模块进行打包成库文件，并使用插件添加到生成的html文件中。
+
+原理：减少第三方模块的打包次数（打包一次），从而减少每次打包的速度。
+
+1. 第三方模块打包一次
+
+- 对第三方模块打包配置
+
+```js
+//webpack.dll.js
+
+const path =require('path')
+
+module.exports={
+  mode:;'production',
+  entry:{
+  	vendors:['react','react-dom','lodash']//这里配置需要打包的第三方库名字
+	},
+  output:{
+    filename:'[name].dll.js',
+    path:path.resolve(__dirname,'../dll'),
+    library:'[name]'//以库文件的形式进行打包
+  }
+}
+```
+
+配置package.json
+
+```json
+{
+  "script":{
+    "build:dll":""
+  }
+}
+```
+
+- 使用插件讲打包的第三方模块添加到新生成的html中。
+
+安装插件:
+
+往生成的html文件中添加静态资源。
+
+```shell
+npm install add-asset-html-webpack-plugin --save
+```
+
+使用：
+
+```js
+//webpack.common.js
+const AddAssetHtmlWebpackPlugin =require('add-asset-html-webpack-plugin')
+
+module.exports={
+  plugins:[
+    new AddAssetHtmlWebpackPlugin({
+      filepath:path.resolve(__dirname,'../dll/vendors.dll.js')
+    })
+  ]
+}
+```
+
+2. 我们引入第三方模块的时候，要去使用dll文件引入
+
+```js
+//webpack.dll.js
+const path =require('path')
+const webpack =require('webpack')
+
+module.exports={
+  mode:;'production',
+  entry:{
+  	vendors:['react','react-dom','lodash']//这里配置需要打包的第三方库名字
+	},
+  output:{
+    filename:'[name].dll.js',
+    path:path.resolve(__dirname,'../dll'),
+    library:'[name]'//以库文件的形式进行打包。向全局暴露。
+  },
+    plugins:[
+      //使用DllPlugin插件对暴露的模块代码做一个分析生成一个manifest.json的映射文件
+      new webpack.DllPlugin({
+        name:'[name]',
+        path:path.resolve(__dirname,'../dll/[name].manifest.json'),
+      })
+    ]
+}
+```
+
+
+
+```js
+//webpack.common.js
+const AddAssetHtmlWebpackPlugin =require('add-asset-html-webpack-plugin')
+
+module.exports={
+  plugins:[
+    new AddAssetHtmlWebpackPlugin({
+      filepath:path.resolve(__dirname,'../dll/vendors.dll.js')
+    }),
+    new webpack.DllReferrencePlugin({
+      manifest:path.resolve(__dirname,'../dll/vendors.manifest.json')
+    })
+  ]
+}
+```
+
+
+
+
+
+
+
 
 
 ## 4.6多页面打包配置
