@@ -1945,7 +1945,7 @@ import home from '@/view/home'
 
 ### 4.5.5使用DllPlugin提高打包速度
 
-单独对依赖的第三方模块进行打包成库文件，并使用插件添加到生成的html文件中。
+在项目中使用的第三方模块（比如`vue`,`react`,`lodash`等），实际上是不会变的。因此我们只需要在第一次打包时对依赖的第三方模块进行分析并打包成库文件，最后借助插件添加到生成的html文件中。
 
 原理：减少第三方模块的打包次数（打包一次），从而减少每次打包的速度。
 
@@ -1955,37 +1955,36 @@ import home from '@/view/home'
 
 ```js
 //webpack.dll.js
-
 const path =require('path')
 
 module.exports={
   mode:;'production',
   entry:{
-  	vendors:['react','react-dom','lodash']//这里配置需要打包的第三方库名字
+  	vendors:['react','react-dom','lodash']//这里配置需要打包的第三方模块名字（只需要打包一次的第三方模块）
 	},
   output:{
-    filename:'[name].dll.js',
-    path:path.resolve(__dirname,'../dll'),
-    library:'[name]'//以库文件的形式进行打包
+    filename:'[name].dll.js',//打包后的名字为vendors.dll.js
+    path:path.resolve(__dirname,'../dll'),//打包后的文件存放路径
+    library:'[name]'//将打包好的文件通过全局变量暴露出来，这个全局变量叫vendors
   }
 }
 ```
 
-配置package.json
+配置package.json:对第三方模块进行打包
 
 ```json
 {
   "script":{
-    "build:dll":""
+    "build:dll":"webpack --config ./build/webpack.dll.js"
   }
 }
 ```
 
-- 使用插件讲打包的第三方模块添加到新生成的html中。
+- 使用插件将打包的第三方模块添加到新生成的html中（只有引入才能使用打包暴露的全局变量）。
 
 安装插件:
 
-往生成的html文件中添加静态资源。
+往新生成的html文件中添加静态资源。
 
 ```shell
 npm install add-asset-html-webpack-plugin --save
@@ -1999,14 +1998,21 @@ const AddAssetHtmlWebpackPlugin =require('add-asset-html-webpack-plugin')
 
 module.exports={
   plugins:[
+    new HtmlWebpackPlugin({
+      template:'src/index.html'
+    }),
     new AddAssetHtmlWebpackPlugin({
-      filepath:path.resolve(__dirname,'../dll/vendors.dll.js')
+      filepath:path.resolve(__dirname,'../dll/vendors.dll.js')//需要添加的文件路径
     })
   ]
 }
 ```
 
-2. 我们引入第三方模块的时候，要去使用dll文件引入
+此时在控制台输入`vendors`,控制台就会打印出内容。
+
+但是这个打包生成的第三方模块，在webpack打包的过程中并没有使用它。目前还只是在html文件中引入了。
+
+2. 我们引入第三方模块的时候，要去使用dll文件引入。
 
 ```js
 //webpack.dll.js
@@ -2023,17 +2029,17 @@ module.exports={
     path:path.resolve(__dirname,'../dll'),
     library:'[name]'//以库文件的形式进行打包。向全局暴露。
   },
-    plugins:[
+  plugins:[
       //使用DllPlugin插件对暴露的模块代码做一个分析生成一个manifest.json的映射文件
       new webpack.DllPlugin({
-        name:'[name]',
-        path:path.resolve(__dirname,'../dll/[name].manifest.json'),
+        name:'[name]',//分析的文件名字，必须和library的名字一样。
+        path:path.resolve(__dirname,'../dll/[name].manifest.json'),//分析结果的存放位置
       })
     ]
 }
 ```
 
-
+此时执行打包命令，在dll文件夹下就会生成一个映射文件。此时还需要在打包的`webpack.common.js`配置中进行配置：
 
 ```js
 //webpack.common.js
@@ -2044,6 +2050,8 @@ module.exports={
     new AddAssetHtmlWebpackPlugin({
       filepath:path.resolve(__dirname,'../dll/vendors.dll.js')
     }),
+    //使用插件。
+    //当进行打包时，发现引入了第三方模块，此时这个插件就会在vendors.manifest.json去找第三方模块的映射关系，如果能找到映射关系，他就知道这个第三方模块没必要再进行打包，直接从vendors.dll.js中拿过来用就可以了（会在全局变量里去拿）。如果发现引入的第三方模块，没在这个映射关系里面，就会在node_modules中去拿这个模块进行打包。
     new webpack.DllReferrencePlugin({
       manifest:path.resolve(__dirname,'../dll/vendors.manifest.json')
     })
@@ -2051,11 +2059,124 @@ module.exports={
 }
 ```
 
+此时就可以正常使用了。并且打包时间缩短了很多。
 
+> 扩展：对第三方模块进行拆分再分别引入
 
+配置`webpack.dll.js`
 
+```js
+//webpack.dll.js
+const path =require('path')
+const webpack =require('webpack')
 
+module.exports={
+  mode:;'production',
+  entry:{
+  	vendors:['lodash'],//对第三方模块进行拆分打包
+      react:['react','react-dom']
+	},
+  output:{
+    filename:'[name].dll.js',
+    path:path.resolve(__dirname,'../dll'),
+    library:'[name]'//以库文件的形式进行打包。向全局暴露。
+  },
+  plugins:[
+      //使用DllPlugin插件对暴露的模块代码做一个分析生成一个manifest.json的映射文件
+      new webpack.DllPlugin({
+        name:'[name]',//分析的文件名字，必须和library的名字一样。
+        path:path.resolve(__dirname,'../dll/[name].manifest.json'),//分析结果的存放位置
+      })
+    ]
+}
+```
 
+此时执行打包命令会生成：`react.dll.js`,`react.manifest.json`和`vendors.dll.js`和`vendors.manifest.json`
+
+此时还需要配置`webpack.common.js`文件
+
+```js
+//webpack.common.js
+const AddAssetHtmlWebpackPlugin =require('add-asset-html-webpack-plugin')
+
+module.exports={
+  plugins:[
+    new AddAssetHtmlWebpackPlugin({
+      filepath:path.resolve(__dirname,'../dll/vendors.dll.js')
+    }),
+    //配置react.dll.js
+ 		new AddAssetHtmlWebpackPlugin({
+      filepath:path.resolve(__dirname,'../dll/react.dll.js')
+    }),
+    new webpack.DllReferrencePlugin({
+      manifest:path.resolve(__dirname,'../dll/vendors.manifest.json')
+    }),
+    //配置react.manifest.json
+    new webpack.DllReferrencePlugin({
+      manifest:path.resolve(__dirname,'../dll/react.manifest.json')
+    })
+  ]
+}
+```
+
+此时重新启动项目，可以正常运行。
+
+但是在大型的项目中，拆分的模块很多，打包生成的第三方模块对应的dll文件很多。此时就要一个一个在`webpack.common.js`中添加很多重复的代码。
+
+解决办法：使用node分析dll目录下有几个dll文件，然后动态的往plugins添加`AddAssetHtmlWebpackPlugin`和`DllReferrencePlugin`
+
+```js
+//webpack.common.js
+const AddAssetHtmlWebpackPlugin =require('add-asset-html-webpack-plugin')
+//2.
+const fs=require('fs')
+
+//1.抽离基础的插件
+const plugins=[
+  new HtmlWebpackPlugin({
+			template: 'src/index.html'
+		}), 
+	new CleanWebpackPlugin(['dist'], {//这个插件的默认的根路径就是代表的当前目录
+			root: path.resolve(__dirname, '../')//配置根路径位置。表示清除上一层的dist目录
+		})
+]
+
+const files=fs.readdirSync(path.resolve(__dirname, '../dll'))
+files.forEach(file=>{
+  if(/.*\.dll.js/.test(file)){
+    plugins.push(
+      new AddAssetHtmlWebpackPlugin({
+      filepath:path.resolve(__dirname,'../dll',file)
+    }))
+  }
+  if(/.*\.manifest.json/.test(file)){
+    plugins.push(
+    new webpack.DllReferrencePlugin({
+      manifest:path.resolve(__dirname,'../dll',file)
+    }))
+  }
+})
+
+module.exports={
+  plugins
+}
+```
+
+此时在webpack.dll.js配置中拆分模块并且打包后，webpack.common.js就会自动的去分析并向全局暴露。
+
+### 4.5.6控制包文件的大小
+
+使用treeshiking
+
+### 4.5.7thread-loader,parallel-webpack,happypack多进程打包
+
+### 4.5.8合理使用sourcemap
+
+### 4.5.9结合stats分析打包结果
+
+### 4.5.10开发环境内存编译
+
+### 4.5.11开发环境无用插件剔除
 
 
 
