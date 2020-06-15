@@ -44,6 +44,16 @@ $ npx webpack -v
 
 注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行webpack命令时，`nodejs`会尝试去全局环境去找webpack，而我们安装webpack到项目中的，因此找不到。
 
+通常，webpack 通过运行一个或多个 [npm scripts](https://docs.npmjs.com/misc/scripts)，会在本地 `node_modules` 目录中查找安装的 webpack：
+
+```json
+"scripts": {
+    "start": "webpack --config webpack.config.js"
+}
+```
+
+
+
 > *在安装一个要打包到生产环境的安装包时，你应该使用* `npm install --save`*，如果你在安装一个用于开发环境的安装包（例如，linter, 测试库等），你应该使用* `npm install --save-dev`
 
 ### 1.4修改package.json文件
@@ -56,7 +66,7 @@ $ npx webpack -v
     "version": "1.0.0",
     "description": "",
 +   "private": true,//增加为私有的
--   //"main": "index.js",这一行删除
+-   //"main": "index.js",//这一行删除
     "scripts": {
       "test": "echo \"Error: no test specified\" && exit 1"
     },
