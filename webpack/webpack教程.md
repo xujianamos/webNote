@@ -2192,6 +2192,70 @@ module.exports={
 
 ## 4.6多页面打包配置
 
+多个html页面引入不同的js文件。
+
+原理：在HtmlWebpackPlugin中配置了多个html
+
+文件夹结构：
+
+
+
+基本配置文件：
+
+```js
+//webpack.common.js
+const plugins=[
+  new HtmlWebpackPlugin({
+    template:'src/index.html',
+    filename:'index.html',//生成的html文件名称
+    chunks:['runtime','vendors','main']//表示这个html文件引入的js文件有哪些
+  }),
+  new HtmlWebpackPlugin({
+    template:'src/index.html',
+    filename:'list.html',//生成的html文件名称
+    chunks:['runtime','vendors','list']//表示这个html文件引入的js文件有哪些
+  })
+]
+
+
+module.exports={
+  entry:{
+    main:'./src/index.js',
+    list:'./src/list.js'
+  },
+  plugins
+}
+```
+
+
+
+动态生成html页面配置：
+
+```js
+//webpack.common.js
+const plugins=[
+  new HtmlWebpackPlugin({
+    template:'src/index.html',
+    filename:'index.html',//生成的html文件名称
+    chunks:['runtime','vendors','main']//表示这个html文件引入的js文件有哪些
+  }),
+  new HtmlWebpackPlugin({
+    template:'src/index.html',
+    filename:'list.html',//生成的html文件名称
+    chunks:['runtime','vendors','list']//表示这个html文件引入的js文件有哪些
+  })
+]
+
+
+module.exports={
+  entry:{
+    main:'./src/index.js',
+    list:'./src/list.js'
+  },
+  plugins
+}
+```
+
 
 
 
