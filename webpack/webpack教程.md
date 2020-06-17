@@ -2192,25 +2192,32 @@ module.exports={
 
 ## 4.6多页面打包配置
 
-多个html页面引入不同的js文件。
+使用场景：在使用jquery，zepto开发的项目时，就需要对多个页面进行打包（多个html页面引入不同的js文件。）。
 
-原理：在HtmlWebpackPlugin中配置了多个html
+原理：在HtmlWebpackPlugin中配置了多个html。
 
 文件夹结构：
 
+```js
 
+```
+
+### 4.6.1基本配置
 
 基本配置文件：
 
 ```js
 //webpack.common.js
 const plugins=[
+  //2.生成多个html文件
   new HtmlWebpackPlugin({
+    //模版
     template:'src/index.html',
     filename:'index.html',//生成的html文件名称
     chunks:['runtime','vendors','main']//表示这个html文件引入的js文件有哪些
   }),
   new HtmlWebpackPlugin({
+    //模版
     template:'src/index.html',
     filename:'list.html',//生成的html文件名称
     chunks:['runtime','vendors','list']//表示这个html文件引入的js文件有哪些
@@ -2219,6 +2226,7 @@ const plugins=[
 
 
 module.exports={
+  //1.配置多个入口文件
   entry:{
     main:'./src/index.js',
     list:'./src/list.js'
@@ -2227,32 +2235,259 @@ module.exports={
 }
 ```
 
+此时即可实现多页面应用的打包。
 
+如果还需要增加页面，只需要在入口添加js文件，然后在配置一个HtmlWebpackPlugin即可。
+
+缺点：每增加一个页面，就要增加入口文件，同时还需要重复的配置HtmlWebpackPlugin。
+
+### 4.6.2根据入口动态生成html文件
 
 动态生成html页面配置：
 
 ```js
 //webpack.common.js
-const plugins=[
-  new HtmlWebpackPlugin({
-    template:'src/index.html',
-    filename:'index.html',//生成的html文件名称
-    chunks:['runtime','vendors','main']//表示这个html文件引入的js文件有哪些
-  }),
-  new HtmlWebpackPlugin({
-    template:'src/index.html',
-    filename:'list.html',//生成的html文件名称
-    chunks:['runtime','vendors','list']//表示这个html文件引入的js文件有哪些
-  })
-]
+const path = require('path');
+const fs = require('fs');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
+const AddAssetHtmlWebpackPlugin = require('add-asset-html-webpack-plugin');
+const webpack = require('webpack');
 
+//生成plugin的函数
+const makePlugins = (configs) => {
+  //1。初始化plugins数组
+	const plugins = [
+		new CleanWebpackPlugin(['dist'], {
+			root: path.resolve(__dirname, '../')
+		})
+	];
+  //2.根据入口文件动态生成html文件，并添加到plugins数组中
+	Object.keys(configs.entry).forEach(item => {
+		plugins.push(
+			new HtmlWebpackPlugin({
+				template: 'src/index.html',
+				filename: `${item}.html`,
+				chunks: ['runtime', 'vendors', item]
+			})
+		)
+	});
+  //3.
+	const files = fs.readdirSync(path.resolve(__dirname, '../dll'));
+	files.forEach(file => {
+		if(/.*\.dll.js/.test(file)) {
+			plugins.push(new AddAssetHtmlWebpackPlugin({
+				filepath: path.resolve(__dirname, '../dll', file)
+			}))
+		}
+		if(/.*\.manifest.json/.test(file)) {
+			plugins.push(new webpack.DllReferencePlugin({
+				manifest: path.resolve(__dirname, '../dll', file)
+			}))
+		}
+	});
+  //4.将plugins数组返回
+	return plugins;
+}
 
+//配置信息
+const configs = {
+	entry: {
+		index: './src/index.js',
+		list: './src/list.js',
+		detail: './src/detail.js',
+	},
+	resolve: {
+		extensions: ['.js', '.jsx'],
+	},
+	module: {
+		rules: [{ 
+			test: /\.jsx?$/, 
+			include: path.resolve(__dirname, '../src'),
+			use: [{
+				loader: 'babel-loader'
+			}]
+		}, {
+			test: /\.(jpg|png|gif)$/,
+			use: {
+				loader: 'url-loader',
+				options: {
+					name: '[name]_[hash].[ext]',
+					outputPath: 'images/',
+					limit: 10240
+				}
+			} 
+		}, {
+			test: /\.(eot|ttf|svg)$/,
+			use: {
+				loader: 'file-loader'
+			} 
+		}]
+	},
+	optimization: {
+		runtimeChunk: {
+			name: 'runtime'
+		},
+		usedExports: true,
+		splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+      	vendors: {
+      		test: /[\\/]node_modules[\\/]/,
+      		priority: -10,
+      		name: 'vendors',
+      	}
+      }
+    }
+	},
+	performance: false,
+	output: {
+		path: path.resolve(__dirname, '../dist')
+	}
+}
+//调用函数并赋值给配置对象的plugins
+configs.plugins = makePlugins(configs);
+//将配置导出
+module.exports = configs
+```
+
+此时如果再增加新页面，只需要在入口文件中添加新页面名称。
+
+# 五.底层原理
+
+## 5.1编写loader
+
+### 5.1.1实现最简单的loader
+
+1. 初始化项目
+
+```shell
+npm init -y
+```
+
+2. 安装webpack，webpack-cli
+
+```shell
+npm i webpack webpack-cli -D
+```
+
+3. 配置webpack
+
+```js
+//webpack.config.js
+const path = require('path')
 module.exports={
+  mode:'development',
   entry:{
-    main:'./src/index.js',
-    list:'./src/list.js'
+    index:'./src/index.js'
   },
-  plugins
+  output:{
+    path:path.resolve(__dirname,'dist'),
+    filename:'[name].js'
+  }
+}
+```
+
+4. 编写loader
+
+loader其实就是一个函数（方法）。用于实现某种功能。
+
+在根目录下新建loaders文件夹，再新建一个replaceLoaders.js文件
+
+```js
+//replaceLoaders.js
+//这里不能使用箭头函数，因为使用this时会出现指向问题
+module.exports=function(source){
+  return source.replace('dell','dellDee')
+}
+```
+
+5. 在本项目使用loader
+
+```js
+//webpack.config.js
+const path = require('path')
+module.exports={
+  mode:'development',
+  entry:{
+    index:'./src/index.js'
+  },
+  module:{
+    rules:[
+      {
+        test:/\.js/,
+        use:[path.resolve(__dirname,'./loaders/replaceLoaders.js')]
+      }
+    ]
+  },
+  output:{
+    path:path.resolve(__dirname,'dist'),
+    filename:'[name].js'
+  }
+}
+```
+
+6. 执行打包
+
+配置package.json
+
+```json
+{
+  "scripts": {
+    "build": "webpack"
+  }
+}
+```
+
+执行打包命令
+
+```shell
+npm run build
+```
+
+此时就使用编写的loader打包成功了。
+
+### 5.1.2loader中传递参数
+
+1. 编写loader
+
+```js
+//replaceLoaders.js
+//这里不能使用箭头函数，因为使用this时会出现指向问题
+module.exports=function(source){
+  //通过this.query可以获取到传递的参数
+  return source.replace('dell',this.query.name)//此时将dell替换为this.query.name的值
+}
+```
+
+2. 配置时传递参数
+
+```js
+//webpack.config.js
+const path = require('path')
+module.exports={
+  mode:'development',
+  entry:{
+    index:'./src/index.js'
+  },
+  module:{
+    rules:[
+      {
+        test:/\.js/,
+        use:[{//由字符串修改为对象配置loader
+          loader:path.resolve(__dirname,'./loaders/replaceLoaders.js'),
+          //通过options传递参数
+          options:{
+            name:'lee'
+          }
+        }]
+      }
+    ]
+  },
+  output:{
+    path:path.resolve(__dirname,'dist'),
+    filename:'[name].js'
+  }
 }
 ```
 
@@ -2263,42 +2498,6 @@ module.exports={
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# 五.底层原理
-
-5.1编写loader
 
 
 
