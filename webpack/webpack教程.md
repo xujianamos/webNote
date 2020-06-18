@@ -2357,6 +2357,8 @@ module.exports = configs
 
 ## 5.1编写loader
 
+loader实际上就是一个函数。但是不能写成箭头函数，必须写成声明式函数。因为如果写成箭头函数，this指向就会存在问题，就不能使用this调用本该属于loader的方法。
+
 ### 5.1.1实现最简单的loader
 
 1. 初始化项目
@@ -2396,7 +2398,7 @@ loader其实就是一个函数（方法）。用于实现某种功能。
 
 ```js
 //replaceLoaders.js
-//这里不能使用箭头函数，因为使用this时会出现指向问题
+//这里不能使用箭头函数，因为使用this时会出现指向问题。
 module.exports=function(source){
   return source.replace('dell','dellDee')
 }
@@ -2414,6 +2416,7 @@ module.exports={
   },
   module:{
     rules:[
+      //使用编写的loader
       {
         test:/\.js/,
         use:[path.resolve(__dirname,'./loaders/replaceLoaders.js')]
@@ -2491,7 +2494,67 @@ module.exports={
 }
 ```
 
+### 5.1.3使用`loader-utils`分析传递的参数
 
+安装:
+
+```shell
+npm i loader-utils -D
+```
+
+使用：
+
+```js
+//replaceLoaders.js
+const loaderUtils = require('loader-utils')
+module.exports=function(source){
+  //使用loaderUtils分析传递过来的参数(this.query),然后把内容放在options里保存
+  const options = loaderUtils.getOptions(this)
+  return source.replace('dell',options.name)//此时将dell替换为options.name的值
+}
+```
+
+### 5.1.4使用多个loader
+
+
+
+
+
+### 5.1.5简化loader使用
+
+之前使用自行编写的loader都是使用的相对位置。这样每次编写很长的路径，就很麻烦。这次改为直接写loader名字即可。
+
+配置：
+
+```js
+//webpack.config.js
+const path = require('path')
+module.exports={
+  mode:'development',
+  entry:{
+    index:'./src/index.js'
+  },
+  resolveLoader:{
+    //1.当使用loader时，先去ode_modules去查找，如果没有。则会紧接着去./loaders/下查找
+    modules:['node_modules','./loaders/']
+  },
+  module:{
+    rules:[
+      {
+        test:/\.js/,
+        use:[{//由字符串修改为对象配置loader
+          //2.当配置了resolveLoaders时，这里只需要写loader的名字即可
+          loader:'replaceLoaders',
+        }]
+      }
+    ]
+  },
+  output:{
+    path:path.resolve(__dirname,'dist'),
+    filename:'[name].js'
+  }
+}
+```
 
 
 
