@@ -2556,6 +2556,11 @@ module.exports={
 }
 ```
 
+## 5.2编写plugin
+
+loader是帮助我们去处理引入的模块。在我们打包时，在某些时刻上需要做某些事情，就需要使用plugin。
+
+plugin是一个类。
 
 
 
@@ -2564,8 +2569,21 @@ module.exports={
 
 
 
-5.2编写plugin
 
 
 
-5.3Bundler源码编写
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 5.3Bundler源码编写
