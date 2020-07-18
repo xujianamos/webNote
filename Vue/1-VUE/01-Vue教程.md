@@ -1,3 +1,100 @@
+
+
+## 0.Vue实例
+
+### 0.1创建一个Vue实例
+
+每个 Vue 应用都是通过用 `Vue` 函数创建一个新的 **Vue 实例**开始的：
+
+```js
+var vm = new Vue({
+  // 选项
+})
+```
+
+虽然没有完全遵循 [MVVM 模型](https://zh.wikipedia.org/wiki/MVVM)，但是 Vue 的设计也受到了它的启发。因此在文档中经常会使用 `vm` (ViewModel 的缩写) 这个变量名表示 Vue 实例。
+
+当创建一个 Vue 实例时，你可以传入一个**选项对象**。
+
+一个 Vue 应用由一个通过 `new Vue` 创建的**根 Vue 实例**，以及可选的嵌套的、可复用的组件树组成。
+
+```
+根实例
+└─ TodoList
+   ├─ TodoItem
+   │  ├─ DeleteTodoButton
+   │  └─ EditTodoButton
+   └─ TodoListFooter
+      ├─ ClearTodosButton
+      └─ TodoListStatistics
+```
+
+所有的 Vue 组件都是 Vue 实例，并且接受相同的选项对象 (一些根实例特有的选项除外)。
+
+### 0.2数据与方法
+
+当一个 Vue 实例被创建时，它将 `data` 对象中的所有的 property 加入到 Vue 的**响应式系统**中。当这些 property 的值发生改变时，视图将会产生“响应”，即匹配更新为新的值。
+
+```js
+// 我们的数据对象
+var data = { a: 1 }
+
+// 该对象被加入到一个 Vue 实例中
+var vm = new Vue({
+  data: data
+})
+
+// 获得这个实例上的 property
+// 返回源数据中对应的字段
+vm.a == data.a // => true
+
+// 设置 property 也会影响到原始数据
+vm.a = 2
+data.a // => 2
+
+// ……反之亦然
+data.a = 3
+vm.a // => 3
+```
+
+当这些数据改变时，视图会进行重渲染。值得注意的是只有当实例被创建时就已经存在于 `data` 中的 property 才是**响应式**的。也就是说如果你添加一个新的 property，比如：
+
+```js
+vm.b = 'hi'
+```
+
+那么对 `b` 的改动将不会触发任何视图的更新。如果你知道你会在晚些时候需要一个 property，但是一开始它为空或不存在，那么你仅需要设置一些初始值。比如：
+
+```js
+data: {
+  newTodoText: '',
+  visitCount: 0,
+  hideCompletedTodos: false,
+  todos: [],
+  error: null
+}
+```
+
+除了数据 property，Vue 实例还暴露了一些有用的实例 property 与方法。它们都有前缀 `$`，以便与用户定义的 property 区分开来。例如：
+
+```js
+var data = { a: 1 }
+var vm = new Vue({
+  el: '#example',
+  data: data
+})
+
+vm.$data === data // => true
+vm.$el === document.getElementById('example') // => true
+
+// $watch 是一个实例方法
+vm.$watch('a', function (newValue, oldValue) {
+  // 这个回调将在 `vm.a` 改变后调用
+})
+```
+
+
+
 ## 1.Vue指令
 
 指令是以`V-`开头的（使用指令需要`v-`开头，自定义指令时则不需要加前缀`v-`），并且都在==开始标签==属性中添加
@@ -78,6 +175,8 @@ v-bind 中，可以写合法的JS表达式
 <!--v-bind告诉浏览器"mytitle + '123'"是表达式来解析-->
 <!--123如果不加引号将会当作变量来解析-->
 <input type="button" value="按钮" :title="mytitle + '123'">
+<!-- 动态参数的缩写 (2.6.0+) -->
+<a :[key]="url"> ... </a>
 ```
 
 ### 1.7	v-on
@@ -94,6 +193,8 @@ v-bind 中，可以写合法的JS表达式
 <!--简写形式-->
 <!--表示：监听到点击事件时，就去执行show方法-->
 <input type="button" value="按钮" @click="show">
+<!-- 动态参数的缩写 (2.6.0+) -->
+<a @[event]="doSomething"> ... </a>
 ```
 
 - 如果该==方法不需要额外参数==，那么方法后的`()`可以不添加
@@ -353,112 +454,233 @@ const app = new Vue({
   <h2>您输入的名字:{{name}}</h2>
 ```
 
-## 2.修饰符
+### 1.9动态参数
 
-### 2.1事件修饰符
-
-#### 2.1.1`.stop`
-
-阻止冒泡
-
-```html
-<div class="inner" @click="div1Handler">
- <input type="button" value="戳他" @click.stop="btnHandler">
-</div>
-```
-
-#### 2.1.2 `.prevent`
-
-阻止默认行为
-
-```html
-<a href="http://www.baidu.com" @click.prevent="linkClick">有问题，先去百度</a>
-```
-
-#### 2.1.3 `.capture`
-
-实现捕获触发事件的机制：
-
-```html
-<div class="inner" @click.capture="div1Handler">
-      <input type="button" value="戳他" @click="btnHandler">
-</div> 
-```
-
-#### 2.1.4`.self`
-
-实现只有点击当前元素时候，才会触发事件处理函数
-
-```html
-<div class="inner" @click.self="div1Handler">
-      <input type="button" value="戳他" @click="btnHandler">
-</div>
-```
-
-> `.stop` 和 `.self `的区别
-
-`.self `只会阻止自己身上冒泡行为的触发，==并不会真正阻止冒泡的行为==
-
-```html
-<div class="outer" @click="div2Handler">
-	<div class="inner" @click.stop="div1Handler">
-	<input type="button" value="戳他" @click.stop="btnHandler">
-</div>
-</div>
-<div class="outer" @click="div2Handler">
-<div class="inner" @click.self="div1Handler">
-<input type="button" value="戳他" @click="btnHandler">
-</div>
-</div>
-```
-
-#### 2.1.5 `.once`
-
-只触发一次事件处理函数
-
-```html
-<a href="http://www.baidu.com" @click.prevent.once="linkClick">有问题，先去百度</a>
-```
-
-#### 2.1.6 `.native`
-
-
-
-### 2.2按键修饰符
-
-Vue 允许为 `v-on` 在监听键盘事件时添加按键修饰符
-
-#### 2.2.1内置修饰符
-
-监听`enter`键
-
-```javascript
-@keyup.enter="add"
-//enter键抬起时执行add方法，add方法由于没有传参，因此可以省略括号
-```
-
-常用的按键别名：
-
-```javascript
-.enter	.tab	.delete (捕获“删除”和“退格”键)	.esc	.space	.up	.down	.left	.right
-```
-
-#### 2.2.2自定义修饰符
-
-通过全局 `config.keyCodes` 对象==自定义全局按键修饰符别名==
+可以用方括号括起来的 JavaScript 表达式作为一个指令的参数：
 
 ```js
-//f2为自定义按键修饰符名称，可以随便取，但是最好注意语义化
-//113为按键对应的键码（通过查表得知），此时按f2就代表按了键码值为113的键
-Vue.config.keyCodes.f2 = 113
-
-//使用方法与内置按键修饰符使用方法一样
-@keyup.f2='add'
+<!--
+注意，参数表达式的写法存在一些约束，如之后的“对动态参数表达式的约束”章节所述。
+-->
+<a v-bind:[attributeName]="url"> ... </a>
 ```
 
-## 3.vue中的样式
+这里的 `attributeName` 会被作为一个 JavaScript 表达式进行动态求值，求得的值将会作为最终的参数来使用。例如，如果你的 Vue 实例有一个 `data` property `attributeName`，其值为 `"href"`，那么这个绑定将等价于 `v-bind:href`。
 
-3.1 `class`
+同样地，你可以使用动态参数为一个动态的事件名绑定处理函数：
+
+```js
+<a v-on:[eventName]="doSomething"> ... </a>
+```
+
+在这个示例中，当 `eventName` 的值为 `"focus"` 时，`v-on:[eventName]` 将等价于 `v-on:focus`。
+
+> 对动态参数的值的约束
+
+动态参数预期会求出一个字符串，异常情况下值为 `null`。这个特殊的 `null` 值可以被显性地用于移除绑定。任何其它非字符串类型的值都将会触发一个警告。
+
+> 对动态参数表达式的约束
+
+动态参数表达式有一些语法约束，因为某些字符，如空格和引号，放在 HTML attribute 名里是无效的。例如：
+
+```js
+<!-- 这会触发一个编译警告 -->
+<a v-bind:['foo' + bar]="value"> ... </a>
+```
+
+变通的办法是使用没有空格或引号的表达式，或用计算属性替代这种复杂表达式。
+
+在 DOM 中使用模板时 (直接在一个 HTML 文件里撰写模板)，还需要避免使用大写字符来命名键名，因为浏览器会把 attribute 名全部强制转为小写：
+
+```js
+<!--
+在 DOM 中使用模板时这段代码会被转换为 `v-bind:[someattr]`。
+除非在实例中有一个名为“someattr”的 property，否则代码不会工作。
+-->
+<a v-bind:[someAttr]="value"> ... </a>
+```
+
+
+
+## 2.事件处理
+
+### 2.1监听事件
+
+可以用 `v-on` 指令监听 DOM 事件，并在触发时运行一些 JavaScript 代码。
+
+```js
+<div id="example-1">
+  <button v-on:click="counter += 1">Add 1</button>
+  <p>The button above has been clicked {{ counter }} times.</p>
+</div>
+```
+
+```js
+var example1 = new Vue({
+  el: '#example-1',
+  data: {
+    counter: 0
+  }
+})
+```
+
+### 2.2事件处理方法
+
+然而许多事件处理逻辑会更为复杂，所以直接把 JavaScript 代码写在 `v-on` 指令中是不可行的。因此 `v-on` 还可以接收一个需要调用的方法名称。
+
+```html
+<div id="example-2">
+  <!-- `greet` 是在下面定义的方法名 -->
+  <button v-on:click="greet">Greet</button>
+</div>
+```
+
+```js
+var example2 = new Vue({
+  el: '#example-2',
+  data: {
+    name: 'Vue.js'
+  },
+  // 在 `methods` 对象中定义方法
+  methods: {
+    greet: function (event) {
+      // `this` 在方法里指向当前 Vue 实例
+      alert('Hello ' + this.name + '!')
+      // `event` 是原生 DOM 事件
+      if (event) {
+        alert(event.target.tagName)
+      }
+    }
+  }
+})
+
+// 也可以用 JavaScript 直接调用方法
+example2.greet() // => 'Hello Vue.js!'
+```
+
+### 2.3内联处理器中的方法
+
+除了直接绑定到一个方法，也可以在内联 JavaScript 语句中调用方法：
+
+```html
+<div id="example-3">
+  <button v-on:click="say('hi')">Say hi</button>
+  <button v-on:click="say('what')">Say what</button>
+</div>
+```
+
+```js
+new Vue({
+  el: '#example-3',
+  methods: {
+    say: function (message) {
+      alert(message)
+    }
+  }
+})
+```
+
+有时也需要在内联语句处理器中访问原始的 DOM 事件。可以用特殊变量 `$event` 把它传入方法：
+
+```html
+<button v-on:click="warn('Form cannot be submitted yet.', $event)">
+  Submit
+</button>
+```
+
+```js
+methods: {
+  warn: function (message, event) {
+    // 现在我们可以访问原生事件对象
+    if (event) {
+      event.preventDefault()
+    }
+    alert(message)
+  }
+}
+```
+
+### 2.4事件修饰符
+
+在事件处理程序中调用 `event.preventDefault()` 或 `event.stopPropagation()` 是非常常见的需求。尽管我们可以在方法中轻松实现这点，但更好的方式是：方法只有纯粹的数据逻辑，而不是去处理 DOM 事件细节。
+
+为了解决这个问题，Vue.js 为 `v-on` 提供了**事件修饰符**。之前提过，修饰符是由点开头的指令后缀来表示的。
+
+- `.stop`
+- `.prevent`
+- `.capture`
+- `.self`
+- `.once`
+- `.passive`
+
+```html
+<!-- 阻止单击事件继续传播 -->
+<a v-on:click.stop="doThis"></a>
+
+<!-- 提交事件不再重载页面 -->
+<form v-on:submit.prevent="onSubmit"></form>
+
+<!-- 修饰符可以串联 -->
+<a v-on:click.stop.prevent="doThat"></a>
+
+<!-- 只有修饰符 -->
+<form v-on:submit.prevent></form>
+
+<!-- 添加事件监听器时使用事件捕获模式 -->
+<!-- 即内部元素触发的事件先在此处理，然后才交由内部元素进行处理 -->
+<div v-on:click.capture="doThis">...</div>
+
+<!-- 只当在 event.target 是当前元素自身时触发处理函数 -->
+<!-- 即事件不是从内部元素触发的 -->
+<div v-on:click.self="doThat">...</div>
+```
+
+> 使用修饰符时，顺序很重要；相应的代码会以同样的顺序产生。因此，用 `v-on:click.prevent.self` 会阻止**所有的点击**，而 `v-on:click.self.prevent` 只会阻止对元素自身的点击。
+
+#### 2.4.1`.once`
+
+```js
+<!-- 点击事件将只会触发一次 -->
+<a v-on:click.once="doThis"></a>
+```
+
+不像其它只能对原生的 DOM 事件起作用的修饰符，`.once` 修饰符还能被用到自定义的[组件事件](https://cn.vuejs.org/v2/guide/components-custom-events.html)上。
+
+#### 2.4.2`.passive`
+
+ue 还对应 [`addEventListener` 中的 `passive` 选项](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Parameters)提供了 `.passive` 修饰符。
+
+```html
+<!-- 滚动事件的默认行为 (即滚动行为) 将会立即触发 -->
+<!-- 而不会等待 `onScroll` 完成  -->
+<!-- 这其中包含 `event.preventDefault()` 的情况 -->
+<div v-on:scroll.passive="onScroll">...</div>
+```
+
+这个 `.passive` 修饰符尤其能够提升移动端的性能。
+
+> 不要把 `.passive` 和 `.prevent` 一起使用，因为 `.prevent` 将会被忽略，同时浏览器可能会向你展示一个警告。请记住，`.passive` 会告诉浏览器你*不*想阻止事件的默认行为。
+
+### 2.5按键修饰符
+
+在监听键盘事件时，我们经常需要检查详细的按键。Vue 允许为 `v-on` 在监听键盘事件时添加按键修饰符：
+
+```html
+<!-- 只有在 `key` 是 `Enter` 时调用 `vm.submit()` -->
+<input v-on:keyup.enter="submit">
+```
+
+你可以直接将 [`KeyboardEvent.key`](https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/key/Key_Values) 暴露的任意有效按键名转换为 kebab-case 来作为修饰符。
+
+```html
+<input v-on:keyup.page-down="onPageDown">
+```
+
+在上述示例中，处理函数只会在 `$event.key` 等于 `PageDown` 时被调用。
+
+## 3.Class 与 Style 绑定
+
+### 3.1 `class`
 
 使用方式：**需要使用`bind指令`绑定类名**
 
@@ -472,37 +694,80 @@ Vue.config.keyCodes.f2 = 113
 
 语法：
 
-```bash
+```html
 <h2 v-bind:class="{key1: value1, key2: value2}">{{message}}</h2>
 # 由于类名是对象的键，因此可以省略引号
 # 键值可以写变量（变量值也需要是Boolean值），也可以直接写Boolean值
 <h2 v-bind:class="{类名1: true, 类名2: boolean}">{{message}}</h2>
 ```
 
-用法介绍：
+我们可以传给 `v-bind:class` 一个对象，以动态地切换 class：
 
-```bash
-#用法一：直接通过{}绑定一个类
-#此时isActive 是在data中定义变量，且这个变量的值是Boolean值
-<h2 :class="{'active': isActive}">Hello World</h2>
+```html
+<div v-bind:class="{ active: isActive }"></div>
+```
 
-#用法二：也可以通过判断，传入多个值
-<h2 :class="{'active': isActive, 'line':isLine}">Hello World</h2>
+上面的语法表示 `active` 这个 class 存在与否将取决于数据 property `isActive`
 
-#用法三：和普通的类同时存在，并不冲突
-#注：如果isActive和isLine都为true，那么会有title/active/line三个类
-<h2 class="title" :class="{'active': isActive, 'line': isLine}">Hello World</h2>
+你可以在对象中传入更多字段来动态切换多个 class。此外，`v-bind:class` 指令也可以与普通的 class attribute 共存。当有如下模板：
 
-#用法四：如果过于复杂，可以放在一个methods或者computed中
-#注：classes是一个计算属性
-<h2 class="title" :class="classes">Hello World</h2>
-#getClasses()是个方法，必须加括号进行调用
-<h2 class="title" :class="getClasses()">{{message}}</h2>
-methods:{
- getClasses: function () {
- #返回一个对象
-   return {active: this.isActive, line: this.isLine}
-      }
+```html
+<div
+  class="static"
+  v-bind:class="{ active: isActive, 'text-danger': hasError }"
+></div>
+```
+
+和如下 data：
+
+```js
+data: {
+  isActive: true,
+  hasError: false
+}
+```
+
+结果渲染为：
+
+```js
+<div class="static active"></div>
+```
+
+当 `isActive` 或者 `hasError` 变化时，class 列表将相应地更新。例如，如果 `hasError` 的值为 `true`，class 列表将变为 `"static active text-danger"`。
+
+绑定的数据对象不必内联定义在模板里：
+
+```js
+<div v-bind:class="classObject"></div>
+```
+
+```js
+data: {
+  classObject: {
+    active: true,
+    'text-danger': false
+  }
+}
+```
+
+渲染的结果和上面一样。我们也可以在这里绑定一个返回对象的[计算属性](https://cn.vuejs.org/v2/guide/computed.html)。这是一个常用且强大的模式：
+
+```js
+<div v-bind:class="classObject"></div>
+```
+
+```js
+data: {
+  isActive: true,
+  error: null
+},
+computed: {
+  classObject: function () {
+    return {
+      active: this.isActive && !this.error,
+      'text-danger': this.error && this.error.type === 'fatal'
+    }
+  }
 }
 ```
 
@@ -546,7 +811,76 @@ methods:{
 <h1 :class="['thin', 'italic', {'active':flag} ]">这是一个很大很大的H1！</h1>
 ```
 
-### 3.2`动态绑定style`
+我们可以把一个数组传给 `v-bind:class`，以应用一个 class 列表：
+
+```js
+<div v-bind:class="[activeClass, errorClass]"></div>
+```
+
+```js
+data: {
+  activeClass: 'active',
+  errorClass: 'text-danger'
+}
+```
+
+渲染为：
+
+```js
+<div class="active text-danger"></div>
+```
+
+如果你也想根据条件切换列表中的 class，可以用三元表达式：
+
+```html
+<div v-bind:class="[isActive ? activeClass : '', errorClass]"></div>
+```
+
+这样写将始终添加 `errorClass`，但是只有在 `isActive` 是 truthy[[1\]](https://cn.vuejs.org/v2/guide/class-and-style.html#footnote-1) 时才添加 `activeClass`。
+
+不过，当有多个条件 class 时这样写有些繁琐。所以在数组语法中也可以使用对象语法：
+
+```js
+<div v-bind:class="[{ active: isActive }, errorClass]"></div>
+```
+
+#### 3.1.3用在组件上
+
+当在一个自定义组件上使用 `class` property 时，这些 class 将被添加到该组件的根元素上面。这个元素上已经存在的 class 不会被覆盖。
+
+例如，如果你声明了这个组件：
+
+```js
+Vue.component('my-component', {
+  template: '<p class="foo bar">Hi</p>'
+})
+```
+
+然后在使用它的时候添加一些 class：
+
+```js
+<my-component class="baz boo"></my-component>
+```
+
+HTML 将被渲染为：
+
+```js
+<p class="foo bar baz boo">Hi</p>
+```
+
+对于带数据绑定 class 也同样适用：
+
+```html
+<my-component v-bind:class="{ active: isActive }"></my-component>
+```
+
+当 `isActive` 为 true时，HTML 将被渲染成为：
+
+```html
+<p class="foo bar active">Hi</p>
+```
+
+### 3.2绑定内联样式
 
 在写CSS属性名的时候，比如`font-size`
 
@@ -559,8 +893,39 @@ methods:{
 style后面跟的是一个对象类型
 
 - 对象的`key`是CSS==属性名称==
-
 - 对象的`value`是==具体赋的值==，值可以来自于`data`中的属性
+
+`v-bind:style` 的对象语法十分直观——看着非常像 CSS，但其实是一个 JavaScript 对象。CSS property 名可以用驼峰式 (camelCase) 或短横线分隔 (kebab-case，记得用引号括起来) 来命名：
+
+```html
+<div v-bind:style="{ color: activeColor, fontSize: fontSize + 'px' }"></div>
+```
+
+```js
+data: {
+  activeColor: 'red',
+  fontSize: 30
+}
+```
+
+直接绑定到一个样式对象通常更好，这会让模板更清晰：
+
+```html
+<div v-bind:style="styleObject"></div>
+```
+
+```js
+data: {
+  styleObject: {
+    color: 'red',
+    fontSize: '13px'
+  }
+}
+```
+
+同样的，对象语法常常结合返回对象的计算属性使用。
+
+
 
 语法：
 
@@ -606,7 +971,60 @@ data: {
     }
 ```
 
-## 4.循环
+## 4.列表渲染
+
+我们可以用 `v-for` 指令基于一个数组来渲染一个列表。`v-for` 指令需要使用 `item in items` 形式的特殊语法，其中 `items` 是源数据数组，而 `item` 则是被迭代的数组元素的**别名**。
+
+```html
+<ul id="example-1">
+  <li v-for="item in items" :key="item.message">
+    {{ item.message }}
+  </li>
+</ul>
+```
+
+```js
+var example1 = new Vue({
+  el: '#example-1',
+  data: {
+    items: [
+      { message: 'Foo' },
+      { message: 'Bar' }
+    ]
+  }
+})
+```
+
+在 `v-for` 块中，我们可以访问所有父作用域的 property。`v-for` 还支持一个可选的第二个参数，即当前项的索引。
+
+```html
+<ul id="example-2">
+  <li v-for="(item, index) in items">
+    {{ parentMessage }} - {{ index }} - {{ item.message }}
+  </li>
+</ul>
+```
+
+```js
+var example2 = new Vue({
+  el: '#example-2',
+  data: {
+    parentMessage: 'Parent',
+    items: [
+      { message: 'Foo' },
+      { message: 'Bar' }
+    ]
+  }
+})
+```
+
+你也可以用 `of` 替代 `in` 作为分隔符，因为它更接近 JavaScript 迭代器的语法：
+
+```html
+<div v-for="item of items"></div>
+```
+
+
 
 ### 4.1循环普通数组
 
@@ -647,25 +1065,48 @@ var vm = new Vue({
 
 ### 4.3循环对象
 
-- 注意：在遍历对象身上的键值对的时候， 除了 有 ` val  key ` ,在第三个位置还有一个索引
+你也可以用 `v-for` 来遍历一个对象的 property。
 
-```
-<p v-for="(val, key, i) in user">值是： {{ val }} --- 键是： {{key}} -- 索引： {{i}}</p>
+```html
+<ul id="v-for-object" class="demo">
+  <li v-for="value in object">
+    {{ value }}
+  </li>
+</ul>
 ```
 
+```js
+new Vue({
+  el: '#v-for-object',
+  data: {
+    object: {
+      title: 'How to do lists in Vue',
+      author: 'Jane Doe',
+      publishedAt: '2016-04-10'
+    }
+  }
+})
 ```
-var vm = new Vue({
-      el: '#app',
-      data: {
-        user: {
-          id: 1,
-          name: '托尼·屎大颗',
-          gender: '男'
-        }
-      },
-      methods: {}
-    });
+
+你也可以提供第二个的参数为 property 名称 (也就是键名)：
+
+```html
+<div v-for="(value, name) in object">
+  {{ name }}: {{ value }}
+</div>
 ```
+
+还可以用第三个参数作为索引：
+
+```html
+<div v-for="(value, name, index) in object">
+  {{ index }}. {{ name }}: {{ value }}
+</div>
+```
+
+
+
+
 
 ### 4.4迭代数字
 
@@ -679,50 +1120,233 @@ var vm = new Vue({
 ### 4.5 v-for 循环中key 属性的使用
 
 - 注意： `v-for` 循环的时候，`key `属性只能使用 `number类型`或`string类型`
-
 - 注意： `key` 在使用的时候，必须使用 `v-bind `属性绑定的形式，指定 `key `的值
-
 - 在组件中，使用`v-for`循环的时候，或者在一些特殊情况中，如果 `v-for` 有问题，必须在使用 `v-for `的同时，==指定 唯一的 字符串/数字 类型 :key 值==
 
-## 5.条件判断
+### 4.6数组更新检测
+
+#### 4.6.1变更方法
+
+Vue 将被侦听的数组的变更方法进行了包裹，所以它们也将会触发视图更新。这些被包裹过的方法包括：
+
+- `push()`
+- `pop()`
+- `shift()`
+- `unshift()`
+- `splice()`
+- `sort()`
+- `reverse()`
+
+#### 4.6.2替换数组
+
+变更方法，顾名思义，会变更调用了这些方法的原始数组。相比之下，也有非变更方法，例如 `filter()`、`concat()` 和 `slice()`。它们不会变更原始数组，而**总是返回一个新数组**。当使用非变更方法时，可以用新数组替换旧数组：
+
+```js
+example1.items = example1.items.filter(function (item) {
+  return item.message.match(/Foo/)
+})
+```
+
+你可能认为这将导致 Vue 丢弃现有 DOM 并重新渲染整个列表。幸运的是，事实并非如此。Vue 为了使得 DOM 元素得到最大范围的重用而实现了一些智能的启发式方法，所以用一个含有相同元素的数组去替换原来的数组是非常高效的操作。
+
+### 4.7显示过滤/排序后的结果
+
+有时，我们想要显示一个数组经过过滤或排序后的版本，而不实际变更或重置原始数据。在这种情况下，可以创建一个计算属性，来返回过滤或排序后的数组。
+
+```html
+<li v-for="n in evenNumbers">{{ n }}</li>
+```
+
+```js
+data: {
+  numbers: [ 1, 2, 3, 4, 5 ]
+},
+computed: {
+  evenNumbers: function () {
+    return this.numbers.filter(function (number) {
+      return number % 2 === 0
+    })
+  }
+}
+```
+
+在计算属性不适用的情况下 (例如，在嵌套 `v-for` 循环中) 你可以使用一个方法：
+
+```html
+<ul v-for="set in sets">
+  <li v-for="n in even(set)">{{ n }}</li>
+</ul>
+```
+
+```js
+data: {
+  sets: [[ 1, 2, 3, 4, 5 ], [6, 7, 8, 9, 10]]
+},
+methods: {
+  even: function (numbers) {
+    return numbers.filter(function (number) {
+      return number % 2 === 0
+    })
+  }
+}
+```
+
+### 4.8在`<template>`上使用v-for
+
+类似于 `v-if`，你也可以利用带有 `v-for` 的 `<template>` 来循环渲染一段包含多个元素的内容。比如：
+
+```html
+<ul>
+  <template v-for="item in items">
+    <li>{{ item.msg }}</li>
+    <li class="divider" role="presentation"></li>
+  </template>
+</ul>
+```
+
+### 4.9在组件上使用`v-for`
+
+在自定义组件上，你可以像在任何普通元素上一样使用 `v-for`
+
+```html
+<my-component v-for="item in items" :key="item.id"></my-component>
+```
+
+> 当在组件上使用 `v-for` 时，`key` 现在是必须的。
+
+然而，任何数据都不会被自动传递到组件里，因为组件有自己独立的作用域。为了把迭代数据传递到组件里，我们要使用 prop：
+
+```html
+<my-component
+  v-for="(item, index) in items"
+  v-bind:item="item"
+  v-bind:index="index"
+  v-bind:key="item.id"
+></my-component>
+```
+
+不自动将 `item` 注入到组件里的原因是，这会使得组件与 `v-for` 的运作紧密耦合。明确组件数据的来源能够使组件在其他场合重复使用。
+
+## 5.条件渲染
 
 ### 5.1	v-if
 
-v-if后面的条件为false时，对应的元素以及其子元素不会渲染
+`v-if` 指令用于条件性地渲染一块内容。这块内容只会在指令的表达式返回 真值的时候被渲染。
 
 ```html
- <h2 v-if="isShow">
-    <div>abc</div>
-    <div>abc</div>
-  </h2>
-  
-data: {
-      isShow: true
-    }
+<h1 v-if="awesome">Vue is awesome!</h1>
 ```
 
-### 5.2	v-else-if
+也可以用 `v-else` 添加一个“else 块”：
 
 ```html
-<h2 v-if="score>=90">优秀</h2>
-  <h2 v-else-if="score>=80">良好</h2>
-  <h2 v-else-if="score>=60">及格</h2>
-  <h2 v-else>不及格</h2>
+<h1 v-if="awesome">Vue is awesome!</h1>
+<h1 v-else>Oh no 😢</h1>
 ```
 
-### 5.3	v-else
+#### 5.1.1在`<template>`元素上使用`v-if`条件渲染分组
+
+因为 `v-if` 是一个指令，所以必须将它添加到一个元素上。但是如果想切换多个元素呢？此时可以把一个 `<template>` 元素当做不可见的包裹元素，并在上面使用 `v-if`。最终的渲染结果将不包含 `<template>` 元素。
 
 ```html
-<h2 v-if="isShow">
-    <div>abc</div>
-    <div>abc</div>
-    <div>abc</div>
-    <div>abc</div>
-    <div>abc</div>
-    {{message}}
-  </h2>
-  <h1 v-else>isShow为false时, 显示我</h1>
+<template v-if="ok">
+  <h1>Title</h1>
+  <p>Paragraph 1</p>
+  <p>Paragraph 2</p>
+</template>
 ```
+
+#### 5.1.2`v-else`
+
+你可以使用 `v-else` 指令来表示 `v-if` 的“else 块”：
+
+```html
+<div v-if="Math.random() > 0.5">
+  Now you see me
+</div>
+<div v-else>
+  Now you don't
+</div>
+```
+
+`v-else` 元素必须紧跟在带 `v-if` 或者 `v-else-if` 的元素的后面，否则它将不会被识别。
+
+#### 5.1.3`v-else-if`
+
+充当 `v-if` 的“else-if 块”，可以连续使用：
+
+```html
+<div v-if="type === 'A'">
+  A
+</div>
+<div v-else-if="type === 'B'">
+  B
+</div>
+<div v-else-if="type === 'C'">
+  C
+</div>
+<div v-else>
+  Not A/B/C
+</div>
+```
+
+类似于 `v-else`，`v-else-if` 也必须紧跟在带 `v-if` 或者 `v-else-if` 的元素之后。
+
+#### 5.1.4用 `key` 管理可复用的元素
+
+Vue 会尽可能高效地渲染元素，通常会复用已有元素而不是从头开始渲染。这么做除了使 Vue 变得非常快之外，还有其它一些好处。例如，如果你允许用户在不同的登录方式之间切换：
+
+```html
+<template v-if="loginType === 'username'">
+  <label>Username</label>
+  <input placeholder="Enter your username">
+</template>
+<template v-else>
+  <label>Email</label>
+  <input placeholder="Enter your email address">
+</template>
+```
+
+那么在上面的代码中切换 `loginType` 将不会清除用户已经输入的内容。因为两个模板使用了相同的元素，`<input>` 不会被替换掉——仅仅是替换了它的 `placeholder`。
+
+这样也不总是符合实际需求，所以 Vue 为你提供了一种方式来表达“这两个元素是完全独立的，不要复用它们”。只需添加一个具有唯一值的 `key` attribute 即可：
+
+```html
+<template v-if="loginType === 'username'">
+  <label>Username</label>
+  <input placeholder="Enter your username" key="username-input">
+</template>
+<template v-else>
+  <label>Email</label>
+  <input placeholder="Enter your email address" key="email-input">
+</template>
+```
+
+现在，每次切换时，输入框都将被重新渲染。
+
+注意，`<label>` 元素仍然会被高效地复用，因为它们没有添加 `key` attribute。
+
+### 5.2`v-show`
+
+另一个用于根据条件展示元素的选项是 `v-show` 指令。用法大致一样：
+
+```html
+<h1 v-show="ok">Hello!</h1>
+```
+
+不同的是带有 `v-show` 的元素始终会被渲染并保留在 DOM 中。`v-show` 只是简单地切换元素的 CSS property `display`。
+
+> 注意，`v-show` 不支持 `<template>` 元素，也不支持 `v-else`。
+
+### 5.3`v-if` vs `v-show`
+
+`v-if` 是“真正”的条件渲染，因为它会确保在切换过程中条件块内的事件监听器和子组件适当地被销毁和重建。
+
+`v-if` 也是**惰性的**：如果在初始渲染时条件为假，则什么也不做——直到条件第一次变为真时，才会开始渲染条件块。
+
+相比之下，`v-show` 就简单得多——不管初始条件是什么，元素总是会被渲染，并且只是简单地基于 CSS 进行切换。
+
+一般来说，`v-if` 有更高的切换开销，而 `v-show` 有更高的初始渲染开销。因此，如果需要非常频繁地切换，则使用 `v-show` 较好；如果在运行时条件很少改变，则使用 `v-if` 较好。
 
 ### 5.4用户登录切换的案例
 
@@ -785,25 +1409,53 @@ const app = new Vue({
 </div>
 ```
 
-### 5.5	v-if与v-show的比较
+## 6.计算属性和侦听器
 
-v-show的用法和v-if非常相似，也用于决定一个元素是否渲染
-
-v-if当条件为false时，压根不会有对应的元素在DOM中
-
-v-show当条件为false时，仅仅是将元素的display属性设置为none而已。
-
-使用选择：
-
-- p当需要在显示与隐藏之间切片很频繁时，使用v-show
-- p当只有一次切换时，通过使用v-if
-
-## 6.计算属性
+对于任何复杂逻辑，你都应当使用**计算属性**。
 
 1. 在 computed 中，可以定义一些属性，这些属性叫做【计算属性】， 计算属性的本质就是一个方法，只不过，我们在使用这些计算属性的时候，是把它们的名称，直接当作属性来使用的；并不会把计算属性当作方法去调用；
-2. 注意1： 计算属性在引用的时候，一定不要加 () 去调用，直接把它当作普通属性去使用就好了；
+2. 注意1： 计算属性在引用的时候，一定不要加 `()` 去调用，直接把它当作普通属性去使用就好了；
 3. 注意2： 只要计算属性，这个 function 内部，所用到的任何 data 中的数据发送了变化，就会立即重新计算这个计算属性的值
 4.  注意3： 计算属性的求值结果，会被缓存起来，方便下次直接使用； 如果计算属性方法中，所有来的任何数据，都没有发生过变化，则不会重新对计算属性求值；
+
+### 6.1基础用法
+
+```html
+<div id="example">
+  <p>Original message: "{{ message }}"</p>
+  <p>Computed reversed message: "{{ reversedMessage }}"</p>
+</div>
+```
+
+
+
+```js
+var vm = new Vue({
+  el: '#example',
+  data: {
+    message: 'Hello'
+  },
+  computed: {
+    // 计算属性的 getter
+    reversedMessage: function () {
+      // `this` 指向 vm 实例
+      return this.message.split('').reverse().join('')
+    }
+  }
+})
+```
+
+这里我们声明了一个计算属性 `reversedMessage`。我们提供的函数将用作 property `vm.reversedMessage` 的 getter 函数：
+
+```js
+console.log(vm.reversedMessage) // => 'olleH'
+vm.message = 'Goodbye'
+console.log(vm.reversedMessage) // => 'eybdooG'
+```
+
+`vm.reversedMessage` 的值始终取决于 `vm.message` 的值。
+
+你可以像绑定普通 property 一样在模板中绑定计算属性。Vue 知道 `vm.reversedMessage` 依赖于 `vm.message`，因此当 `vm.message` 发生改变时，所有依赖 `vm.reversedMessage` 的绑定也会更新。而且最妙的是我们已经以声明的方式创建了这种依赖关系：计算属性的 getter 函数是没有副作用 (side effect) 的，这使它更易于测试和理解。
 
 ```js
 computed: {
@@ -824,38 +1476,169 @@ computed: {
 
 > 注：计算属性在最后必须返回一个值
 
-### 6.1计算属性的`setter和getter`
+### 6.2计算属性缓存VS方法
 
-每个计算属性都包含一个getter和一个setter
+你可能已经注意到我们可以通过在表达式中调用方法来达到同样的效果：
 
-- 在上面的例子中，我们只是使用getter来读取。
+```html
+<p>Reversed message: "{{ reversedMessage() }}"</p>
+```
 
-- 在某些情况下，你也可以提供一个setter方法（不常用）
+
+
+```js
+// 在组件中
+methods: {
+  reversedMessage: function () {
+    return this.message.split('').reverse().join('')
+  }
+}
+```
+
+我们可以将同一函数定义为一个方法而不是一个计算属性。两种方式的最终结果确实是完全相同的。然而，不同的是**计算属性是基于它们的响应式依赖进行缓存的**。只在相关响应式依赖发生改变时它们才会重新求值。这就意味着只要 `message` 还没有发生改变，多次访问 `reversedMessage` 计算属性会立即返回之前的计算结果，而不必再次执行函数。
+
+这也同样意味着下面的计算属性将不再更新，因为 `Date.now()` 不是响应式依赖：
 
 ```js
 computed: {
-      // 计算属性一般是没有set方法, 只读属性.
-      fullName: {
-        set: function(newValue) {
-          // console.log('-----', newValue);
-          const names = newValue.split(' ');
-          this.firstName = names[0];
-          this.lastName = names[1];
-        },
-        get: function () {
-          return this.firstName + ' ' + this.lastName
-        }
-      },
-    }
+  now: function () {
+    return Date.now()
+  }
+}
 ```
 
-### 6.2	`methods`和`computed`的对比
+相比之下，每当触发重新渲染时，调用方法将**总会**再次执行函数。
 
-`computed`属性的结果会被缓存，除非依赖的响应式属性变化才会重新计算。主要当作属性来使用；调用多次，只会执行一次
+### 6.3计算属性VS侦听属性
 
-`methods`方法表示一个具体的操作，主要书写业务逻辑；每次调用都会执行函数
+Vue 提供了一种更通用的方式来观察和响应 Vue 实例上的数据变动：**侦听属性**。当你有一些数据需要随着其它数据变动而变动时，你很容易滥用 `watch`——特别是如果你之前使用过 AngularJS。然而，通常更好的做法是使用计算属性而不是命令式的 `watch` 回调。细想一下这个例子：
 
-### 6.3侦听器
+```html
+<div id="demo">{{ fullName }}</div>
+```
+
+```js
+var vm = new Vue({
+  el: '#demo',
+  data: {
+    firstName: 'Foo',
+    lastName: 'Bar',
+    fullName: 'Foo Bar'
+  },
+  watch: {
+    firstName: function (val) {
+      this.fullName = val + ' ' + this.lastName
+    },
+    lastName: function (val) {
+      this.fullName = this.firstName + ' ' + val
+    }
+  }
+})
+```
+
+上面代码是命令式且重复的。将它与计算属性的版本进行比较：
+
+```js
+var vm = new Vue({
+  el: '#demo',
+  data: {
+    firstName: 'Foo',
+    lastName: 'Bar'
+  },
+  computed: {
+    fullName: function () {
+      return this.firstName + ' ' + this.lastName
+    }
+  }
+})
+```
+
+### 6.4计算属性的 setter
+
+计算属性默认只有 getter，不过在需要时你也可以提供一个 setter：
+
+```js
+computed: {
+  fullName: {
+    // getter
+    get: function () {
+      return this.firstName + ' ' + this.lastName
+    },
+    // setter
+    set: function (newValue) {
+      var names = newValue.split(' ')
+      this.firstName = names[0]
+      this.lastName = names[names.length - 1]
+    }
+  }
+}
+```
+
+现在再运行 `vm.fullName = 'John Doe'` 时，setter 会被调用，`vm.firstName` 和 `vm.lastName` 也会相应地被更新。
+
+### 6.5侦听器
+
+虽然计算属性在大多数情况下更合适，但有时也需要一个自定义的侦听器。这就是为什么 Vue 通过 `watch` 选项提供了一个更通用的方法，来响应数据的变化。当需要在数据变化时执行异步或开销较大的操作时，这个方式是最有用的。
+
+```html
+<div id="watch-example">
+  <p>
+    Ask a yes/no question:
+    <input v-model="question">
+  </p>
+  <p>{{ answer }}</p>
+</div>
+```
+
+```js
+<!-- 因为 AJAX 库和通用工具的生态已经相当丰富，Vue 核心代码没有重复 -->
+<!-- 提供这些功能以保持精简。这也可以让你自由选择自己更熟悉的工具。 -->
+<script src="https://cdn.jsdelivr.net/npm/axios@0.12.0/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.13.1/lodash.min.js"></script>
+<script>
+var watchExampleVM = new Vue({
+  el: '#watch-example',
+  data: {
+    question: '',
+    answer: 'I cannot give you an answer until you ask a question!'
+  },
+  watch: {
+    // 如果 `question` 发生改变，这个函数就会运行
+    question: function (newQuestion, oldQuestion) {
+      this.answer = 'Waiting for you to stop typing...'
+      this.debouncedGetAnswer()
+    }
+  },
+  created: function () {
+    // `_.debounce` 是一个通过 Lodash 限制操作频率的函数。
+    // 在这个例子中，我们希望限制访问 yesno.wtf/api 的频率
+    // AJAX 请求直到用户输入完毕才会发出。想要了解更多关于
+    // `_.debounce` 函数 (及其近亲 `_.throttle`) 的知识，
+    // 请参考：https://lodash.com/docs#debounce
+    this.debouncedGetAnswer = _.debounce(this.getAnswer, 500)
+  },
+  methods: {
+    getAnswer: function () {
+      if (this.question.indexOf('?') === -1) {
+        this.answer = 'Questions usually contain a question mark. ;-)'
+        return
+      }
+      this.answer = 'Thinking...'
+      var vm = this
+      axios.get('https://yesno.wtf/api')
+        .then(function (response) {
+          vm.answer = _.capitalize(response.data.answer)
+        })
+        .catch(function (error) {
+          vm.answer = 'Error! Could not reach the API. ' + error
+        })
+    }
+  }
+})
+</script>
+```
+
+在这个示例中，使用 `watch` 选项允许我们执行异步操作 (访问一个 API)，限制我们执行该操作的频率，并在我们得到最终结果前，设置中间状态。这些都是计算属性无法做到的。
 
 ## 7.过滤器
 
@@ -2041,3 +2824,1108 @@ src
 	--main.js		//打包入口/项目入口文件
 ```
 
+## 14.组件基础
+
+### 14.1基本实例
+
+这里有一个 Vue 组件的示例：
+
+```js
+// 定义一个名为 button-counter 的新组件
+Vue.component('button-counter', {
+  data: function () {
+    return {
+      count: 0
+    }
+  },
+  template: '<button v-on:click="count++">You clicked me {{ count }} times.</button>'
+})
+```
+
+组件是可复用的 Vue 实例，且带有一个名字：在这个例子中是 `<button-counter>`。我们可以在一个通过 `new Vue` 创建的 Vue 根实例中，把这个组件作为自定义元素来使用：
+
+```html
+<div id="components-demo">
+  <button-counter></button-counter>
+</div>
+```
+
+```js
+new Vue({ el: '#components-demo' })
+```
+
+因为组件是可复用的 Vue 实例，所以它们与 `new Vue` 接收相同的选项，例如 `data`、`computed`、`watch`、`methods` 以及生命周期钩子等。仅有的例外是像 `el` 这样根实例特有的选项。
+
+### 14.2组件的复用
+
+你可以将组件进行任意次数的复用：
+
+```js
+<div id="components-demo">
+  <button-counter></button-counter>
+  <button-counter></button-counter>
+  <button-counter></button-counter>
+</div>
+```
+
+注意当点击按钮时，每个组件都会各自独立维护它的 `count`。因为你每用一次组件，就会有一个它的新**实例**被创建。
+
+#### 14.2.1`data`必须是一个函数
+
+当我们定义这个 `<button-counter>` 组件时，你可能会发现它的 `data` 并不是像这样直接提供一个对象：
+
+```js
+data: {
+  count: 0
+}
+```
+
+取而代之的是，**一个组件的 `data` 选项必须是一个函数**，因此每个实例可以维护一份被返回对象的独立的拷贝：
+
+```js
+data: function () {
+  return {
+    count: 0
+  }
+}
+```
+
+如果 Vue 没有这条规则，点击一个按钮就可能会像如下代码一样影响到*其它所有实例*：
+
+### 14.3组件的组织
+
+通常一个应用会以一棵嵌套的组件树的形式来组织：
+
+例如，你可能会有页头、侧边栏、内容区等组件，每个组件又包含了其它的像导航链接、博文之类的组件。
+
+为了能在模板中使用，这些组件必须先注册以便 Vue 能够识别。这里有两种组件的注册类型：**全局注册**和**局部注册**。至此，我们的组件都只是通过 `Vue.component` 全局注册的：
+
+```js
+Vue.component('my-component-name', {
+  // ... options ...
+})
+```
+
+全局注册的组件可以用在其被注册之后的任何 (通过 `new Vue`) 新创建的 Vue 根实例，也包括其组件树中的所有子组件的模板中。
+
+### 14.4通过 Prop 向子组件传递数据
+
+早些时候，我们提到了创建一个博文组件的事情。问题是如果你不能向这个组件传递某一篇博文的标题或内容之类的我们想展示的数据的话，它是没有办法使用的。这也正是 prop 的由来。
+
+Prop 是你可以在组件上注册的一些自定义 attribute。当一个值传递给一个 prop attribute 的时候，它就变成了那个组件实例的一个 property。为了给博文组件传递一个标题，我们可以用一个 `props` 选项将其包含在该组件可接受的 prop 列表中：
+
+```js
+Vue.component('blog-post', {
+  props: ['title'],
+  template: '<h3>{{ title }}</h3>'
+})
+```
+
+一个组件默认可以拥有任意数量的 prop，任何值都可以传递给任何 prop。在上述模板中，你会发现我们能够在组件实例中访问这个值，就像访问 `data` 中的值一样。
+
+一个 prop 被注册之后，你就可以像这样把数据作为一个自定义 attribute 传递进来：
+
+```html
+<blog-post title="My journey with Vue"></blog-post>
+<blog-post title="Blogging with Vue"></blog-post>
+<blog-post title="Why Vue is so fun"></blog-post>
+```
+
+然而在一个典型的应用中，你可能在 `data` 里有一个博文的数组：
+
+```js
+new Vue({
+  el: '#blog-post-demo',
+  data: {
+    posts: [
+      { id: 1, title: 'My journey with Vue' },
+      { id: 2, title: 'Blogging with Vue' },
+      { id: 3, title: 'Why Vue is so fun' }
+    ]
+  }
+})
+```
+
+并想要为每篇博文渲染一个组件：
+
+```html
+<blog-post
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:title="post.title"
+></blog-post>
+```
+
+如上所示，你会发现我们可以使用 `v-bind` 来动态传递 prop。这在你一开始不清楚要渲染的具体内容，比如[从一个 API 获取博文列表](https://codesandbox.io/s/github/vuejs/vuejs.org/tree/master/src/v2/examples/vue-20-component-blog-post-example)的时候，是非常有用的。
+
+### 14.5单个根元素
+
+当构建一个 `<blog-post>` 组件时，你的模板最终会包含的东西远不止一个标题：
+
+```html
+<h3>{{ title }}</h3>
+```
+
+最最起码，你会包含这篇博文的正文：
+
+```html
+<h3>{{ title }}</h3>
+<div v-html="content"></div>
+```
+
+然而如果你在模板中尝试这样写，Vue 会显示一个错误，并解释道 **every component must have a single root element (每个组件必须只有一个根元素)**。你可以将模板的内容包裹在一个父元素内，来修复这个问题，例如：
+
+```html
+<div class="blog-post">
+  <h3>{{ title }}</h3>
+  <div v-html="content"></div>
+</div>
+```
+
+看起来当组件变得越来越复杂的时候，我们的博文不只需要标题和内容，还需要发布日期、评论等等。为每个相关的信息定义一个 prop 会变得很麻烦：
+
+```html
+<blog-post
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:title="post.title"
+  v-bind:content="post.content"
+  v-bind:publishedAt="post.publishedAt"
+  v-bind:comments="post.comments"
+></blog-post>
+```
+
+所以是时候重构一下这个 `<blog-post>` 组件了，让它变成接受一个单独的 `post` prop：
+
+```html
+<blog-post
+  v-for="post in posts"
+  v-bind:key="post.id"
+  v-bind:post="post"
+></blog-post>
+Vue.component('blog-post', {
+  props: ['post'],
+  template: `
+    <div class="blog-post">
+      <h3>{{ post.title }}</h3>
+      <div v-html="post.content"></div>
+    </div>
+  `
+})
+```
+
+现在，不论何时为 `post` 对象添加一个新的 property，它都会自动地在 `<blog-post>` 内可用。
+
+### 14.6监听子组件事件
+
+在我们开发 `<blog-post>` 组件时，它的一些功能可能要求我们和父级组件进行沟通。例如我们可能会引入一个辅助功能来放大博文的字号，同时让页面的其它部分保持默认的字号。
+
+在其父组件中，我们可以通过添加一个 `postFontSize` 数据 property 来支持这个功能：
+
+```js
+new Vue({
+  el: '#blog-posts-events-demo',
+  data: {
+    posts: [/* ... */],
+    postFontSize: 1
+  }
+})
+```
+
+它可以在模板中用来控制所有博文的字号：
+
+```html
+<div id="blog-posts-events-demo">
+  <div :style="{ fontSize: postFontSize + 'em' }">
+    <blog-post
+      v-for="post in posts"
+      v-bind:key="post.id"
+      v-bind:post="post"
+    ></blog-post>
+  </div>
+</div>
+```
+
+现在我们在每篇博文正文之前添加一个按钮来放大字号：
+
+```html
+Vue.component('blog-post', {
+  props: ['post'],
+  template: `
+    <div class="blog-post">
+      <h3>{{ post.title }}</h3>
+      <button>
+        Enlarge text
+      </button>
+      <div v-html="post.content"></div>
+    </div>
+  `
+})
+```
+
+问题是这个按钮不会做任何事：
+
+```html
+<button>
+  Enlarge text
+</button>
+```
+
+当点击这个按钮时，我们需要告诉父级组件放大所有博文的文本。幸好 Vue 实例提供了一个自定义事件的系统来解决这个问题。父级组件可以像处理 native DOM 事件一样通过 `v-on` 监听子组件实例的任意事件：
+
+```html
+<blog-post
+  ...
+  v-on:enlarge-text="postFontSize += 0.1"
+></blog-post>
+```
+
+同时子组件可以通过调用内建的 [**`$emit`** 方法](https://cn.vuejs.org/v2/api/#vm-emit)并传入事件名称来触发一个事件：
+
+```html
+<button v-on:click="$emit('enlarge-text')">
+  Enlarge text
+</button>
+```
+
+有了这个 `v-on:enlarge-text="postFontSize += 0.1"` 监听器，父级组件就会接收该事件并更新 `postFontSize` 的值。
+
+#### 14.6.1使用事件抛出一个值
+
+有的时候用一个事件来抛出一个特定的值是非常有用的。例如我们可能想让 `<blog-post>` 组件决定它的文本要放大多少。这时可以使用 `$emit` 的第二个参数来提供这个值：
+
+```html
+<button v-on:click="$emit('enlarge-text', 0.1)">
+  Enlarge text
+</button>
+```
+
+然后当在父级组件监听这个事件的时候，我们可以通过 `$event` 访问到被抛出的这个值：
+
+```html
+<blog-post
+  ...
+  v-on:enlarge-text="postFontSize += $event"
+></blog-post>
+
+```
+
+或者，如果这个事件处理函数是一个方法：
+
+```html
+<blog-post
+  ...
+  v-on:enlarge-text="onEnlargeText"
+></blog-post>
+```
+
+那么这个值将会作为第一个参数传入这个方法：
+
+```js
+methods: {
+  onEnlargeText: function (enlargeAmount) {
+    this.postFontSize += enlargeAmount
+  }
+}
+```
+
+#### 14.6.2在组件上使用V-mode1
+
+自定义事件也可以用于创建支持 `v-model` 的自定义输入组件。记住：
+
+```html
+<input v-model="searchText">
+```
+
+等价于：
+
+```html
+<input
+  v-bind:value="searchText"
+  v-on:input="searchText = $event.target.value"
+>
+```
+
+当用在组件上时，`v-model` 则会这样：
+
+```html
+<custom-input
+  v-bind:value="searchText"
+  v-on:input="searchText = $event"
+></custom-input>
+```
+
+为了让它正常工作，这个组件内的 `<input>` 必须：
+
+- 将其 `value` attribute 绑定到一个名叫 `value` 的 prop 上
+- 在其 `input` 事件被触发时，将新的值通过自定义的 `input` 事件抛出
+
+写成代码之后是这样的：
+
+```js
+Vue.component('custom-input', {
+  props: ['value'],
+  template: `
+    <input
+      v-bind:value="value"
+      v-on:input="$emit('input', $event.target.value)"
+    >
+  `
+})
+```
+
+现在 `v-model` 就应该可以在这个组件上完美地工作起来了：
+
+```html
+<custom-input v-model="searchText"></custom-input>
+```
+
+### 14.7通过插槽分发内容
+
+和 HTML 元素一样，我们经常需要向一个组件传递内容，像这样：
+
+```html
+<alert-box>
+  Something bad happened.
+</alert-box>
+```
+
+幸好，Vue 自定义的 `<slot>` 元素让这变得非常简单：
+
+```html
+Vue.component('alert-box', {
+  template: `
+    <div class="demo-alert-box">
+      <strong>Error!</strong>
+      <slot></slot>
+    </div>
+  `
+})
+```
+
+如你所见，我们只要在需要的地方加入插槽就行了——就这么简单！
+
+### 14.8动态组件
+
+### 14.9组件注册
+
+#### 14.9.1组件名
+
+在注册一个组件的时候，我们始终需要给它一个名字。比如在全局注册的时候我们已经看到了：
+
+```js
+Vue.component('my-component-name', { /* ... */ })
+```
+
+该组件名就是 `Vue.component` 的第一个参数。
+
+你给予组件的名字可能依赖于你打算拿它来做什么。当直接在 DOM 中使用一个组件 (而不是在字符串模板或[单文件组件](https://cn.vuejs.org/v2/guide/single-file-components.html)) 的时候，我们强烈推荐遵循 [W3C 规范](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)中的自定义组件名 (字母全小写且必须包含一个连字符)。这会帮助你避免和当前以及未来的 HTML 元素相冲突。
+
+定义组件名的方式有两种：
+
+> 使用 kebab-case
+
+```js
+Vue.component('my-component-name', { /* ... */ })
+```
+
+当使用 kebab-case (短横线分隔命名) 定义一个组件时，你也必须在引用这个自定义元素时使用 kebab-case，例如 `<my-component-name>`。
+
+> 使用 PascalCase
+
+```js
+Vue.component('MyComponentName', { /* ... */ })
+```
+
+当使用 PascalCase (首字母大写命名) 定义一个组件时，你在引用这个自定义元素时两种命名法都可以使用。也就是说 `<my-component-name>` 和 `<MyComponentName>` 都是可接受的。注意，尽管如此，直接在 DOM (即非字符串的模板) 中使用时只有 kebab-case 是有效的。
+
+#### 14.9.2全局注册
+
+到目前为止，我们只用过 `Vue.component` 来创建组件：
+
+```js
+Vue.component('my-component-name', {
+  // ... 选项 ...
+})
+```
+
+这些组件是**全局注册的**。也就是说它们在注册之后可以用在任何新创建的 Vue 根实例 (`new Vue`) 的模板中。比如：
+
+```js
+Vue.component('component-a', { /* ... */ })
+Vue.component('component-b', { /* ... */ })
+Vue.component('component-c', { /* ... */ })
+
+new Vue({ el: '#app' })
+
+```
+
+```html
+<div id="app">
+  <component-a></component-a>
+  <component-b></component-b>
+  <component-c></component-c>
+</div>
+```
+
+在所有子组件中也是如此，也就是说这三个组件*在各自内部*也都可以相互使用。
+
+#### 14.9.3局部注册
+
+全局注册往往是不够理想的。比如，如果你使用一个像 webpack 这样的构建系统，全局注册所有的组件意味着即便你已经不再使用一个组件了，它仍然会被包含在你最终的构建结果中。这造成了用户下载的 JavaScript 的无谓的增加。
+
+在这些情况下，你可以通过一个普通的 JavaScript 对象来定义组件：
+
+```js
+var ComponentA = { /* ... */ }
+var ComponentB = { /* ... */ }
+var ComponentC = { /* ... */ }
+```
+
+然后在 `components` 选项中定义你想要使用的组件：
+
+```js
+new Vue({
+  el: '#app',
+  components: {
+    'component-a': ComponentA,
+    'component-b': ComponentB
+  }
+})
+```
+
+对于 `components` 对象中的每个 property 来说，其 property 名就是自定义元素的名字，其 property 值就是这个组件的选项对象。
+
+注意**局部注册的组件在其子组件中\*不可用\***。例如，如果你希望 `ComponentA` 在 `ComponentB` 中可用，则你需要这样写：
+
+```js
+var ComponentA = { /* ... */ }
+
+var ComponentB = {
+  components: {
+    'component-a': ComponentA
+  },
+  // ...
+}
+```
+
+或者如果你通过 Babel 和 webpack 使用 ES2015 模块，那么代码看起来更像：
+
+```js
+import ComponentA from './ComponentA.vue'
+
+export default {
+  components: {
+    ComponentA
+  },
+  // ...
+}
+```
+
+注意在 ES2015+ 中，在对象中放一个类似 `ComponentA` 的变量名其实是 `ComponentA: ComponentA` 的缩写，即这个变量名同时是：
+
+- 用在模板中的自定义元素的名称
+- 包含了这个组件选项的变量名
+
+#### 14.9.4模块系统
+
+> 在模块系统中局部注册
+
+如果你还在阅读，说明你使用了诸如 Babel 和 webpack 的模块系统。在这些情况下，我们推荐创建一个 `components` 目录，并将每个组件放置在其各自的文件中。
+
+然后你需要在局部注册之前导入每个你想使用的组件。例如，在一个假设的 `ComponentB.js` 或 `ComponentB.vue` 文件中：
+
+```js
+import ComponentA from './ComponentA'
+import ComponentC from './ComponentC'
+
+export default {
+  components: {
+    ComponentA,
+    ComponentC
+  },
+  // ...
+}
+```
+
+现在 `ComponentA` 和 `ComponentC` 都可以在 `ComponentB` 的模板中使用了。
+
+> 基础组件的自动化全局注册
+
+可能你的许多组件只是包裹了一个输入框或按钮之类的元素，是相对通用的。我们有时候会把它们称为[基础组件](https://cn.vuejs.org/v2/style-guide/#基础组件名-强烈推荐)，它们会在各个组件中被频繁的用到。
+
+所以会导致很多组件里都会有一个包含基础组件的长列表：
+
+```js
+import BaseButton from './BaseButton.vue'
+import BaseIcon from './BaseIcon.vue'
+import BaseInput from './BaseInput.vue'
+
+export default {
+  components: {
+    BaseButton,
+    BaseIcon,
+    BaseInput
+  }
+}
+```
+
+而只是用于模板中的一小部分：
+
+```js
+<BaseInput
+  v-model="searchText"
+  @keydown.enter="search"
+/>
+<BaseButton @click="search">
+  <BaseIcon name="search"/>
+</BaseButton>
+```
+
+如果你恰好使用了 webpack (或在内部使用了 webpack 的 [Vue CLI 3+](https://github.com/vuejs/vue-cli))，那么就可以使用 `require.context` 只全局注册这些非常通用的基础组件。这里有一份可以让你在应用入口文件 (比如 `src/main.js`) 中全局导入基础组件的示例代码：
+
+```js
+import Vue from 'vue'
+import upperFirst from 'lodash/upperFirst'
+import camelCase from 'lodash/camelCase'
+
+const requireComponent = require.context(
+  // 其组件目录的相对路径
+  './components',
+  // 是否查询其子目录
+  false,
+  // 匹配基础组件文件名的正则表达式
+  /Base[A-Z]\w+\.(vue|js)$/
+)
+
+requireComponent.keys().forEach(fileName => {
+  // 获取组件配置
+  const componentConfig = requireComponent(fileName)
+
+  // 获取组件的 PascalCase 命名
+  const componentName = upperFirst(
+    camelCase(
+      // 获取和目录深度无关的文件名
+      fileName
+        .split('/')
+        .pop()
+        .replace(/\.\w+$/, '')
+    )
+  )
+
+  // 全局注册组件
+  Vue.component(
+    componentName,
+    // 如果这个组件选项是通过 `export default` 导出的，
+    // 那么就会优先使用 `.default`，
+    // 否则回退到使用模块的根。
+    componentConfig.default || componentConfig
+  )
+})
+```
+
+记住**全局注册的行为必须在根 Vue 实例 (通过 `new Vue`) 创建之前发生**。
+
+### 14.10prop
+
+#### 14.10.1Prop 的大小写（camelCase vs kebab-case）
+
+HTML 中的 attribute 名是大小写不敏感的，所以浏览器会把所有大写字符解释为小写字符。这意味着当你使用 DOM 中的模板时，camelCase (驼峰命名法) 的 prop 名需要使用其等价的 kebab-case (短横线分隔命名) 命名：
+
+```js
+Vue.component('blog-post', {
+  // 在 JavaScript 中是 camelCase 的
+  props: ['postTitle'],
+  template: '<h3>{{ postTitle }}</h3>'
+})
+```
+
+```html
+<!-- 在 HTML 中是 kebab-case 的 -->
+<blog-post post-title="hello!"></blog-post>
+```
+
+重申一次，如果你使用字符串模板，那么这个限制就不存在了。
+
+#### 14.10.2Prop类型
+
+到这里，我们只看到了以字符串数组形式列出的 prop：
+
+```js
+props: ['title', 'likes', 'isPublished', 'commentIds', 'author']
+```
+
+但是，通常你希望每个 prop 都有指定的值类型。这时，你可以以对象形式列出 prop，这些 property 的名称和值分别是 prop 各自的名称和类型：
+
+```js
+props: {
+  title: String,
+  likes: Number,
+  isPublished: Boolean,
+  commentIds: Array,
+  author: Object,
+  callback: Function,
+  contactsPromise: Promise // or any other constructor
+}
+```
+
+#### 14.10.3传递静态或动态Prop
+
+像这样，你已经知道了可以像这样给 prop 传入一个静态的值：
+
+```html
+<blog-post title="My journey with Vue"></blog-post>
+```
+
+你也知道 prop 可以通过 `v-bind` 动态赋值，例如：
+
+```html
+<!-- 动态赋予一个变量的值 -->
+<blog-post v-bind:title="post.title"></blog-post>
+
+<!-- 动态赋予一个复杂表达式的值 -->
+<blog-post
+  v-bind:title="post.title + ' by ' + post.author.name"
+></blog-post>
+```
+
+在上述两个示例中，我们传入的值都是字符串类型的，但实际上*任何*类型的值都可以传给一个 prop。
+
+> 传入一个数字
+
+```html
+<!-- 即便 `42` 是静态的，我们仍然需要 `v-bind` 来告诉 Vue -->
+<!-- 这是一个 JavaScript 表达式而不是一个字符串。-->
+<blog-post v-bind:likes="42"></blog-post>
+
+<!-- 用一个变量进行动态赋值。-->
+<blog-post v-bind:likes="post.likes"></blog-post>
+```
+
+> 传入一个布尔值
+
+```html
+<!-- 包含该 prop 没有值的情况在内，都意味着 `true`。-->
+<blog-post is-published></blog-post>
+
+<!-- 即便 `false` 是静态的，我们仍然需要 `v-bind` 来告诉 Vue -->
+<!-- 这是一个 JavaScript 表达式而不是一个字符串。-->
+<blog-post v-bind:is-published="false"></blog-post>
+
+<!-- 用一个变量进行动态赋值。-->
+<blog-post v-bind:is-published="post.isPublished"></blog-post>
+```
+
+> 传入一个数组
+
+```html
+<!-- 即便数组是静态的，我们仍然需要 `v-bind` 来告诉 Vue -->
+<!-- 这是一个 JavaScript 表达式而不是一个字符串。-->
+<blog-post v-bind:comment-ids="[234, 266, 273]"></blog-post>
+
+<!-- 用一个变量进行动态赋值。-->
+<blog-post v-bind:comment-ids="post.commentIds"></blog-post>
+```
+
+> 传入一个对象
+
+```html
+<!-- 即便对象是静态的，我们仍然需要 `v-bind` 来告诉 Vue -->
+<!-- 这是一个 JavaScript 表达式而不是一个字符串。-->
+<blog-post
+  v-bind:author="{
+    name: 'Veronica',
+    company: 'Veridian Dynamics'
+  }"
+></blog-post>
+
+<!-- 用一个变量进行动态赋值。-->
+<blog-post v-bind:author="post.author"></blog-post>
+```
+
+> 传入一个对象的所有 property
+
+如果你想要将一个对象的所有 property 都作为 prop 传入，你可以使用不带参数的 `v-bind` (取代 `v-bind:prop-name`)。例如，对于一个给定的对象 `post`：
+
+```js
+post: {
+  id: 1,
+  title: 'My Journey with Vue'
+}
+```
+
+下面的模板：
+
+```html
+<blog-post v-bind="post"></blog-post>
+```
+
+等价于：
+
+```html
+<blog-post
+  v-bind:id="post.id"
+  v-bind:title="post.title"
+></blog-post>
+```
+
+#### 14.10.4单向数据流
+
+所有的 prop 都使得其父子 prop 之间形成了一个**单向下行绑定**：父级 prop 的更新会向下流动到子组件中，但是反过来则不行。这样会防止从子组件意外变更父级组件的状态，从而导致你的应用的数据流向难以理解。
+
+额外的，每次父级组件发生变更时，子组件中所有的 prop 都将会刷新为最新的值。这意味着你**不**应该在一个子组件内部改变 prop。如果你这样做了，Vue 会在浏览器的控制台中发出警告。
+
+这里有两种常见的试图变更一个 prop 的情形：
+
+1. **这个 prop 用来传递一个初始值；这个子组件接下来希望将其作为一个本地的 prop 数据来使用。**在这种情况下，最好定义一个本地的 data property 并将这个 prop 用作其初始值：
+
+   ```js
+   props: ['initialCounter'],
+   data: function () {
+     return {
+       counter: this.initialCounter
+     }
+   }
+   ```
+
+2. **这个 prop 以一种原始的值传入且需要进行转换。**在这种情况下，最好使用这个 prop 的值来定义一个计算属性：
+
+```js
+props: ['size'],
+computed: {
+  normalizedSize: function () {
+    return this.size.trim().toLowerCase()
+  }
+}
+```
+
+注意在 JavaScript 中对象和数组是通过引用传入的，所以对于一个数组或对象类型的 prop 来说，在子组件中改变变更这个对象或数组本身**将会**影响到父组件的状态。
+
+#### 14.10.5prop验证
+
+我们可以为组件的 prop 指定验证要求，例如你知道的这些类型。如果有一个需求没有被满足，则 Vue 会在浏览器控制台中警告你。这在开发一个会被别人用到的组件时尤其有帮助。
+
+为了定制 prop 的验证方式，你可以为 `props` 中的值提供一个带有验证需求的对象，而不是一个字符串数组。例如：
+
+```js
+Vue.component('my-component', {
+  props: {
+    // 基础的类型检查 (`null` 和 `undefined` 会通过任何类型验证)
+    propA: Number,
+    // 多个可能的类型
+    propB: [String, Number],
+    // 必填的字符串
+    propC: {
+      type: String,
+      required: true
+    },
+    // 带有默认值的数字
+    propD: {
+      type: Number,
+      default: 100
+    },
+    // 带有默认值的对象
+    propE: {
+      type: Object,
+      // 对象或数组默认值必须从一个工厂函数获取
+      default: function () {
+        return { message: 'hello' }
+      }
+    },
+    // 自定义验证函数
+    propF: {
+      validator: function (value) {
+        // 这个值必须匹配下列字符串中的一个
+        return ['success', 'warning', 'danger'].indexOf(value) !== -1
+      }
+    }
+  }
+})
+```
+
+当 prop 验证失败的时候，(开发环境构建版本的) Vue 将会产生一个控制台的警告。
+
+> 注意那些 prop 会在一个组件实例创建**之前**进行验证，所以实例的 property (如 `data`、`computed` 等) 在 `default` 或 `validator` 函数中是不可用的。
+
+`type` 可以是下列原生构造函数中的一个：
+
+- `String`
+- `Number`
+- `Boolean`
+- `Array`
+- `Object`
+- `Date`
+- `Function`
+- `Symbol`
+
+额外的，`type` 还可以是一个自定义的构造函数，并且通过 `instanceof` 来进行检查确认。例如，给定下列现成的构造函数：
+
+```js
+function Person (firstName, lastName) {
+  this.firstName = firstName
+  this.lastName = lastName
+}
+```
+
+你可以使用：
+
+```js
+Vue.component('blog-post', {
+  props: {
+    author: Person
+  }
+})
+```
+
+来验证 `author` prop 的值是否是通过 `new Person` 创建的。
+
+#### 14.10.6非Prop的Attribute
+
+一个非 prop 的 attribute 是指传向一个组件，但是该组件并没有相应 prop 定义的 attribute。
+
+因为显式定义的 prop 适用于向一个子组件传入信息，然而组件库的作者并不总能预见组件会被用于怎样的场景。这也是为什么组件可以接受任意的 attribute，而这些 attribute 会被添加到这个组件的根元素上。
+
+例如，想象一下你通过一个 Bootstrap 插件使用了一个第三方的 `<bootstrap-date-input>` 组件，这个插件需要在其 `<input>` 上用到一个 `data-date-picker` attribute。我们可以将这个 attribute 添加到你的组件实例上：
+
+```html
+<bootstrap-date-input data-date-picker="activated"></bootstrap-date-input>
+```
+
+然后这个 `data-date-picker="activated"` attribute 就会自动添加到 `<bootstrap-date-input>` 的根元素上。
+
+> 替换/合并已有的Attribute
+
+想象一下 `<bootstrap-date-input>` 的模板是这样的：
+
+```html
+<input type="date" class="form-control">
+```
+
+为了给我们的日期选择器插件定制一个主题，我们可能需要像这样添加一个特别的类名：
+
+```html
+<bootstrap-date-input
+  data-date-picker="activated"
+  class="date-picker-theme-dark"
+></bootstrap-date-input>
+```
+
+在这种情况下，我们定义了两个不同的 `class` 的值：
+
+- `form-control`，这是在组件的模板内设置好的
+- `date-picker-theme-dark`，这是从组件的父级传入的
+
+对于绝大多数 attribute 来说，从外部提供给组件的值会替换掉组件内部设置好的值。所以如果传入 `type="text"` 就会替换掉 `type="date"` 并把它破坏！庆幸的是，`class` 和 `style` attribute 会稍微智能一些，即两边的值会被合并起来，从而得到最终的值：`form-control date-picker-theme-dark`。
+
+> 禁用Attribute 继承
+
+如果你**不**希望组件的根元素继承 attribute，你可以在组件的选项中设置 `inheritAttrs: false`。例如：
+
+```js
+Vue.component('my-component', {
+  inheritAttrs: false,
+  // ...
+})
+```
+
+这尤其适合配合实例的 `$attrs` property 使用，该 property 包含了传递给一个组件的 attribute 名和 attribute 值，例如：
+
+```js
+{
+  required: true,
+  placeholder: 'Enter your username'
+}
+```
+
+有了 `inheritAttrs: false` 和 `$attrs`，你就可以手动决定这些 attribute 会被赋予哪个元素。在撰写[基础组件](https://cn.vuejs.org/v2/style-guide/#基础组件名-强烈推荐)的时候是常会用到的：
+
+```js
+Vue.component('base-input', {
+  inheritAttrs: false,
+  props: ['label', 'value'],
+  template: `
+    <label>
+      {{ label }}
+      <input
+        v-bind="$attrs"
+        v-bind:value="value"
+        v-on:input="$emit('input', $event.target.value)"
+      >
+    </label>
+  `
+})
+```
+
+注意 `inheritAttrs: false` 选项**不会**影响 `style` 和 `class` 的绑定。
+
+这个模式允许你在使用基础组件的时候更像是使用原始的 HTML 元素，而不会担心哪个元素是真正的根元素：
+
+```js
+<base-input
+  v-model="username"
+  required
+  placeholder="Enter your username"
+></base-input>
+```
+
+### 14.11自定义事件
+
+#### 14.11.1事件名
+
+不同于组件和 prop，事件名不存在任何自动化的大小写转换。而是触发的事件名需要完全匹配监听这个事件所用的名称。举个例子，如果触发一个 camelCase 名字的事件：
+
+```
+this.$emit('myEvent')
+```
+
+则监听这个名字的 kebab-case 版本是不会有任何效果的：
+
+```
+<!-- 没有效果 -->
+<my-component v-on:my-event="doSomething"></my-component>
+```
+
+不同于组件和 prop，事件名不会被用作一个 JavaScript 变量名或 property 名，所以就没有理由使用 camelCase 或 PascalCase 了。并且 `v-on` 事件监听器在 DOM 模板中会被自动转换为全小写 (因为 HTML 是大小写不敏感的)，所以 `v-on:myEvent` 将会变成 `v-on:myevent`——导致 `myEvent` 不可能被监听到。
+
+因此，我们推荐你**始终使用 kebab-case 的事件名**。
+
+#### 14.11.2自定义组件的v-mode1
+
+一个组件上的 `v-model` 默认会利用名为 `value` 的 prop 和名为 `input` 的事件，但是像单选框、复选框等类型的输入控件可能会将 `value` attribute 用于[不同的目的](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#Value)。`model` 选项可以用来避免这样的冲突：
+
+```
+Vue.component('base-checkbox', {
+  model: {
+    prop: 'checked',
+    event: 'change'
+  },
+  props: {
+    checked: Boolean
+  },
+  template: `
+    <input
+      type="checkbox"
+      v-bind:checked="checked"
+      v-on:change="$emit('change', $event.target.checked)"
+    >
+  `
+})
+```
+
+现在在这个组件上使用 `v-model` 的时候：
+
+```
+<base-checkbox v-model="lovingVue"></base-checkbox>
+```
+
+这里的 `lovingVue` 的值将会传入这个名为 `checked` 的 prop。同时当 `<base-checkbox>` 触发一个 `change` 事件并附带一个新的值的时候，这个 `lovingVue` 的 property 将会被更新。
+
+>  注意你仍然需要在组件的 `props` 选项里声明 `checked` 这个 prop。
+
+#### 14.11.3将原生事件绑定到组件
+
+你可能有很多次想要在一个组件的根元素上直接监听一个原生事件。这时，你可以使用 `v-on` 的 `.native` 修饰符：
+
+```
+<base-input v-on:focus.native="onFocus"></base-input>
+```
+
+在有的时候这是很有用的，不过在你尝试监听一个类似 `<input>` 的非常特定的元素时，这并不是个好主意。比如上述 `<base-input>` 组件可能做了如下重构，所以根元素实际上是一个 `<label>` 元素：
+
+```
+<label>
+  {{ label }}
+  <input
+    v-bind="$attrs"
+    v-bind:value="value"
+    v-on:input="$emit('input', $event.target.value)"
+  >
+</label>
+```
+
+这时，父级的 `.native` 监听器将静默失败。它不会产生任何报错，但是 `onFocus` 处理函数不会如你预期地被调用。
+
+为了解决这个问题，Vue 提供了一个 `$listeners` property，它是一个对象，里面包含了作用在这个组件上的所有监听器。例如：
+
+```
+{
+  focus: function (event) { /* ... */ }
+  input: function (value) { /* ... */ },
+}
+```
+
+有了这个 `$listeners` property，你就可以配合 `v-on="$listeners"` 将所有的事件监听器指向这个组件的某个特定的子元素。对于类似 `<input>` 的你希望它也可以配合 `v-model` 工作的组件来说，为这些监听器创建一个类似下述 `inputListeners` 的计算属性通常是非常有用的：
+
+```js
+Vue.component('base-input', {
+  inheritAttrs: false,
+  props: ['label', 'value'],
+  computed: {
+    inputListeners: function () {
+      var vm = this
+      // `Object.assign` 将所有的对象合并为一个新对象
+      return Object.assign({},
+        // 我们从父级添加所有的监听器
+        this.$listeners,
+        // 然后我们添加自定义监听器，
+        // 或覆写一些监听器的行为
+        {
+          // 这里确保组件配合 `v-model` 的工作
+          input: function (event) {
+            vm.$emit('input', event.target.value)
+          }
+        }
+      )
+    }
+  },
+  template: `
+    <label>
+      {{ label }}
+      <input
+        v-bind="$attrs"
+        v-bind:value="value"
+        v-on="inputListeners"
+      >
+    </label>
+  `
+})
+```
+
+现在 `<base-input>` 组件是一个**完全透明的包裹器**了，也就是说它可以完全像一个普通的 `<input>` 元素一样使用了：所有跟它相同的 attribute 和监听器都可以工作，不必再使用 `.native` 监听器。
+
+14.11.4`.sync` 修饰符
+
+在有些情况下，我们可能需要对一个 prop 进行“双向绑定”。不幸的是，真正的双向绑定会带来维护上的问题，因为子组件可以变更父组件，且在父组件和子组件都没有明显的变更来源。
+
+这也是为什么我们推荐以 `update:myPropName` 的模式触发事件取而代之。举个例子，在一个包含 `title` prop 的假设的组件中，我们可以用以下方法表达对其赋新值的意图：
+
+```js
+this.$emit('update:title', newTitle)
+```
+
+然后父组件可以监听那个事件并根据需要更新一个本地的数据 property。例如：
+
+```js
+<text-document
+  v-bind:title="doc.title"
+  v-on:update:title="doc.title = $event"
+></text-document>
+```
+
+为了方便起见，我们为这种模式提供一个缩写，即 `.sync` 修饰符：
+
+```js
+<text-document v-bind:title.sync="doc.title"></text-document>
+```
+
+注意带有 `.sync` 修饰符的 `v-bind` **不能**和表达式一起使用 (例如 `v-bind:title.sync=”doc.title + ‘!’”` 是无效的)。取而代之的是，你只能提供你想要绑定的 property 名，类似 `v-model`。
+
+当我们用一个对象同时设置多个 prop 的时候，也可以将这个 `.sync` 修饰符和 `v-bind` 配合使用：
+
+```
+<text-document v-bind.sync="doc"></text-document>
+```
+
+这样会把 `doc` 对象中的每一个 property (如 `title`) 都作为一个独立的 prop 传进去，然后各自添加用于更新的 `v-on` 监听器。
+
+将 `v-bind.sync` 用在一个字面量的对象上，例如 `v-bind.sync=”{ title: doc.title }”`，是无法正常工作的，因为在解析一个像这样的复杂表达式的时候，有很多边缘情况需要考虑。
