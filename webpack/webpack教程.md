@@ -4,7 +4,7 @@
 
 ## 1.webpack安装
 
-如果使用 webpack 4+ 版本，还需要安装 `webpack-cli`。
+如果使用 `webpack 4+ `版本，还需要安装 `webpack-cli`。
 
 ### 1.1全局安装webpack
 
@@ -17,11 +17,11 @@ $ npm install webpack webpack-cli -g
 $ webpack -v
 ```
 
-注：由于每个项目所依赖的webpack版本不同，配置也不同。因此不能全局安装webpack。否则会造成打包错误。
+注：由于每个项目所依赖的`webpack`版本不同，配置也不同。因此不能全局安装`webpack`。否则会造成打包错误。
 
 ### 1.2卸载webpack
 
-卸载全局安装的webpack。
+卸载全局安装的`webpack`。
 
 ```bash
 npm uninstall webpack webpack-cli -g
@@ -29,11 +29,13 @@ npm uninstall webpack webpack-cli -g
 
 ### 1.3本地安装
 
-在项目中安装。这可以使我们在引入破坏式变更(breaking change)的依赖时，更容易分别升级项目。
+在指定项目中安装。这可以使我们在引入破坏式变更(breaking change)的依赖时，更容易分别升级项目。
 
 ```bash
 # 进入项目根目录
 $ cd 项目名
+# 初始化项目
+$ npm init -y
 # 局部安装
 $ npm install webpack webpack-cli -D
 # 或者
@@ -42,9 +44,9 @@ $ npm install webpack webpack-cli --save-dev
 $ npx webpack -v
 ```
 
-注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行webpack命令时，`nodejs`会尝试去全局环境去找webpack，而我们安装webpack到项目中的，因此找不到。
+注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行`webpack`命令时，`nodejs`会尝试去全局环境去找`webpack`，而我们安装`webpack`到项目中的，因此找不到。
 
-通常，webpack 通过运行一个或多个 [npm scripts](https://docs.npmjs.com/misc/scripts)，会在本地 `node_modules` 目录中查找安装的 webpack：
+通常，`webpack `通过运行一个或多个 [npm scripts](https://docs.npmjs.com/misc/scripts)，会在本地 `node_modules` 目录中查找安装的 webpack：
 
 ```json
 "scripts": {
@@ -52,13 +54,11 @@ $ npx webpack -v
 }
 ```
 
-
-
-> *在安装一个要打包到生产环境的安装包时，你应该使用* `npm install --save`*，如果你在安装一个用于开发环境的安装包（例如，linter, 测试库等），你应该使用* `npm install --save-dev`
+> 在安装一个要打包到**生产环境**的安装包时，你应该使用 `npm install --save`，如果你在安装一个用于**开发环境**的安装包（例如，linter, 测试库等），你应该使用 `npm install --save-dev`
 
 ### 1.4修改package.json文件
 
-我们还需要调整 `package.json` 文件，以便确保我们安装包是`私有的(private)`，并且移除 `main` 入口。这可以防止意外发布你的代码。
+我们还需要调整 `package.json` 文件，以便确保我们**安装包是私有的(private)**，并且移除 `main` 入口。这可以防止意外发布你的代码。
 
 ```json
 {
@@ -81,24 +81,22 @@ $ npx webpack -v
   }
 ```
 
-
-
 ## 2.webpack配置文件
 
-使用 `npx webpack index.js`时将使用webpack的默认配置进行打包index.js文件
+使用 `npx webpack index.js`时将使用**webpack的默认配置**进行打包`index.js`文件
 
 ### 2.1基本配置
 
 #### 2.1.1配置打包文件
 
-在项目根目录下新建`webpack.config.js`用于编写webpack的配置。
+在**项目根目录**下新建`webpack.config.js`用于编写webpack的配置。
 
 ```js
 //webpack.config.js
 const path =require('path')
 module.exports={
   //打包模式
-  mode:'development',
+  mode:'development',//开发模式
   //打包入口文件
   entry:'./index.js',
   //打包出口文件
@@ -109,7 +107,7 @@ module.exports={
 }
 ```
 
-注意：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。
+==注意==：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。
 
 #### 2.1.2配置打包命令
 
@@ -2561,8 +2559,6 @@ module.exports={
 loader是帮助我们去处理引入的模块。在我们打包时，在某些时刻上需要做某些事情，就需要使用plugin。
 
 plugin是一个类。
-
-
 
 
 
