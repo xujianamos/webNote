@@ -6,6 +6,8 @@
 
 如果使用 `webpack 4+ `版本，还需要安装 `webpack-cli`。
 
+注：一般安装`webpack-cli`时，`webpack`也会一并安装。
+
 ### 1.1全局安装webpack
 
 ```bash
