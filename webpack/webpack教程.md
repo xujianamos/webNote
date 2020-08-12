@@ -2,6 +2,15 @@
 
 在开始之前，请确保安装了 [Node.js](https://nodejs.org/en/) 的最新版本。使用 Node.js 最新的长期支持版本(LTS - Long Term Support)。
 
+- 查看node和npm版本
+
+```bash
+#查看node版本
+$ node -v
+# 查看npm版本
+$ npm -v
+```
+
 ## 1.webpack安装
 
 如果使用 `webpack 4+ `版本，还需要安装 `webpack-cli`。
@@ -11,12 +20,16 @@
 ### 1.1全局安装webpack
 
 ```bash
-# 初始化项目（初始化 npm）
+# 初始化项目（初始化 npm）创建node的包文件
 $ npm init -y
 # 全局安装webpack
 $ npm install webpack webpack-cli -g
 # 查看安装webpack的版本号
 $ webpack -v
+# 如果输出正确的版本号，则表明安装成功
+
+# 打包文件
+$ webpack index.js(入口文件)
 ```
 
 注：由于每个项目所依赖的`webpack`版本不同，配置也不同。因此不能全局安装`webpack`。否则会造成打包错误。
@@ -26,7 +39,7 @@ $ webpack -v
 卸载全局安装的`webpack`。
 
 ```bash
-npm uninstall webpack webpack-cli -g
+$ npm uninstall webpack webpack-cli -g
 ```
 
 ### 1.3本地安装
@@ -38,21 +51,28 @@ npm uninstall webpack webpack-cli -g
 $ cd 项目名
 # 初始化项目
 $ npm init -y
-# 局部安装
+
+# 局部安装（安装最新版本的webpack）
 $ npm install webpack webpack-cli -D
 # 或者
 $ npm install webpack webpack-cli --save-dev
+# 局部安装（安装指定版本的webpack）
+$ npm install webpack@4.16.5 webpack-cli -D
+
 # 查看版本号
 $ npx webpack -v
+
+#打包文件
+$ npx webpack index.js(入口文件)
 ```
 
-注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行`webpack`命令时，`nodejs`会尝试去全局环境去找`webpack`，而我们安装`webpack`到项目中的，因此找不到。
+注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行`webpack`命令时，`nodejs`会尝试去全局环境去找`webpack`，而我们安装`webpack`到项目中的，因此找不到。此时只能使用`npx webpack -v`查看版本号。
 
 通常，`webpack `通过运行一个或多个 [npm scripts](https://docs.npmjs.com/misc/scripts)，会在本地 `node_modules` 目录中查找安装的 webpack：
 
 ```json
 "scripts": {
-    "start": "webpack --config webpack.config.js"
+    "start": "webpack --config webpack.config.js"//--config后面是指定的配置文件
 }
 ```
 
@@ -73,8 +93,8 @@ $ npx webpack -v
       "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],
-    "author": "",
-    "license": "ISC",
+    "author": "",//作者
+    "license": "ISC",//开源
     "devDependencies": {
       "webpack": "^4.0.1",
       "webpack-cli": "^2.0.9"
@@ -85,7 +105,7 @@ $ npx webpack -v
 
 ## 2.webpack配置文件
 
-使用 `npx webpack index.js`时将使用**webpack的默认配置**进行打包`index.js`文件
+使用 `npx webpack index.js`时将使用**webpack的默认配置**进行打包`index.js`文件。
 
 ### 2.1基本配置
 
@@ -96,20 +116,24 @@ $ npx webpack -v
 ```js
 //webpack.config.js
 const path =require('path')
-module.exports={
+module.exports = {
   //打包模式
-  mode:'development',//开发模式
+  mode:'development',//打包模式，默认的打包模式是production
   //打包入口文件
-  entry:'./index.js',
+  entry:'./src/index.js',
   //打包出口文件
   output:{
+    //打包后的文件名字
     filename:'bundle.js',
-    path:path.resolve(__dirname,'dist')
+    //打包后的文件存放位置（必须是绝对路径）
+    path:path.resolve(__dirname,'dist')//__dirname代表当前文件夹下
   }
 }
 ```
 
-==注意==：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。
+==注意==：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。也就是执行`npx webpack`打包命令，则webpack的默认配置文件就必须是`webpack.config.js`。否则就会打包错误。
+
+> 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示webpack此时以webpackconfig.js为配置文件进行打包。
 
 #### 2.1.2配置打包命令
 
@@ -119,6 +143,7 @@ module.exports={
 //package.json
 {
   "scripts":{
+    //打包命令
     "bundle":"webpack"
   }
 }
@@ -132,13 +157,42 @@ module.exports={
 
 作用：使我们能在命令行使用`webpack`命令。
 
+## 2.3打包输出信息
+
+```js
+Hash: 746dba14f98f4132d613   //本次打包唯一的hash值
+Version: webpack 4.44.1		//本次打包使用的webpack版本
+Time: 47ms	//打包耗时
+/*
+* Asset：打包输出的文件名字
+* Size：打包后文件大小
+* Chunks：打包文件对应的id值
+* Chunk Names：打包文件对应的文件。此时这里是main，是因为我们入口文件entry:{main:'./src/main.js'}中对应的main
+*/
+Built at: 2020-08-12 10:03:52 ├F10: PM┤
+    Asset      Size  Chunks             Chunk Names
+bundle.js  3.79 KiB    main  [emitted]  main
+Entrypoint main = bundle.js	//入口文件
+[./src/main.js] 20 bytes {main} [built]//需要打包的文件列表
+```
+
+
+
+## 2.4项目目录结构
+
+```
+
+```
+
+
+
 # 二.webpack核心概念
 
 ## 1.entry
 
 指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的==开始==。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
 
-单页应用(SPA)：一个入口起点，多页应用(MPA)：多个入口起点。
+单页应用(SPA)：一个入口起点。多页应用(MPA)：多个入口起点。
 
 ### 1.1语法
 
@@ -307,7 +361,7 @@ filename: "[chunkhash].bundle.js"
 
 webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，css等文件时，就需要使用loader告诉webpack怎么去打包。
 
-注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 [ES2015 特性](http://es6-features.org/)，请确保你在 webpack 的 [loader 系统](https://www.webpackjs.com/concepts/loaders/)中使用了一个像是 [Babel](https://babeljs.io/) 或 [Bublé](https://buble.surge.sh/guide/) 的[转译器](https://www.webpackjs.com/loaders/#transpiling)。
+注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
 
 作用：
 
@@ -359,9 +413,15 @@ module.exports={
 
 #### 3.1.1file-loader
 
-用于打包文件
+用于打包文件。
+
+底层原理：遇到jpg、png、txt等静态文件时，先将此文件移到输出根目录下，再将此文件的地址返回给变量。
 
 - 基础配置
+
+此时打包后图片存放在文件打包输出目录下，并且图片名字为`hash.jpg`。
+
+例如图片名字为：`logo.jpg`,则打包后的图片名字为：`hash值.jpg`
 
 ```js
  module:{
@@ -378,6 +438,10 @@ module.exports={
 
 - 配置打包后文件如何命名
 
+此时图片存放位置为文件打包输出的根目录下，并且名字为`原始名字_hash值.png`.
+
+例如图片名字为：`logo.png`，则打包后图片名字为：`logo_hash值.png`
+
 ```js
  module:{
     rules:[
@@ -385,6 +449,7 @@ module.exports={
        test:/\(.jpg|png|gif)$/,
        use:{
          loader:'file-loader',
+         //配置项
          options:{
            //placeholder 占位符
            //配置打包后文件的名字如何命名，[name]表示原始名字，[hash]表示名字后面加上hash值，[ext]表示原始文件的后缀名
@@ -398,6 +463,8 @@ module.exports={
 
 - 配置打包后文件的存放位置
 
+
+
 ```js
 {
          loader:'file-loader',
@@ -406,7 +473,8 @@ module.exports={
            //配置打包后文件的名字
            name:'[name]_[hash].[ext]',
            //配置打包后存放位置
-           //表示打包后的文件存放在images/文件夹下
+           //表示打包后的图片文件存放在images/文件夹下。
+             //注意：此时images文件夹在打包输出的根目录下
            outputPath:'images/'
          }
        }
@@ -423,6 +491,14 @@ import avatar from './avatar.jpg'
 
 #### 3.1.2url-loader
 
+- 安装
+
+```bash
+
+```
+
+
+
 与`file-loader`类似，只是多了`limit`配置项。但是打包图片时会将图片转换成base64的。并且图片文件会打包到输出的js文件中
 
 ```js
@@ -435,11 +511,17 @@ import avatar from './avatar.jpg'
            //配置打包后存放位置
            //表示打包后的文件存放在images/文件夹下
            outputPath:'images/',
-           //当图片大于10kb时就存放在images/文件夹下，小于时就存放在打包后的js文件中
+           //当图片大于10kb时就存放在images/文件夹下（相当于file-loader），小于时就存放在打包后的js文件中
            limit:10240
          }
        }
 ```
+
+优点：打包到js文件中，减少了http请求。但是图片过大会导致js文件很大，加载js文件很耗时。
+
+推荐：如果图片过大，建议使用file-loader,加载js文件就会很快。如果图片很小，建议使用url-loader,减少http请求。
+
+
 
 ### 3.2打包样式文件
 
@@ -511,7 +593,7 @@ module.exports = {
 
 - 使用
 
-同时需要在需要添加前缀的类型文件中使用postcss-loader
+同时需要在需要添加前缀的类型文件中使用postcss-loader。打包时遇到`postcss-loader`，就会去找`postcss.config.js`配置文件，并使用配置文件中的插件。
 
 ```js
 {
