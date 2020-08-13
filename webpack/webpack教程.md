@@ -1,6 +1,6 @@
-# 一.webpack基本使用
+# 1.webpack基本使用
 
-在开始之前，请确保安装了 [Node.js](https://nodejs.org/en/) 的最新版本。使用 Node.js 最新的长期支持版本(LTS - Long Term Support)。
+在开始使用`webpack`之前，请确保安装了 `Node.js `的最新版本。推荐使用 `Node.js `最新的长期支持版本(LTS - Long Term Support)。
 
 - 查看node和npm版本
 
@@ -11,16 +11,16 @@ $ node -v
 $ npm -v
 ```
 
-## 1.webpack安装
+## 1.1  webpack安装
 
-如果使用 `webpack 4+ `版本，还需要安装 `webpack-cli`。
+如果使用 `webpack 4+ `版本，需要安装 `webpack-cli`。
 
-注：一般安装`webpack-cli`时，`webpack`也会一并安装。
+注：一般安装`webpack-cli`时，`webpack`也会一并安装,但是建议一起安装，避免不必要的错误。
 
-### 1.1全局安装webpack
+### 1.1.1  全局安装webpack
 
 ```bash
-# 初始化项目（初始化 npm）创建node的包文件
+# 初始化项目（初始化 npm）创建node的包文件管理
 $ npm init -y
 # 全局安装webpack
 $ npm install webpack webpack-cli -g
@@ -28,13 +28,13 @@ $ npm install webpack webpack-cli -g
 $ webpack -v
 # 如果输出正确的版本号，则表明安装成功
 
-# 打包文件
+# 使用默认配置打包文件
 $ webpack index.js(入口文件)
 ```
 
 注：由于每个项目所依赖的`webpack`版本不同，配置也不同。因此不能全局安装`webpack`。否则会造成打包错误。
 
-### 1.2卸载webpack
+### 1.1.2  卸载webpack
 
 卸载全局安装的`webpack`。
 
@@ -42,9 +42,9 @@ $ webpack index.js(入口文件)
 $ npm uninstall webpack webpack-cli -g
 ```
 
-### 1.3本地安装
+### 1.1.3  本地安装
 
-在指定项目中安装。这可以使我们在引入破坏式变更(breaking change)的依赖时，更容易分别升级项目。
+在指定项目中安装。存在多个项目不同webpack版本时，这样更容易分别升级项目。
 
 ```bash
 # 进入项目根目录
@@ -62,23 +62,24 @@ $ npm install webpack@4.16.5 webpack-cli -D
 # 查看版本号
 $ npx webpack -v
 
-#打包文件
+# 使用默认配置打包文件
 $ npx webpack index.js(入口文件)
 ```
 
 注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行`webpack`命令时，`nodejs`会尝试去全局环境去找`webpack`，而我们安装`webpack`到项目中的，因此找不到。此时只能使用`npx webpack -v`查看版本号。
 
-通常，`webpack `通过运行一个或多个 [npm scripts](https://docs.npmjs.com/misc/scripts)，会在本地 `node_modules` 目录中查找安装的 webpack：
+通常，`webpack `通过运行一个或多个 `npm scripts`，会在本地 `node_modules` 目录中查找安装的 webpack：
 
 ```json
 "scripts": {
-    "start": "webpack --config webpack.config.js"//--config后面是指定的配置文件
+  //--config后面是指定的webpack配置文件名字
+    "build": "webpack --config webpack.config.js"
 }
 ```
 
 > 在安装一个要打包到**生产环境**的安装包时，你应该使用 `npm install --save`，如果你在安装一个用于**开发环境**的安装包（例如，linter, 测试库等），你应该使用 `npm install --save-dev`
 
-### 1.4修改package.json文件
+### 1.1.4  修改package.json文件
 
 我们还需要调整 `package.json` 文件，以便确保我们**安装包是私有的(private)**，并且移除 `main` 入口。这可以防止意外发布你的代码。
 
@@ -103,19 +104,18 @@ $ npx webpack index.js(入口文件)
   }
 ```
 
-## 2.webpack配置文件
+## 1.2.webpack配置文件
 
 使用 `npx webpack index.js`时将使用**webpack的默认配置**进行打包`index.js`文件。
 
-### 2.1基本配置
-
-#### 2.1.1配置打包文件
+### 1.2.1配置打包文件
 
 在**项目根目录**下新建`webpack.config.js`用于编写webpack的配置。
 
 ```js
 //webpack.config.js
 const path =require('path')
+
 module.exports = {
   //打包模式
   mode:'development',//打包模式，默认的打包模式是production
@@ -135,29 +135,31 @@ module.exports = {
 
 > 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示webpack此时以webpackconfig.js为配置文件进行打包。
 
-#### 2.1.2配置打包命令
+### 1.2.2配置打包命令
 
-在`package.json`文件的`scripts`脚本下添加打包命令。
+在`package.json`文件的`scripts`脚本下添加打包命令。避免每次输`npx webpack`命令。
 
 ```js
 //package.json
 {
   "scripts":{
     //打包命令
-    "bundle":"webpack"
+    "build":"webpack"
   }
 }
 ```
 
-此时只需执行`npm run bundle`命令即可打包成功。
+可以使用 `npm run build` 命令，来替代我们之前使用的 `npx` 命令。
 
-## 2.2webpack-cli作用
+> 通过向`npm run build` 命令和你的参数之间添加两个中横线，可以将自定义参数传递给 webpack，例如：`npm run build -- --colors`。
+
+## 1.3webpack-cli作用
 
 如果没有安装`webpack-cli`这个文件，就无法在命令行下执行全局安装的`webpack`命令和局部安装的`npx webpack`命令
 
 作用：使我们能在命令行使用`webpack`命令。
 
-## 2.3打包输出信息
+## 1.4打包输出信息
 
 ```js
 Hash: 746dba14f98f4132d613   //本次打包唯一的hash值
@@ -176,40 +178,126 @@ Entrypoint main = bundle.js	//入口文件
 [./src/main.js] 20 bytes {main} [built]//需要打包的文件列表
 ```
 
+## 1.5项目目录结构
 
-
-## 2.4项目目录结构
-
+```markdown
+webpack-vue-template
+├─ .gitignore
+├─ package-lock.json
+├─ package.json
+├─ src
+│  └─ main.js
+└─ webpack.config.js
 ```
 
-```
+# 2.  webpack核心概念
 
-
-
-# 二.webpack核心概念
-
-## 1.entry
+## 2.1  entry
 
 指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的==开始==。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
 
+可以通过在 webpack 配置中配置 `entry` 属性，来指定一个入口起点（或多个入口起点）。默认值为 `./src`。
+
 单页应用(SPA)：一个入口起点。多页应用(MPA)：多个入口起点。
 
-### 1.1语法
+`entry` 配置的最简单例子：
 
-#### 1.1.1单个入口
+```js
+//webpack.config.js
+module.exports = {
+  entry: './src/index.js'
+};
+```
+
+### 2.1.1 单个入口(简写)语法
+
+属性值为字符串形式。
+
+```js
+//webpack.config.js
+module.exports={
+   entry: './src/main.js'
+}
+```
+
+`entry` 属性的单个入口语法，是下面的简写：
 
 ```js
 //webpack.config.js
 module.exports={
    entry: {
-    main: './main.js'
+    main: './src/main.js'
   }
-  //简写形式
-  entry: './main.js'
 }
 ```
 
-#### 1.1.2多个入口（对象语法）
+打包输出信息：
+
+```js
+Hash: 12a7fbc8a81fc16aecea
+Version: webpack 4.44.1
+Time: 372ms
+Built at: 2020-08-13 11:27:09
+  Asset     Size  Chunks             Chunk Names
+main.js  554 KiB    main  [emitted]  main
+Entrypoint main = main.js
+[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
+[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
+[./src/main.js] 214 bytes {main} [built]
+```
+
+此时`dist`目录下生成了1个文件：
+
+![image-20200813112830416](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813112830416.png)
+
+### 2.1.2数组语法
+
+属性值为数组形式。
+
+```js
+//webpack.config.js
+module.exports={
+   entry: ['./src/main.js','lodash']
+}
+```
+
+`entry` 属性的数组语法，是下面的简写：
+
+```js
+//webpack.config.js
+module.exports={
+   entry: {
+     main: ['./src/main.js','lodash']
+   }
+}
+```
+
+> 向 `entry` 属性传入「**文件路径(file path)数组**」将创建**多个主入口(multi-main entry)**。在你想要多个依赖文件一起注入，并且将它们的依赖导向到一个`chunk`时，传入数组的方式就很有用。
+
+打包输出信息：
+
+```bash
+Hash: 14ab9c7be43f7b5a467d
+Version: webpack 4.44.1
+Time: 358ms
+Built at: 2020-08-13 11:29:25
+  Asset     Size  Chunks             Chunk Names
+main.js  555 KiB    main  [emitted]  main
+Entrypoint main = main.js
+[0] multi ./src/main.js ./src/index.js 40 bytes {main} [built]
+[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
+[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
+[./src/index.js] 21 bytes {main} [built]
+[./src/main.js] 214 bytes {main} [built]
+```
+
+此时`dist`目录下生成了1个文件：
+
+![image-20200813113032120](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813113032120.png)
+
+### 2.1.3多个入口（对象语法）
+
+属性值为对象形式。这个是最完整的entry配置，其他形式只是它的简化形式而已。
 
 ```js
 //webpack.config.js
@@ -221,74 +309,116 @@ module.exports={
 }
 ```
 
-### 1.2应用场景：
+打包输出信息：
 
-#### 1.2.1打包输出为固定一个文件名
+```js
+Hash: e8f77d56163515053f38
+Version: webpack 4.44.1
+Time: 363ms
+Built at: 2020-08-13 11:22:16
+   Asset      Size  Chunks             Chunk Names
+index.js  3.79 KiB   index  [emitted]  index
+ main.js   554 KiB    main  [emitted]  main
+Entrypoint main = main.js
+Entrypoint index = index.js
+[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
+[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
+[./src/index.js] 21 bytes {index} [built]
+[./src/main.js] 214 bytes {main} [built]
+```
+
+此时`dist`目录下生成了两个文件：
+
+![image-20200813112632202](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813112632202.png)
+
+对象语法会比较繁琐。然而，这是应用程序中定义入口的最可扩展的方式。
+
+> **“可扩展的 webpack 配置”**是指：可重用并且可以与其他配置组合使用。这是一种流行的技术，用于将关注点(concern)从环境(environment)、构建目标(build target)、运行时(runtime)中分离。然后使用专门的工具（如`webpack-merge`）将它们合并。
+
+------
+
+应用场景：
+
+### 2.1.4单页应用程序
 
 ```js
 //webpack.config.js
-//打包入口配置
-entry:'./src/index.js',
-//打包出口配置
-output:{
-  filename:'bundle.js',
-  path:path.resolve(__dirname,'dist')
+const config={
+  //打包入口配置
+	entry:'./src/index.js',
+	//打包出口配置
+	output:{
+    //配置打包输出的名字为 bundle.js
+  	filename:'bundle.js',
+  	path:path.resolve(__dirname,'dist')
+	}
 }
+
+module.exports = config;
 ```
 
 此时打包输出的js文件只有一个`bundle.js`。
 
-#### 1.2.2打包输出为多个文件
+### 2.1.5多页面应用程序
+
+配置了几个入口，打包就输出多少个js文件
 
 ```js
 //webpack.config.js
-//打包入口配置
-entry:{
-  //打包到main.js
-  main:'./src/index.js',
-  //打包到sub.js
-  sub:'./src/index.js'
-},
-//打包出口配置
-output:{
-  // [name]在这个地方为占位符，打包时会替换为入口配置的键值
-  filename:'[name].js',
-  path:path.resolve(__dirname,'dist')
+const config={
+  entry:{
+  main:'./src/index.js',//打包到main.js
+  index:'./src/index.js'//打包到index.js
+	},
+	output:{
+  	// [name]在这个地方为占位符，打包时会替换为入口配置的键值
+ 	 filename:'[name].js',
+ 	 path:path.resolve(__dirname,'dist')
+	}
 }
+module.exports = config;
 ```
 
-此时打包输出的js文件为两个，分别是`main.js`,`sub.js`。这两个js文件名为打包入口`entry`中配置的键值。
+此时打包输出的js文件为两个，分别是`main.js`,`index.js`。这两个js文件名为打包入口`entry`中配置的`key`属性。
 
-#### 1.2.3打包输出时自动在html文件的script中添加`cdn`地址
+使用 `CommonsChunkPlugin` 为每个页面间的应用程序共享代码创建 bundle。由于入口起点增多，多页应用能够复用入口起点之间的大量代码/模块，从而可以极大地从这些技术中受益。
+
+推荐：每个 HTML 文档只使用一个入口起点。
+
+### 2.1.6打包输出时自动在html文件的script中添加`cdn`地址
 
 适用场景：只将打包后的html文件拿给后端部署。将其他静态资源放在cdn服务器上。
 
 ```js
 //webpack.config.js
-//打包入口配置
-entry:{
-  main:'./src/index.js',
-  sub:'./src/index.js'
-},
-//打包出口配置
-output:{
-  //为html文件引入js文件自动添加cdn地址
-  publicPath:'http://cdn.com.cn'
-  // [name]在这个地方为占位符，打包时会替换为入口配置的键值
-  filename:'[name].js',
-  path:path.resolve(__dirname,'dist')
+const config={
+  entry:{
+  	main:'./src/index.js',
+  	index:'./src/index.js'
+	},
+	output:{
+  	//为html文件引入js文件自动添加cdn地址
+  	publicPath:'http://cdn.com.cn'
+  	// [name]在这个地方为占位符，打包时会替换为入口配置的键值
+  	filename:'[name].js',
+ 	 path:path.resolve(__dirname,'dist')
+	}
 }
+
+module.exports = config;
 ```
 
 此时打包完成后，html文件中引入的js文件都自动添加了配置的cdn地址。
 
-## 2.output
+## 2.2output
 
 **output** 属性告诉 webpack 在哪里输出它所创建的 ==bundles==，以及如何命名这些文件，默认值为 `./dist`。
 
+基本上，整个应用程序结构，都会被编译到你指定的输出路径的文件夹中。你可以通过在配置中指定一个 `output` 字段，来配置这些处理过程。
+
 > 注意，即使可以存在多个`入口`起点，但只指定一个`输出`配置。
 
-### 2.1基本用法
+### 2.2.1基本用法
 
 在 webpack 中配置 `output` 属性的最低要求是，将它的值设置为一个对象，包括以下两点：
 
@@ -309,117 +439,187 @@ module.exports={
 }
 ```
 
-### 2.2多个入口
+此配置将一个单独的 `bundle.js` 文件输出到 `/dist` 目录中。
 
-如果配置创建了多个单独的 "chunk"（例如，使用多个入口起点或使用像 CommonsChunkPlugin 这样的插件），则应该使用[占位符(substitutions)](https://www.webpackjs.com/configuration/output#output-filename)来确保每个文件具有唯一的名称。
+### 2.2.2多个入口
+
+如果配置创建了多个单独的 `chunk`（例如，使用多个入口起点或使用像 `CommonsChunkPlugin `这样的插件），则应该使用**占位符(substitutions)**来确保每个文件具有唯一的名称。
 
 ```js
 module.exports={
  	 entry: {
-   		 app: './src/app.js',
-   	 	search: './src/search.js'
+   		index: './src/index.js',
+   	 	main: './src/main.js'
  	 },
-  	output: {
-      //使用入口名称
+  output: {
+      //使用占位符 [name]来确保每一个输出文件有唯一名称
    		 filename: '[name].js',
      	 path: __dirname + '/dist'
   	}
 }
 
-// 写入到硬盘：./dist/app.js, ./dist/search.js
+// 写入到硬盘：./dist/index.js, ./dist/main.js
 ```
 
-2.3`filename`配置
+如果此时`filename`为固定名称`bundle.js`，则打包时会报错:
 
-使用入口名称：
+```
+ERROR in chunk main [entry]
+bundle.js
+Conflict: Multiple chunks emit assets to the same filename bundle.js (chunks index and main)
+```
+
+即多个文件资源有相同的文件名称。此时需要使用`占位符` 来确保每一个输出的文件都有唯一的名称。
+
+### 2.2.3`filename`配置
+
+（1）使用入口名称作为输出文件名：
 
 ```js
 filename: "[name].bundle.js"
 ```
 
-使用内部 chunk id:
+打包后输出
+
+```bash
+Hash: e8f77d56163515053f38
+Version: webpack 4.44.1
+Time: 375ms
+Built at: 2020-08-13 13:53:48
+          Asset      Size  Chunks             Chunk Names
+index.bundle.js  3.79 KiB   index  [emitted]  index
+ main.bundle.js   554 KiB    main  [emitted]  main
+Entrypoint main = main.bundle.js
+Entrypoint index = index.bundle.js
+[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
+[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
+[./src/index.js] 21 bytes {index} [built]
+[./src/main.js] 214 bytes {main} [built]
+```
+
+![image-20200813135532469](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813135532469.png)
+
+使用内部 `chunk id`:
 
 ```js
 filename: "[id].bundle.js"
 ```
 
-使用每次构建过程中，唯一的 hash 生成:
+使用每次构建过程中，唯一的 `hash `生成:默认hash值长度为20
 
 ```js
 filename: "[name].[hash].bundle.js"
 ```
 
-使用基于每个 chunk 内容的 hash：
+输出信息：
+
+```
+Hash: e8f77d56163515053f38
+Version: webpack 4.44.1
+Time: 666ms
+Built at: 2020-08-13 13:59:54
+                               Asset      Size  Chunks                         Chunk Names
+index.e8f77d56163515053f38.bundle.js  3.79 KiB   index  [emitted] [immutable]  index
+ main.e8f77d56163515053f38.bundle.js   554 KiB    main  [emitted] [immutable]  main
+Entrypoint main = main.e8f77d56163515053f38.bundle.js
+Entrypoint index = index.e8f77d56163515053f38.bundle.js
+[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
+[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
+[./src/index.js] 21 bytes {index} [built]
+[./src/main.js] 214 bytes {main} [built]
+```
+
+![image-20200813140036425](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813140036425.png)
+
+使用基于每个 `chunk` 内容的 `hash`：
 
 ```js
 filename: "[chunkhash].bundle.js"
 ```
 
+输出信息：
 
+```
+Hash: e8f77d56163515053f38
+Version: webpack 4.44.1
+Time: 382ms
+Built at: 2020-08-13 13:57:05
+                         Asset      Size  Chunks                         Chunk Names
+089a5654d56f6f28f211.bundle.js  3.79 KiB   index  [emitted] [immutable]  index
+795b0c772923ff2f92de.bundle.js   554 KiB    main  [emitted] [immutable]  main
+Entrypoint main = 795b0c772923ff2f92de.bundle.js
+Entrypoint index = 089a5654d56f6f28f211.bundle.js
+[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
+[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
+[./src/index.js] 21 bytes {index} [built]
+[./src/main.js] 214 bytes {main} [built]
+```
 
-## 3.loader
+![image-20200813135757208](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813135757208.png)
+
+### 2.2.4使用 CDN 和资源 hash
+
+```js
+output: {
+  path: "/home/proj/cdn/assets/[hash]",
+  publicPath: "http://cdn.com/assets/[hash]/"
+}
+```
+
+在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。如果你在编译时不知道 `publicPath`，你可以先忽略它，并且在入口起点设置
+
+## 2.3.loader
 
 webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，css等文件时，就需要使用loader告诉webpack怎么去打包。
 
+`loader`让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解 JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效[模块](https://www.webpackjs.com/concepts/modules)，然后你就可以利用 webpack 的打包能力，对它们进行处理。
+
 注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
 
-作用：
+在 webpack 的配置中 **loader** 有两个目标：
 
-- 安装loader
-
-使用loader时需要先用`npm install file-loader -D`安装相应的loader才能进行配置使用。
-
-- 配置loader
+1. `test` 属性，用于标识出应该被对应的 loader 进行转换的某个或某些文件。
+2. `use` 属性，表示进行转换时，应该使用哪个 loader。
 
 ```js
 //webpack.config.js
 
-const path =require('path')
-
-module.exports={
-  //打包模式
-  mode:'development',
-  //打包入口文件
-  entry:'./index.js',
-  //loader配置规则
-  module:{
-    rules:[
-      {
-       test:/\.jpg$/,
-       use:{
-         loader:'file-loader',
-         options:{
-           //placeholder 占位符
-           //配置打包后文件的名字
-           name:'[name]_[hash].[ext]'
-         }
-       }
-      }
+const config = {
+  module: {
+    rules: [
+      { test: /\.txt$/, use: 'raw-loader' }
     ]
-  },
-  //打包出口文件
-  output:{
-    filename:'bundle.js',
-    path:path.resolve(__dirname,'dist')
   }
-}
+};
+
+module.exports = config;
 ```
 
-- 执行顺序
+以上配置中，对一个单独的 module 对象定义了 `rules` 属性，里面包含两个必须属性：`test` 和 `use`。这告诉 webpack 编译器(compiler) 如下信息：
+
+> “嘿，webpack 编译器，当你碰到「在 `require()`/`import` 语句中被解析为 '.txt' 的路径」时，在你对它打包之前，先**使用** `raw-loader` 转换一下。”
+
+### 2.3.1执行顺序
 
 从右到左，从下到上执行。
 
-### 3.1打包图片类文件
+### 2.3.2打包文件
 
-#### 3.1.1file-loader
+#### （1）file-loader
 
-用于打包文件。
+将文件发送到输出文件夹，并返回（相对）URL。
 
 底层原理：遇到jpg、png、txt等静态文件时，先将此文件移到输出根目录下，再将此文件的地址返回给变量。
 
+- 安装：
+
+```bash
+npm install --save-dev file-loader
+```
+
 - 基础配置
 
-此时打包后图片存放在文件打包输出目录下，并且图片名字为`hash.jpg`。
+默认情况下，生成的文件的文件名就是文件内容的 MD5 哈希值并会保留所引用资源的原始扩展名。
 
 例如图片名字为：`logo.jpg`,则打包后的图片名字为：`hash值.jpg`
 
@@ -436,11 +636,9 @@ module.exports={
   },
 ```
 
+![image-20200813143600033](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143600033.png)
+
 - 配置打包后文件如何命名
-
-此时图片存放位置为文件打包输出的根目录下，并且名字为`原始名字_hash值.png`.
-
-例如图片名字为：`logo.png`，则打包后图片名字为：`logo_hash值.png`
 
 ```js
  module:{
@@ -461,9 +659,13 @@ module.exports={
   },
 ```
 
+此时图片存放位置为文件打包输出的根目录下，并且名字为`原始名字_hash值.png`.
+
+例如图片名字为：`logo.png`，则打包后图片名字为：`logo_hash值.png`
+
+![image-20200813143947047](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143947047.png)
+
 - 配置打包后文件的存放位置
-
-
 
 ```js
 {
@@ -480,6 +682,8 @@ module.exports={
        }
 ```
 
+![image-20200813144427221](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813144427221.png)
+
 - 拓展
 
 ```js
@@ -487,19 +691,28 @@ module.exports={
 import avatar from './avatar.jpg'
 ```
 
+使用`file-loader`打包字体文件。
 
+```js
+{
+       test:/\.(eot|ttf|svg)$/,
+       use:{
+         loader:'file-loader'
+       }
+}
+```
 
-#### 3.1.2url-loader
+#### （2）url-loader
+
+与`file-loader`类似，只是多了`limit`配置项。但是打包图片时会将图片转换成base64的。并且图片文件会打包到输出的js文件中。
 
 - 安装
 
 ```bash
-
+npm install --save-dev url-loader
 ```
 
-
-
-与`file-loader`类似，只是多了`limit`配置项。但是打包图片时会将图片转换成base64的。并且图片文件会打包到输出的js文件中
+- 配置
 
 ```js
 {
@@ -521,19 +734,17 @@ import avatar from './avatar.jpg'
 
 推荐：如果图片过大，建议使用file-loader,加载js文件就会很快。如果图片很小，建议使用url-loader,减少http请求。
 
+### 2.3.3打包样式文件
 
+#### （1）style-loader和css-loader
 
-### 3.2打包样式文件
-
-#### 3.2.1基本配置
-
-安装：
+- 安装：
 
 ```bash
 npm install style-loader css-loader -D
 ```
 
-使用：
+- 使用：
 
 ```js
  {
@@ -544,7 +755,45 @@ npm install style-loader css-loader -D
 
 原理：`css-loader`负责将css文件之间的依赖关系合并。`style-loader`将合并后的css文件挂载到html文件的head中(以内部样式表形式)
 
-#### 3.2.2.打包scss文件
+- 抽离css文件
+
+```js
+
+```
+
+#### （2）less-loader
+
+加载和转译 LESS 文件
+
+- 安装
+
+```bash
+npm install --save-dev less-loader less
+```
+
+- 基础配置
+
+```js
+module.exports = {
+    ...
+    module: {
+        rules: [{
+            test: /\.less$/,
+            use: [{
+                loader: "style-loader" 
+            }, {
+                loader: "css-loader"
+            }, {
+                loader: "less-loader" 
+            }]
+        }]
+    }
+};
+```
+
+
+
+#### （3）打包scss文件
 
 安装：
 
@@ -566,7 +815,41 @@ npm install sass-loader node-sass  --save-dev
 }
 ```
 
-#### 3.2.3给样式自动添加厂商前缀
+抽离成单独的文件
+
+```js
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+
+const extractSass = new ExtractTextPlugin({
+    filename: "[name].[contenthash].css",
+    disable: process.env.NODE_ENV === "development"
+});
+
+module.exports = {
+    ...
+    module: {
+        rules: [{
+            test: /\.scss$/,
+            use: extractSass.extract({
+                use: [{
+                    loader: "css-loader"
+                }, {
+                    loader: "sass-loader"
+                }],
+                // 在开发环境使用 style-loader
+                fallback: "style-loader"
+            })
+        }]
+    },
+    plugins: [
+        extractSass
+    ]
+};
+```
+
+
+
+#### （4）给样式自动添加厂商前缀
 
 使用`postcss-loader`实现自动给样式添加厂商前缀。
 
@@ -671,22 +954,38 @@ import style from './index.scss'
 style.类名 添加到需要使用的上面
 ```
 
-#### 3.2.5打包字体文件
+### 2.3.4转换编译(Transpiling)
 
-使用`file-loader`打包字体文件。
+### 2.3.5清理和测试(Linting && Testing)
 
-```js
-{
-       test:/\.(eot|ttf|svg)$/,
-       use:{
-         loader:'file-loader'
-       }
-}
-```
+### 2.3.6框架(Frameworks)
 
 ## 4.plugins
 
-可以在webpack运行到某个时刻的时候，帮你做一些事情。
+loader 被用于转换某些类型的模块，而插件则可以用于执行范围更广的任务。插件的范围包括，从打包优化和压缩，一直到重新定义环境中的变量。[插件接口](https://www.webpackjs.com/api/plugins)功能极其强大，可以用来处理各种各样的任务。
+
+想要使用一个插件，你只需要 `require()` 它，然后把它添加到 `plugins` 数组中。多数插件可以通过选项(option)自定义。你也可以在一个配置文件中因为不同目的而多次使用同一个插件，这时需要通过使用 `new` 操作符来创建它的一个实例。
+
+```js
+//webpack.config.js
+const HtmlWebpackPlugin = require('html-webpack-plugin'); // 通过 npm 安装
+const webpack = require('webpack'); // 用于访问内置插件
+
+const config = {
+  module: {
+    rules: [
+      { test: /\.txt$/, use: 'raw-loader' }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({template: './src/index.html'})
+  ]
+};
+
+module.exports = config;
+```
+
+
 
 ### 4.1HtmlWebpackPlugin
 
