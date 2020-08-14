@@ -410,7 +410,7 @@ module.exports = config;
 
 此时打包完成后，html文件中引入的js文件都自动添加了配置的cdn地址。
 
-## 2.2output
+## 2.2  output
 
 **output** 属性告诉 webpack 在哪里输出它所创建的 ==bundles==，以及如何命名这些文件，默认值为 `./dist`。
 
@@ -568,7 +568,7 @@ output: {
 
 在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。如果你在编译时不知道 `publicPath`，你可以先忽略它，并且在入口起点设置
 
-## 2.3.loader
+## 2.3  loader
 
 webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，css等文件时，就需要使用loader告诉webpack怎么去打包。
 
@@ -599,7 +599,7 @@ module.exports = config;
 
 > “嘿，webpack 编译器，当你碰到「在 `require()`/`import` 语句中被解析为 '.txt' 的路径」时，在你对它打包之前，先**使用** `raw-loader` 转换一下。”
 
-### 2.3.1执行顺序
+### 2.3.1  loader执行顺序
 
 从右到左，从下到上执行。
 
@@ -607,7 +607,7 @@ module.exports = config;
 
 #### （1）file-loader
 
-将文件发送到输出文件夹，并返回（相对）URL。
+将文件打包到输出文件夹，并返回（相对）URL。
 
 底层原理：遇到jpg、png、txt等静态文件时，先将此文件移到输出根目录下，再将此文件的地址返回给变量。
 
@@ -621,7 +621,7 @@ npm install --save-dev file-loader
 
 默认情况下，生成的文件的文件名就是文件内容的 MD5 哈希值并会保留所引用资源的原始扩展名。
 
-例如图片名字为：`logo.jpg`,则打包后的图片名字为：`hash值.jpg`
+例如图片名字为：`logo.jpg`,则打包后的图片名字为：`20位hash值.jpg`
 
 ```js
  module:{
@@ -650,8 +650,13 @@ npm install --save-dev file-loader
          //配置项
          options:{
            //placeholder 占位符
-           //配置打包后文件的名字如何命名，[name]表示原始名字，[hash]表示名字后面加上hash值，[ext]表示原始文件的后缀名
-           name:'[name]_[hash].[ext]'
+           /*
+           	配置打包后文件的名字如何命名：
+           		[name]：表示原始名字，
+           		[hash]：表示名字后面加上hash值(20位)，使用 [hash:n] 的形式指定输出的hash值位数。
+           		[ext]：表示原始文件的后缀名
+           */
+           name:'[name]_[hash:6].[ext]'
          }
        }
       }
@@ -809,11 +814,42 @@ npm install sass-loader node-sass  --save-dev
       use: [{
           loader: "style-loader" // 将 JS 字符串生成为 style 节点
       }, {
-          loader: "css-loader" // 将 CSS 转化成 CommonJS 模块
+          loader: "css-loader", // 将 CSS 转化成 CommonJS 模块
+        	options:{
+            //在scss文件中使用@import语法引入其他scss文件时，也要走下面两个loader。如果不配置，将不会走sass-loader，postcss-loader
+            importLoaders:2
+          }
       }, {
           loader: "sass-loader" // 将 Sass 编译成 CSS
+      },
+      'postcss-loader'
 }
 ```
+
+例如：
+
+在`src/assets/css`下新建`index.scss`和`main.scss`文件
+
+```scss
+/*index.scss*/
+body{
+  width:100px;
+  height:100px
+}
+```
+
+在`main.scss`中引入编写的`index.scss`文件
+
+```scss
+/*main.scss*/
+@import './index.scss';
+body{
+  color:red;
+  font-size:14px;
+}
+```
+
+此时进行打包，如果没有在`css-loader`中配置`importLoaders`项，则打包`main.scss`时，其中引入的`index.scss`就不会走`sass-loader`和`postcss-loader`。
 
 抽离成单独的文件
 
