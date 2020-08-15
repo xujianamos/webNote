@@ -196,7 +196,9 @@ webpack-vue-template
 
 指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的==开始==。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
 
-可以通过在 webpack 配置中配置 `entry` 属性，来指定一个入口起点（或多个入口起点）。默认值为 `./src`。
+可以通过在 webpack 配置中配置 `entry` 属性，来指定一个入口起点（或多个入口起点）。
+
+默认值为 `./src`。
 
 单页应用(SPA)：一个入口起点。多页应用(MPA)：多个入口起点。
 
@@ -230,6 +232,8 @@ module.exports={
   }
 }
 ```
+
+> 注：如果没配置`output`，此时输出会使用output默认配置。也就是输出到根目录下`dist/`文件下。
 
 打包输出信息：
 
@@ -291,23 +295,32 @@ Entrypoint main = main.js
 [./src/main.js] 214 bytes {main} [built]
 ```
 
+> 此时输出文件只有一个`main.js`。表示将数组中引入的两个文件一起打包到了`main.js`。
+
 此时`dist`目录下生成了1个文件：
 
 ![image-20200813113032120](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813113032120.png)
 
 ### 2.1.3多个入口（对象语法）
 
-属性值为对象形式。这个是最完整的entry配置，其他形式只是它的简化形式而已。
+属性值为对象形式。这个是**最完整的entry配置**，其他形式只是它的简化形式而已。
 
 ```js
 //webpack.config.js
 module.exports={
 	entry: {
-    	index: './src/index.js',
-    	main: './src/main.js'
-  	}
+    index: './src/index.js',
+    main: './src/main.js'
+  	},
+  output:{
+    //[name]占位符，根据entry的属性决定
+  	filename:'[name].js',
+  	path:path.resolve(__dirname,'dist')
+	}
 }
 ```
+
+> 注意：如果存在多个入口文件的情况下，则必须自定义配置`output`配置项，并且output的`filename`要使用`[name]`占位符，根据入口的`key`作为输出文件的名字动态输出。如果不配置`output`配置项，打包时，控制台会报错，并且只会打包出一个文件。
 
 打包输出信息：
 
@@ -327,17 +340,11 @@ Entrypoint index = index.js
 [./src/main.js] 214 bytes {main} [built]
 ```
 
+从输出信息的`Asset`字段，可以看出输出了两个文件，分别是：`index.js`,`main.js`
+
 此时`dist`目录下生成了两个文件：
 
 ![image-20200813112632202](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813112632202.png)
-
-对象语法会比较繁琐。然而，这是应用程序中定义入口的最可扩展的方式。
-
-> **“可扩展的 webpack 配置”**是指：可重用并且可以与其他配置组合使用。这是一种流行的技术，用于将关注点(concern)从环境(environment)、构建目标(build target)、运行时(runtime)中分离。然后使用专门的工具（如`webpack-merge`）将它们合并。
-
-------
-
-应用场景：
 
 ### 2.1.4单页应用程序
 
@@ -361,17 +368,17 @@ module.exports = config;
 
 ### 2.1.5多页面应用程序
 
-配置了几个入口，打包就输出多少个js文件
+配置了几个入口，打包就输出多少个js文件。此时必须将`output`配置项的`filename`字段配置使用占位符`[name].js`
 
 ```js
 //webpack.config.js
 const config={
   entry:{
-  main:'./src/index.js',//打包到main.js
-  index:'./src/index.js'//打包到index.js
+    main:'./src/index.js',//打包到main.js
+    index:'./src/index.js'//打包到index.js
 	},
 	output:{
-  	// [name]在这个地方为占位符，打包时会替换为入口配置的键值
+  	// [name]在这个地方为占位符，打包时会替换为入口配置的键名
  	 filename:'[name].js',
  	 path:path.resolve(__dirname,'dist')
 	}
@@ -380,35 +387,6 @@ module.exports = config;
 ```
 
 此时打包输出的js文件为两个，分别是`main.js`,`index.js`。这两个js文件名为打包入口`entry`中配置的`key`属性。
-
-使用 `CommonsChunkPlugin` 为每个页面间的应用程序共享代码创建 bundle。由于入口起点增多，多页应用能够复用入口起点之间的大量代码/模块，从而可以极大地从这些技术中受益。
-
-推荐：每个 HTML 文档只使用一个入口起点。
-
-### 2.1.6打包输出时自动在html文件的script中添加`cdn`地址
-
-适用场景：只将打包后的html文件拿给后端部署。将其他静态资源放在cdn服务器上。
-
-```js
-//webpack.config.js
-const config={
-  entry:{
-  	main:'./src/index.js',
-  	index:'./src/index.js'
-	},
-	output:{
-  	//为html文件引入js文件自动添加cdn地址
-  	publicPath:'http://cdn.com.cn'
-  	// [name]在这个地方为占位符，打包时会替换为入口配置的键值
-  	filename:'[name].js',
- 	 path:path.resolve(__dirname,'dist')
-	}
-}
-
-module.exports = config;
-```
-
-此时打包完成后，html文件中引入的js文件都自动添加了配置的cdn地址。
 
 ## 2.2  output
 
@@ -420,12 +398,12 @@ module.exports = config;
 
 ### 2.2.1基本用法
 
-在 webpack 中配置 `output` 属性的最低要求是，将它的值设置为一个对象，包括以下两点：
+在 webpack 中配置 `output` 属性的最低要求是：将它的值设置为一个对象，包括以下两点：
 
 - `filename` 用于输出文件的文件名。
 - 目标输出目录 `path` 的绝对路径。
 
-对于单个[`入口`](https://www.webpackjs.com/configuration/entry-context#entry)起点，filename 会是一个静态名称。
+对于**单个入口**起点，`filename` 会是一个静态名称。
 
 ```js
 //webpack.config.js
@@ -441,6 +419,16 @@ module.exports={
 
 此配置将一个单独的 `bundle.js` 文件输出到 `/dist` 目录中。
 
+```js
+Hash: b1e0de12e8a811a4a2cf
+Version: webpack 4.44.1
+Time: 55ms
+Built at: 2020-08-15 5:01:58 ├F10: PM┤
+    Asset      Size  Chunks             Chunk Names
+bundle.js  5.67 KiB    main  [emitted]  main
+Entrypoint main = bundle.js
+```
+
 ### 2.2.2多个入口
 
 如果配置创建了多个单独的 `chunk`（例如，使用多个入口起点或使用像 `CommonsChunkPlugin `这样的插件），则应该使用**占位符(substitutions)**来确保每个文件具有唯一的名称。
@@ -448,8 +436,8 @@ module.exports={
 ```js
 module.exports={
  	 entry: {
-   		index: './src/index.js',
-   	 	main: './src/main.js'
+   	 index: './src/index.js',
+   	 main: './src/main.js'
  	 },
   output: {
       //使用占位符 [name]来确保每一个输出文件有唯一名称
@@ -473,7 +461,7 @@ Conflict: Multiple chunks emit assets to the same filename bundle.js (chunks ind
 
 ### 2.2.3`filename`配置
 
-（1）使用入口名称作为输出文件名：
+**（1）使用入口名称作为输出文件名：**
 
 ```js
 filename: "[name].bundle.js"
@@ -499,16 +487,21 @@ Entrypoint index = index.bundle.js
 
 ![image-20200813135532469](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813135532469.png)
 
-使用内部 `chunk id`:
+**（2）使用内部 `chunk id`:**
 
 ```js
 filename: "[id].bundle.js"
 ```
 
-使用每次构建过程中，唯一的 `hash `生成:默认hash值长度为20
+**（3）使用每次构建过程中，唯一的 `hash `生成:**
+
+默认hash值长度为20。
 
 ```js
 filename: "[name].[hash].bundle.js"
+
+//指定hash值长度:此时生成的hash值只有6位
+filename: "[name].[hash:6].bundle.js"
 ```
 
 输出信息：
@@ -531,7 +524,7 @@ Entrypoint index = index.e8f77d56163515053f38.bundle.js
 
 ![image-20200813140036425](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813140036425.png)
 
-使用基于每个 `chunk` 内容的 `hash`：
+**（4）使用基于每个 `chunk` 内容的 `hash`：**
 
 ```js
 filename: "[chunkhash].bundle.js"
@@ -557,24 +550,61 @@ Entrypoint index = 089a5654d56f6f28f211.bundle.js
 
 ![image-20200813135757208](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813135757208.png)
 
-### 2.2.4使用 CDN 和资源 hash
+### 2.2.4打包输出时自动在html文件的script中添加`cdn`地址
+
+项目开发完成后，有时需要将静态资源（比如js文件，图片等）放到静态资源服务器上，而`html`文件放在其他服务器上的，此时，`html`文件中引入的js文件则会找不到相应的js文件，当然手工加入cdn服务器地址也可以，但是当多个html文件需要引入多个js文件时，则会加大工作量，还容易出错。
+
+此时只需要在output配置项中添加`publicPath`字段，值为cdn地址，即可在html文件中自动添加cdn地址。
 
 ```js
-output: {
-  path: "/home/proj/cdn/assets/[hash]",
-  publicPath: "http://cdn.com/assets/[hash]/"
+//webpack.config.js
+const config={
+  entry:{
+  	main:'./src/index.js',
+  	index:'./src/index.js'
+	},
+	output:{
+  	//为html文件引入js文件自动添加cdn地址
+  	publicPath:'http://cdn.com.cn'
+  	filename:'[name].js',
+ 	 path:path.resolve(__dirname,'dist')
+	}
 }
+
+module.exports = config;
 ```
 
-在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。如果你在编译时不知道 `publicPath`，你可以先忽略它，并且在入口起点设置
+输出的html文件：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>模版文件</title>
+  </head>
+  <body>
+    <!--引入的js文件都自动添加了cdn地址-->
+    <script src="http://cdn.com.cn/main.a08e89.bundle.js"></script>
+    <script src="http://cdn.com.cn/index.a08e89.bundle.js"></script>
+  </body>
+</html>
+```
+
+在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。
 
 ## 2.3  loader
 
+
+
 webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，css等文件时，就需要使用loader告诉webpack怎么去打包。
 
-`loader`让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解 JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效[模块](https://www.webpackjs.com/concepts/modules)，然后你就可以利用 webpack 的打包能力，对它们进行处理。
+`loader`让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解 JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack 的打包能力，对它们进行处理。
 
 注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
+
+### 2.3.1loader基本配置
 
 在 webpack 的配置中 **loader** 有两个目标：
 
@@ -599,13 +629,21 @@ module.exports = config;
 
 > “嘿，webpack 编译器，当你碰到「在 `require()`/`import` 语句中被解析为 '.txt' 的路径」时，在你对它打包之前，先**使用** `raw-loader` 转换一下。”
 
-### 2.3.1  loader执行顺序
+- test值类型
+
+
+
+
+
+- use值类型
+
+
+
+-  loader执行顺序
 
 从右到左，从下到上执行。
 
-### 2.3.2打包文件
-
-#### （1）file-loader
+### 2.3.2file-loader
 
 将文件打包到输出文件夹，并返回（相对）URL。
 
@@ -638,7 +676,7 @@ npm install --save-dev file-loader
 
 ![image-20200813143600033](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143600033.png)
 
-- 配置打包后文件如何命名
+- 配置打包后图片文件如何命名：
 
 ```js
  module:{
@@ -670,7 +708,7 @@ npm install --save-dev file-loader
 
 ![image-20200813143947047](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143947047.png)
 
-- 配置打包后文件的存放位置
+- 配置打包后文件的存放位置：
 
 ```js
 {
@@ -689,14 +727,7 @@ npm install --save-dev file-loader
 
 ![image-20200813144427221](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813144427221.png)
 
-- 拓展
-
-```js
-//使用es6引入图片
-import avatar from './avatar.jpg'
-```
-
-使用`file-loader`打包字体文件。
+- 使用`file-loader`打包字体文件。
 
 ```js
 {
@@ -707,7 +738,7 @@ import avatar from './avatar.jpg'
 }
 ```
 
-#### （2）url-loader
+### 2.3.3url-loader
 
 与`file-loader`类似，只是多了`limit`配置项。但是打包图片时会将图片转换成base64的。并且图片文件会打包到输出的js文件中。
 
@@ -739,9 +770,9 @@ npm install --save-dev url-loader
 
 推荐：如果图片过大，建议使用file-loader,加载js文件就会很快。如果图片很小，建议使用url-loader,减少http请求。
 
-### 2.3.3打包样式文件
+### 2.3.4style-loader
 
-#### （1）style-loader和css-loader
+建议将 `style-loader` 与 `css-loader` 结合使用
 
 - 安装：
 
@@ -760,13 +791,112 @@ npm install style-loader css-loader -D
 
 原理：`css-loader`负责将css文件之间的依赖关系合并。`style-loader`将合并后的css文件挂载到html文件的head中(以内部样式表形式)
 
-- 抽离css文件
+### 2.3.5postcss-loader
 
-```js
+使用`postcss-loader`实现自动给样式添加厂商前缀。
 
+- 安装：
+
+```bash
+npm i -D postcss-loader
 ```
 
-#### （2）less-loader
+- 配置：
+
+根目录下新建`postcss.config.js`文件。
+
+安装`npm i -D autoprefixer`插件。
+
+```js
+//postcss.config.js
+module.exports = {
+  plugins: [
+    require('autoprefixer')
+  ]
+}
+```
+
+- 使用
+
+同时需要在需要添加前缀的类型文件中使用postcss-loader。打包时遇到`postcss-loader`，就会去找`postcss.config.js`配置文件，并使用配置文件中的插件。
+
+```js
+{
+      test: /\.scss$/,
+      use: [
+        'style-loader',
+        'css-loader',
+        'sass-loader',
+        'postcss-loader'
+        ]
+}
+```
+
+### 2.3.6css-loader
+
+js文件中引入scss文件
+
+当在js文件中使用`import 'index.scss'`引入样式文件时，依次执行postcss-loader，sass-loader，css-loader，style-loader。
+
+在scss文件中引入scss文件
+
+当在scss文件中使用`@import './index.scss'`引入其他scss文件时，打包时有可能就不会使用postcss-loader，sass-loader。如果也让打包时使用这两个loader，则需要在`css-loader`中进行配置。
+
+```js
+ {
+        test: /\.scss$/,
+        use: [ 
+          'style-loader', 
+          {
+          	loader:'css-loader',
+          	options:{
+              //使用import语法引入的scss文件也需要走下面两个loader
+            importLoaders:2
+          	}
+       	 	}
+          'sass-loader',
+        	'postcss-loader'
+        ]
+}
+```
+
+- cssloader模块化打包
+
+当在入口js文件中使用`import './index.css'`这种全局方式引入css文件时。此样式会作用于所有文件。这会导致一些未知的错误。
+
+配置：
+
+```js
+ {
+        test: /\.scss$/,
+        use: [ 
+          'style-loader', 
+          {
+          	loader:'css-loader',
+          	options:{
+              //使用import语法引入的scss文件也需要走下面两个loader
+            	importLoaders:2,
+              //开启模块化打包
+            	modules:true
+          	}
+       	 	}
+          'sass-loader',
+        	'postcss-loader'
+        ]
+}
+```
+
+样式引入方式：
+
+```js
+//index.js
+import style from './index.scss'
+
+//使用
+style.类名 添加到需要使用的上面
+```
+
+### 2.3.7less-loader
 
 加载和转译 LESS 文件
 
@@ -796,9 +926,7 @@ module.exports = {
 };
 ```
 
-
-
-#### （3）打包scss文件
+### 2.3.8打包scss文件
 
 安装：
 
@@ -883,183 +1011,424 @@ module.exports = {
 };
 ```
 
-
-
-#### （4）给样式自动添加厂商前缀
-
-使用`postcss-loader`实现自动给样式添加厂商前缀。
-
-- 安装：
-
-```bash
-npm i -D postcss-loader
-```
-
-- 配置：
-
-根目录下新建`postcss.config.js`文件。
-
-安装`npm i -D autoprefixer`插件。
-
-```js
-//postcss.config.js
-module.exports = {
-  plugins: [
-    require('autoprefixer')
-  ]
-}
-```
-
-- 使用
-
-同时需要在需要添加前缀的类型文件中使用postcss-loader。打包时遇到`postcss-loader`，就会去找`postcss.config.js`配置文件，并使用配置文件中的插件。
-
-```js
-{
-      test: /\.scss$/,
-      use: [
-        'style-loader',
-        'css-loader',
-        'sass-loader',
-        'postcss-loader'
-        ]
-}
-```
-
-#### 3.2.4css-loader详解
-
-- js文件中引入scss文件
-
-当在js文件中使用`import 'index.scss'`引入样式文件时，依次执行postcss-loader，sass-loader，css-loader，style-loader。
-
-- 在scss文件中引入scss文件
-
-当在scss文件中使用`@import './index.scss'`引入其他scss文件时，打包时有可能就不会使用postcss-loader，sass-loader。如果也让打包时使用这两个loader，则需要在`css-loader`中进行配置。
-
-```js
- {
-        test: /\.scss$/,
-        use: [ 
-          'style-loader', 
-          {
-          	loader:'css-loader',
-          	options:{
-              //使用import语法引入的scss文件也需要走下面两个loader
-            importLoaders:2
-          	}
-       	 	}
-          'sass-loader',
-        	'postcss-loader'
-        ]
-}
-```
-
-- cssloader模块化打包
-
-当在入口js文件中使用`import './index.css'`这种全局方式引入css文件时。此样式会作用于所有文件。这会导致一些未知的错误。
-
-配置：
-
-```js
- {
-        test: /\.scss$/,
-        use: [ 
-          'style-loader', 
-          {
-          	loader:'css-loader',
-          	options:{
-              //使用import语法引入的scss文件也需要走下面两个loader
-            	importLoaders:2,
-              //开启模块化打包
-            	modules:true
-          	}
-       	 	}
-          'sass-loader',
-        	'postcss-loader'
-        ]
-}
-```
-
-样式引入方式：
-
-```js
-//index.js
-import style from './index.scss'
-
-//使用
-style.类名 添加到需要使用的上面
-```
-
-### 2.3.4转换编译(Transpiling)
-
-### 2.3.5清理和测试(Linting && Testing)
-
-### 2.3.6框架(Frameworks)
-
 ## 4.plugins
 
-loader 被用于转换某些类型的模块，而插件则可以用于执行范围更广的任务。插件的范围包括，从打包优化和压缩，一直到重新定义环境中的变量。[插件接口](https://www.webpackjs.com/api/plugins)功能极其强大，可以用来处理各种各样的任务。
+loader 被用于转换某些类型的模块，而插件(`plugins`)则可以用于执行范围更广的任务。插件的范围包括，从打包优化和压缩，一直到重新定义环境中的变量。
 
-想要使用一个插件，你只需要 `require()` 它，然后把它添加到 `plugins` 数组中。多数插件可以通过选项(option)自定义。你也可以在一个配置文件中因为不同目的而多次使用同一个插件，这时需要通过使用 `new` 操作符来创建它的一个实例。
+想要使用一个插件，你只需要 `require()` 它，然后把它添加到 `plugins` 数组中。多数插件可以通过选项(`option`)自定义。你也可以在一个配置文件中因为不同目的而多次使用同一个插件，这时需要通过使用 `new` 操作符来多次创建它的实例。
 
 ```js
 //webpack.config.js
-const HtmlWebpackPlugin = require('html-webpack-plugin'); // 通过 npm 安装
-const webpack = require('webpack'); // 用于访问内置插件
+//1.导入插件
+const HtmlWebpackPlugin = require('html-webpack-plugin'); 
 
 const config = {
-  module: {
-    rules: [
-      { test: /\.txt$/, use: 'raw-loader' }
-    ]
-  },
+  //2.在plugins配置项中实例化插件
   plugins: [
-    new HtmlWebpackPlugin({template: './src/index.html'})
+    new HtmlWebpackPlugin()
   ]
 };
 
 module.exports = config;
 ```
 
+### 4.1html-webpack-plugin
 
+`html-webpack-plugin`会在打包结束后，自动生成一个html文件，并默认把打包生成的所有js文件自动引入到这个html文件中。
 
-### 4.1HtmlWebpackPlugin
-
-HtmlWebpackPlugin会在打包结束后，自动生成一个html文件，并把打包生成的js文件自动引入到这个html文件中。
-
-安装：
+- 安装：
 
 ```bash
 npm install --save-dev html-webpack-plugin
 ```
 
-配置：
+#### 4.1.1基本配置
 
 ```js
 //webpack.config.js
 //1. 导入插件
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
+//2.实例化插件
+const htmlWebpackPlugin=new HtmlWebpackPlugin()
 
-const webpackConfig = {
+const config = {
+  entry: {
+    main:'./src/main.js',
+    index:'./src/index.js'
+  },
+  output: {
+    path: path.resolve(__dirname, './dist'),
+    filename: '[name]_[hash:6].[ext]'
+  },
+  //3.使用插件
+  plugins: [htmlWebpackPlugin]
+};
+module.exports=config
+```
+
+如果你有多个 webpack 入口点， 他们都会在生成的HTML文件中的 `script` 标签内。
+
+此时打包输出的`dist`文件夹下自动生成了`index.html`文件。并且`index.html`文件中自动引入了打包输出的两个js文件。
+
+![image-20200815182902267](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200815182902267.png)
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Webpack App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script src="main.5d9b59.bundle.js"></script>
+    <script src="index.5d9b59.bundle.js"></script>
+  </body>
+</html>
+```
+
+> 注：如果你有任何CSS assets 在webpack的输出中（例如， 利用`ExtractTextPlugin`提取CSS）， 那么这些将被包含在HTML head中的`<link>`标签内。
+
+#### 4.1.2配置html模版
+
+默认情况下，`html-webpack-plugin`生成的`index.html`文件不含任何html标签。有时我们需要在`body`标签中添加一个根标签，此时就需要我们自定义`index.html`(模版文件)。
+
+1. 在项目根目录下的`public`文件夹下新建`index.html`模版文件
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我是自定义的模版文件</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+  </body>
+</html>
+
+```
+
+2. 在插件中添加`template`字段指向新建的模版文件
+
+```js
+//webpack.config.js
+//1. 导入插件
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+//2.实例化插件
+const htmlWebpackPlugin=new HtmlWebpackPlugin({
+   //指向我们新建的模板文件路径
+   template:'./public/index.html'
+})
+
+const config = {
   entry: 'index.js',
   output: {
     path: path.resolve(__dirname, './dist'),
     filename: 'index_bundle.js'
   },
-  //2. 实列化插件
-  plugins: [
-    //打包之后运行
-    //这个插件默认生成的html文件不含任何html标签（也就是不含vue绑定的id标签），因此需要添加相应的配置项
-    new HtmlWebpackPlugin({
-      //指定打包的模板文件路径
-      template:'src/index.html'
-    })
-  ]
+  //3.使用插件
+  plugins: [htmlWebpackPlugin]
+};
+module.exports=config
+```
+
+此时打包输出的html文件中就多了添加的根标签，并且也引入了js文件：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我是自定义的模版文件</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+    <script src="main.c9bbdc.bundle.js"></script>
+    <script src="index.c9bbdc.bundle.js"></script>
+  </body>
+</html>
+```
+
+#### 4.1.3配置html文件的title
+
+在index.html 文件中的`title`标签内部可以使用 `<%= htmlWebpackPlugin.options.title %>` 设置网页标题。
+
+1. 在插件实例化时添加title字段
+
+```js
+//webpack.config.js
+const htmlWebpackPlugin=new HtmlWebpackPlugin({
+   //指向我们新建的模板文件路径
+   template:'./public/index.html',
+  //配置html文件的title值
+  title:'我是html标题'
+})
+```
+
+2. 在html模版文件中动态获取title
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= htmlWebpackPlugin.options.title %></title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+  </body>
+</html>
+```
+
+打包输出的html文件：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我是html标题</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+    <script src="main.655cbc.bundle.js"></script>
+    <script src="index.655cbc.bundle.js"></script>
+  </body>
+</html>
+```
+
+此时title中的文字就是`HtmlWebpackPlugin`中配置的title字段值。
+
+#### 4.1.4配置打包输出文件存放路径和文件名
+
+默认情况下，插件生成的html文件名为`index.html`，存放在`ouput.path`的根目录下。
+
+通过配置`filename`字段，来修改输出的html文件名和存放路径。
+
+```js
+//webpack.config.js
+const htmlWebpackPlugin = new HtmlWebpackPlugin({
+  title: "我是html标题",
+  template: "./public/index.html",
+  //配置输出文件名和存放路径
+  filename: "./html/login.html",
+});
+```
+
+此时存放在`ouput.path`目录下的html文件夹中，名字为`login.html`
+
+> 注：**生成文件的根路径为`ouput.path`的目录**，也就是在filename配置的路径都是在 `output.path` 目录下生成文件和文件夹。
+
+![image-20200815225416149](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200815225416149.png)
+
+补充：
+
+1、filename配置的html文件目录是相对于webpackConfig.output.path路径而言的，不是相对于当前项目目录结构的。
+2、指定生成的html文件内容中的`link`和`script`路径是相对于生成目录下的，写路径的时候请写生成目录下的相对路径。
+
+#### 4.1.5配置允许插入到模板中的一些chunk
+
+允许插入到模板中的一些`chunk`，不配置此项默认会将`entry`中所有的`chunk`注入到模板中。在配置多个页面时，每个页面注入的`chunk`应该是不相同的，需要通过该配置为不同页面注入不同的`chunk`；
+
+值为数组类型，数组中为打包生成的chunk名字（打包时控制台输出的chunk字段值）。
+
+```bash
+Hash: 655cbc267cbe5a63904c
+Version: webpack 4.44.1
+Time: 709ms
+Built at: 2020-08-15 11:09:12 ├F10: PM┤
+                 Asset       Size  Chunks                         Chunk Names
+images/logo_2f1542.png    108 KiB          [emitted]              
+index.655cbc.bundle.js     18 KiB   index  [emitted] [immutable]  index
+            login.html  324 bytes          [emitted]              
+ main.655cbc.bundle.js    554 KiB    main  [emitted] [immutable]  main
+Entrypoint main = main.655cbc.bundle.js
+Entrypoint index = index.655cbc.bundle.js
+```
+
+```js
+//webpack.config.js
+const htmlWebpackPlugin = new HtmlWebpackPlugin({
+  title: "我是html标题",
+  template: "./public/index.html",
+  filename: "login.html",
+  //只将打包生成Chunk Names为index的添加到该html模版中
+  chunks: ["index"],
+});
+```
+
+打包生成的html：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我是html标题</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+  <script src="index.655cbc.bundle.js"></script></body>
+</html>
+```
+
+此时只在body中引入了chunks为index的js文件。
+
+- 配置多页面打包
+
+`html-webpack-plugin`的一个实例生成一个html文件，如果单页应用中需要多个页面入口（多个template值），或者多页应用时配置多个html时，那么就需要实例化该插件多次；
+
+即有几个页面就需要在webpack的plugins数组中配置几个该插件实例：
+
+```js
+const loginhtmlWebpackPlugin = new HtmlWebpackPlugin({
+  title: "我是登录页面",
+  template: "./public/index.html",
+  filename: "login.html",
+  //登录页面需要的js文件
+  chunks: ["index"],
+});
+const indexhtmlWebpackPlugin = new HtmlWebpackPlugin({
+  title: "我是首页",
+  template: "./public/index.html",
+  filename: "index.html",
+  //首页需要的js文件
+  chunks: ["main"],
+});
+module.exports = {
+  // 打包模式
+  mode: "development",
+  // 打包入口
+  entry: {
+    main: "./src/main.js",
+    index: "./src/index.js",
+  },
+  //插件配置
+  plugins: [loginhtmlWebpackPlugin, indexhtmlWebpackPlugin],
+  // 打包出口文件
+  output: {
+    filename: "[name].[hash:6].bundle.js",
+    path: path.resolve(__dirname, "./dist"),
+  },
 };
 ```
 
-如果你有多个 webpack 入口点， 他们都会在生成的HTML文件中的 `script` 标签内。
+如上例应用中配置了1个入口页面：`index.html`。
+
+此时在`dist`目录下会生成两个html文件，分别是`index.html`和`login.html`
+
+![image-20200816000435213](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816000435213.png)
+
+打包生成的`index.html`：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我是首页</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+  <script src="main.655cbc.bundle.js"></script></body>
+</html>
+```
+
+打包生成的`login.html`：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我是登录页面</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+  <script src="index.655cbc.bundle.js"></script></body>
+</html>
+```
+
+#### 4.1.5其他配置项
+
+- `inject`
+
+向`template`或者`templateContent`中注入所有静态资源，不同的配置值注入的位置不经相同。
+
+1、**true或者body**：所有**JavaScript**资源插入到body元素的底部
+2、**head**: 所有**JavaScript**资源插入到head元素中
+3、**false**： 所有静态资源css和JavaScript都不会注入到模板文件中
+
+- **`favicon`**
+
+添加特定favicon路径到输出的html文档中，这个同`title`配置项，需要在模板中动态获取其路径值
+
+- **`hash`**
+
+值为：true|false。是否为所有注入的静态资源添加webpack每次编译产生的唯一hash值。
+
+值为true时，在引入的静态资源后面动态生成hash值（❓后面的值）
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我是html标题</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+    <script src="main.655cbc.bundle.js?655cbc267cbe5a63904c"></script>
+    <script src="index.655cbc.bundle.js?655cbc267cbe5a63904c"></script>
+  </body>
+</html>
+```
+
+- **`excludeChunks`**
+
+这个与`chunks`配置项正好相反，用来配置不允许注入的chunk。
+
+值类型：数组类型。
+
+值为打包生成的`chunk`名称。
+
+```js
+const loginhtmlWebpackPlugin = new HtmlWebpackPlugin({
+  title: "我是登录页面",
+  template: "./public/index.html",
+  filename: "login.html",
+  //除了chunk为main的不注入到login.html，其他chunk都会注入到login.html
+  excludeChunks: ["main"],
+});
+```
+
+- chunksSortMode
+
+none | auto| function，默认auto； 允许指定的thunk在插入到html文档前进行排序。
+**function**值可以指定具体排序规则；**auto**基于chunk的id进行排序； **none**就是不排序
+
+- **`showErrors`**
+
+true|false，默认true；是否将错误信息输出到html页面中。这个很有用，在生成html文件的过程中有错误信息，输出到页面就能看到错误相关信息便于调试。
 
 ### 4.2clean-webpack-plugin
 
@@ -1078,7 +1447,10 @@ npm install clean-webpack-plugin -D
 
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 //1. 导入插件
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+//旧版本导入插件方式
+//const CleanWebpackPlugin = require('clean-webpack-plugin');
+//新版本导入插件方式
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const path = require('path');
 
 const webpackConfig = {
@@ -1098,23 +1470,40 @@ const webpackConfig = {
     //2. 使用插件
     //打包之前先被运行
     //打包之前先删除dist目录下的所有文件
-    new CleanWebpackPlugin(['dist'])
+    //旧版本实例化
+    //new CleanWebpackPlugin(['dist'])
+    //新版本实例化
+    new CleanWebpackPlugin()
   ]
 };
+module.exports =webpackConfig
 ```
 
-
+> 注意：默认要删除的是output.path
 
 ## 5.sourceMap
 
-作用：当我们打包的代码出错的时候，如果不用`sourceMap`，我们只能知道打包出来的代码第一行出错了，但是我们并不知道对应的源代码哪里出错了，所以我们需要使用`sourceMap`帮我们做一个源代码和目标生成之间的一个映射。就能知道源代码的第几行出错了。
+作用：当我们打包的代码出错的时候，如果不用`sourceMap`，我们只能知道打包出来的代码第几行出错了，但是我们并不知道对应的源代码哪里出错了，所以我们需要使用`sourceMap`帮我们做一个源代码和目标生成之间的一个映射。就能知道源代码的第几行出错了。
+
+例如：
+
+控制台报错信息图：
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816004350038.png" alt="image-20200816004350038" style="zoom:50%;" />
+
+点右上角`main.js:9`:
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816004508362.png" alt="image-20200816004508362" style="zoom:50%;" />
+
+由上图可以看出，自动跳转到打包后的错误信息处，而不能直接跳转到源代码错误处。
 
 ### 5.1基础配置
 
 ```js
 module.exports={
-  //打包模式
-  mode:'development',
+  entry: {
+    main: "./src/main.js",
+  },
   //1. 配置sourcemap
   devtool:'source-map'
 }
@@ -1122,9 +1511,13 @@ module.exports={
 
 此时打包后生成一个`main.js`文件，并且还会有一个`main.js.map`文件,这个文件是源代码与打包的main.js之间的映射关系。
 
-![image-20200518231523736](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200518231523736.png)
+![image-20200816005053890](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816005053890.png)
 
-此时就会显示源代码的第一行出错了，而不是打包后的文件第几行出错。
+此时点开控制台错误信息就会显示源代码的第几行出错了，而不是打包后的文件第几行出错。
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816005201868.png" alt="image-20200816005201868" style="zoom:50%;" />
+
+
 
 ### 5.2inline-source-map
 
