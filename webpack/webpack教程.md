@@ -1483,6 +1483,8 @@ module.exports =webpackConfig
 
 ## 5.sourceMap
 
+当 webpack 打包源代码时，可能会很难追踪到错误和警告在源代码中的原始位置。例如，如果将三个源文件（`a.js`, `b.js` 和 `c.js`）打包到一个 bundle（`bundle.js`）中，而其中一个源文件包含一个错误，那么堆栈跟踪就会简单地指向到 `bundle.js`。这并通常没有太多帮助，因为你可能需要准确地知道错误来自于哪个源文件。
+
 作用：当我们打包的代码出错的时候，如果不用`sourceMap`，我们只能知道打包出来的代码第几行出错了，但是我们并不知道对应的源代码哪里出错了，所以我们需要使用`sourceMap`帮我们做一个源代码和目标生成之间的一个映射。就能知道源代码的第几行出错了。
 
 例如：
@@ -1618,29 +1620,41 @@ module.exports={
 npm install webpack-dev-server -D
 ```
 
-- 配置
+#### 6.2.1基本配置
+
+在对象中添加devServer属性，并配置服务器可访问的文件夹路径即可。
 
 ```js
+//webpack.config.js
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const indexhtmlWebpackPlugin = new HtmlWebpackPlugin({
+  title: "我是首页",
+  template: "./public/index.html",
+});
 module.exports={
-  //配置服务器
-  devServer:{
-    //在哪个目录开启服务器
-    //将 dist 目录下的文件，作为可访问文件。
-    contentBase:'./dist',
-    //打包后自动打开浏览器
-    open:true,
-    //指定端口号
-    port:8080,
-    //开启模块热替换
-    hot:true,
-    hotonly:true
-  }
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  //1.配置开发服务器(dev server)，在哪里查找文件
+  devServer: {
+    //可以使用相对路径，也可以使用绝对路径path.join(__dirname, "dist")
+    contentBase: "./dist",
+  },
+  entry: {
+    main: "./src/main.js",
+  },
+  plugins: [indexhtmlWebpackPlugin, new CleanWebpackPlugin()],
+  output: {
+      filename: '[name].bundle.js',
+      path: path.resolve(__dirname, 'dist')
+    }
 }
 ```
 
-- 使用
+以上配置告知 `webpack-dev-server`，在 `localhost:8080` 下建立服务，将 `dist` 目录下的文件，作为可访问文件。
 
-在`package.json`中配置了webpack-dev-server后只需在控制台执行`npm run start`即可开启服务。
+添加一个 script 脚本，可以直接运行开发服务器(dev server)：
 
 ```js
 //package.json
@@ -1651,6 +1665,94 @@ module.exports={
   }
 }
 
+```
+
+现在，我们可以在命令行中运行 `npm run start`，就会看到浏览器自动加载页面。如果现在修改和保存任意源文件，web 服务器就会自动重新加载编译后的代码。
+
+#### 6.2.2跨域配置
+
+如果你有单独的后端开发服务器 API，并且希望在同域名下发送 API 请求 ，那么代理某些 URL 会很有用。
+
+在 `localhost:3000` 上有后端服务的话，你可以这样启用代理：
+
+```js
+devServer: {
+    //可以使用相对路径，也可以使用绝对路径path.join(__dirname, "dist")
+    contentBase: "./dist",
+    proxy: {
+      "/api": "http://localhost:3000"
+ }
+},
+```
+
+请求到 `/api/users` 现在会被代理到请求 `http://localhost:3000/api/users`。
+
+如果你不想始终传递 `/api` ，则需要重写路径：
+
+```js
+proxy: {
+  "/api": {
+    target: "http://localhost:3000",
+    pathRewrite: {"^/api" : ""}
+  }
+}
+```
+
+默认情况下，不接受运行在 HTTPS 上，且使用了无效证书的后端服务器。如果你想要接受，修改配置如下：
+
+```js
+proxy: {
+  "/api": {
+    target: "https://other-server.example.com",
+    secure: false
+  }
+}
+```
+
+有时你不想代理所有的请求。可以基于一个函数的返回值绕过代理。
+
+在函数中你可以访问请求体、响应体和代理选项。必须返回 `false` 或路径，来跳过代理请求。
+
+例如：对于浏览器请求，你想要提供一个 HTML 页面，但是对于 API 请求则保持代理。你可以这样做：
+
+```js
+proxy: {
+  "/api": {
+    target: "http://localhost:3000",
+    bypass: function(req, res, proxyOptions) {
+      if (req.headers.accept.indexOf("html") !== -1) {
+        console.log("Skipping proxy for browser request.");
+        return "/index.html";
+      }
+    }
+  }
+}
+```
+
+#### 6.2.2其他参数配置
+
+- open
+
+值为`boolean`类型。当为`true`时，打包完成后会自动打开浏览器。
+
+```js
+open: true
+```
+
+- port
+
+配置端口号:
+
+```js
+port: 8080
+```
+
+- host
+
+指定使用一个 host。默认是 `localhost`。如果你希望服务器外部可访问，指定如下：
+
+```js
+host: "0.0.0.0"
 ```
 
 ### 6.3使用 webpack-dev-middleware
@@ -1726,17 +1828,150 @@ app.listen(3000, function () {
 
 打开浏览器，跳转到 `http://localhost:3000`，你应该看到你的webpack 应用程序已经运行！
 
-## 7.使用Babel处理ES6语法
+## 7.模块热替换
 
-### 7.1webpack中使用babel
+模块热替换(Hot Module Replacement 或 HMR)是 webpack 提供的最有用的功能之一。它允许在运行时更新各种模块，而无需进行完全刷新。
 
-安装：
+> 注：**HMR** *不适用于生产环境，这意味着它应当只在开发环境使用。*
+
+### 7.1启用 HMR
+
+启用此功能实际上相当简单。而我们要做的，就是更新 `webpack-dev-server` 的配置，和使用 webpack 内置的 HMR 插件。
+
+```js
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
+const webpack = require('webpack');
+
+module.exports = {
+    entry: {
+     index: './src/index.js'
+    },
+    devtool: 'inline-source-map',
+    devServer: {
+      contentBase: './dist',
+      //1.启用 webpack 的模块热替换特性：
+      hot: true,
+      hotOnly: true
+    },
+    plugins: [
+      new CleanWebpackPlugin(),
+      new HtmlWebpackPlugin({}),
+      //2.使用webpack内置插件HMR
+      new webpack.NamedModulesPlugin(),
+      new webpack.HotModuleReplacementPlugin()
+    ],
+    output: {
+      filename: '[name].bundle.js',
+      path: path.resolve(__dirname, 'dist')
+    }
+  };
+```
+
+注意，我们还添加了 `NamedModulesPlugin`，以便更容易查看要修补(patch)的依赖。
+
+项目结构：
+
+```js
+webpack-vue-template
+├─ .gitignore
+├─ package-lock.json
+├─ package.json
+├─ src
+│  └─ index.js
+│	 └─ number.js
+│	 └─ counter.js
+│  └─ global.css
+└─ webpack.config.js
+```
+
+```js
+//number.js
+export default function number() {
+    let div = document.createElement('div');
+    div.setAttribute('id','number');
+  	div.innerHTML=2000;
+  	document.body.appendChild(div);
+  }
+```
+
+```js
+//counter.js
+export default function counter() {
+  let div = document.createElement("div");
+  div.setAttribute("id", "counter");
+  div.innerHTML = 10;
+  div.onclick = function () {
+    div.innerHTML = parseInt(div.innerHTML, 10) + 10;
+  };
+  document.body.appendChild(div);
+}
+```
+
+现在，我们来修改 `index.js` 文件，以便当 `number.js`或者`counter.js` 内部发生变更时可以告诉 webpack 接受更新的模块。
+
+```js
+//index.js
+import number from './number.js';
+import counter from './counter.js';
+
+//执行模块代码
+number()
+counter()
+//如果开启了module.hot才会执行后面的逻辑
+if (module.hot) {
+  //表示：number.js这个文件发生了变化，那么就会执行后面的回调函数
+    module.hot.accept('./number.js', function() {
+      //如果number发生了变化，那么先清除页面上已经渲染的元素，再执行函数重新渲染
+      document.body.removeChild(document.getElementById("number"));
+      //重新执行main
+      number();
+    })
+  }
+```
+
+在页面上counter的值加到30：
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816171501240.png" alt="image-20200816171501240" style="zoom:50%;" />
+
+然后修改 `number.js` 中的值
+
+```js
+export default function number() {
+    let div = document.createElement('div');
+    div.setAttribute('id','number');
+  //将值2000修改为3000
+  	div.innerHTML=3000;
+  	document.body.appendChild(div);
+  }
+```
+
+此时页面显示：
+
+
+
+`login.js`文件代码不做修改
+
+```js
+export default function printMe() {
+    
+  }
+```
+
+
+
+## 8.使用Babel处理ES6语法
+
+### 8.1webpack中使用babel
+
+- 安装：
 
 ```shell
 npm install --save-dev babel-loader @babel/core
 ```
 
-使用：
+- 使用：
 
 ```js
 //webpack.config.js
@@ -1800,7 +2035,7 @@ npm install --save @babel/polyfill
 import "@babel/polyfill";
 //或者
 require("@babel/polyfill");
-//如果配置了useBuiltIns:'usage'这个配置项，就无需再引入上面的
+//如果配置了useBuiltIns，则不需要引入上面的
 ```
 
 注意：这个插件会将所有语法都打包。但是我们只使用promise，map方法。因此只需要将这两个高级语法实现下就可以了
@@ -1908,7 +2143,7 @@ npm install --save @babel/runtime-corejs2
 新建`.babelrc`文件，将`webpack.config.js`中`babel-loader`的options配置项抽离处理单独配置。写了这个文件就会生效，无需引入。
 
 ```js
-//.babelrc
+//.babelrc打包库代码配置
 {
    "plugins": [["@babel/plugin-transform-runtime",{
        "corejs": 2,//这里如果改为2时，需要安装插件npm install --save @babel/runtime-corejs2
@@ -1918,6 +2153,23 @@ npm install --save @babel/runtime-corejs2
             }]]
 }
 ```
+
+```js
+//.babelrc打包业务代码配置
+{
+  presets: [["@babel/preset-env",{
+             "targets": {
+         			 	 "edge": "17",
+         				 "firefox": "60",
+         				 "chrome": "67",
+         				 "safari": "11.1",
+        			},
+             useBuiltIns:'usage'
+           }]]
+}
+```
+
+
 
 注意：`.babelrc`中的配置是从下网上，从左到右的执行顺序。
 
@@ -1938,9 +2190,124 @@ module.exports={
 }
 ```
 
+## 9.配置React代码的打包
+
+- 安装
+
+```bash
+npm install --save-dev @babel/preset-react
+```
+
+- 配置
+
+```js
+//.babelrc打包业务代码配置
+//执行顺序是从下往上，从右往左
+//先转换react代码，再转换成es5代码
+{
+  presets: [
+    ["@babel/preset-env",{
+             "targets": {
+         			 	 "edge": "17",
+         				 "firefox": "60",
+         				 "chrome": "67",
+         				 "safari": "11.1",
+        			},
+             useBuiltIns:'usage'
+           }
+    ],
+    //配置react
+    "@babel/preset-react"
+  ]
+}
+```
+
+## 10.所有代码配置
+
+```js
+//webpack.config.js
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const webpack = require("webpack");
+module.exports = {
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  entry: {
+    main: "./src/main.js",
+  },
+  devServer: {
+    contentBase: "./dist",
+    open: true,
+    port: 8080,
+    hot: true,
+    hotOnly: true,
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
+      // 打包图片文件
+      {
+        test: /\.(jpg|png|gig)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              name: "[name]_[hash:6].[ext]",
+              outputPath: "images/",
+              limit: 10240,
+            },
+          },
+        ],
+      },
+      // 打包css文件
+      { test: /\.css$/, use: ["style-loader", "css-loader", "postcss-loader"] },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: ["style-loader", "css-loader", "less-loader", "postcss-loader"],
+      },
+      // 打包字体文件
+      { test: /\.(eot|ttf|svg)$/, use: "file-loader" },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+  ],
+  output: {
+    filename: "[name]_[hash:6].js",
+    path: path.resolve(__dirname, "./dist"),
+  },
+};
+```
 
 
-# 三.webpack高级概念
+
+# 3.webpack高级概念
 
 ## 3.1Tree Shaking
 
@@ -1954,17 +2321,15 @@ module.exports={
 
 ### 3.1.1开发环境
 
-配置：
+- 配置：
 
 ```js
 //webpack.config.js
 module.exports={
   mode:'development',
-	plugins:[
-  	optimization:{//注意是在开发环境
+  optimization:{//注意是在开发环境
  	 		usedExports:true
   	}
-	]
 }
 ```
 
@@ -1984,6 +2349,7 @@ module.exports={
 ```json
 //如果在main。js中以import "@babel/polyfill";这种方式引入了。而这个模块又没有导出任何内容，因此不需要打包。就可以将这个模块加入数组中。
 {
+  //但是一般情况下不需要将@babel/polyfill添加到sideEffects数组中。
   "sideEffects":["@babel/polyfill"]
 }
 ```
@@ -1991,6 +2357,7 @@ module.exports={
 `tree shaking`会去查看每个文件是否有导出，如果没有导出就不打包，有导出才去打包。但是我们写的`css`文件没有导出，因此会存在问题。修改我们的配置如下：
 
 ```json
+//package.json
 {
   "sideEffects":[
     "*.css"//表示遇到任何css文件，也不要使用tree shaking
@@ -2008,16 +2375,15 @@ module.exports={
 //webpack.config.js
 module.exports={
   mode:'production',
-	plugins:[
     //生产环境就不需要以下配置
   	//optimization:{//注意是在开发环境
  	 		//usedExports:true
   	//}
-	]
 }
 ```
 
 ```json
+//package.json
 {
   "sideEffects":[
     "*.css"//表示遇到任何css文件，也不要使用tree shaking
@@ -2029,7 +2395,7 @@ module.exports={
 
 ## 3.2打包模式区分
 
-*开发环境(development)*和*生产环境(production)*的构建目标差异很大。在*开发环境*中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 source map 和 localhost server。而在*生产环境*中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
+开发环境(`development`)和生产环境(`production`)的构建目标差异很大。在**开发环境**中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 source map 和 localhost server。而在**生产环境**中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
 
 开发环境和生产环境打包的配置是不同的，因此我们将开发环境与生产环境的配置区分开。而不用每次手动去改。
 
@@ -2041,7 +2407,387 @@ module.exports={
 npm install --save-dev webpack-merge
 ```
 
+### 3.2.1开发环境配置
+
+在项目根目录下新建`webpack.dev.js`:
+
+```js
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const webpack = require("webpack");
+module.exports = {
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  entry: {
+    main: "./src/main.js",
+  },
+  devServer: {
+    contentBase: "./dist",
+    open: true,
+    port: 8080,
+    hot: true,
+  },
+
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
+      // 打包图片文件
+      {
+        test: /\.(jpg|png|gig)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              name: "[name]_[hash:6].[ext]",
+              outputPath: "images/",
+              limit: 10240,
+            },
+          },
+        ],
+      },
+      // 打包css文件
+      { test: /\.css$/, use: ["style-loader", "css-loader", "postcss-loader"] },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: ["style-loader", "css-loader", "less-loader", "postcss-loader"],
+      },
+      // 打包字体文件
+      { test: /\.(eot|ttf|svg)$/, use: "file-loader" },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+  ],
+  output: {
+    filename: "[name]_[hash:6].js",
+    path: path.resolve(__dirname, "./dist"),
+  },
+};
+
+```
+
+修改`package.json`脚本命令：
+
+```json
+{
+  "scripts": {
+    //新增开发环境启动脚本，使用--config指定使用的webpack配置文件
+    "dev": "webpack-dev-server --config webpack.dev.js"
+  },
+}
+```
+
+此时使用`npm run dev`即可进行项目开发。
+
+### 3.2.2生成环境配置
+
+在项目根目录下新建`webpack.prod.js`:
+
+```js
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const webpack = require("webpack");
+module.exports = {
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  entry: {
+    main: "./src/main.js",
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
+      // 打包图片文件
+      {
+        test: /\.(jpg|png|gig)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              name: "[name]_[hash:6].[ext]",
+              outputPath: "images/",
+              limit: 10240,
+            },
+          },
+        ],
+      },
+      // 打包css文件
+      { test: /\.css$/, use: ["style-loader", "css-loader", "postcss-loader"] },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: ["style-loader", "css-loader", "less-loader", "postcss-loader"],
+      },
+      // 打包字体文件
+      { test: /\.(eot|ttf|svg)$/, use: "file-loader" },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+  ],
+  output: {
+    filename: "[name]_[hash:6].js",
+    path: path.resolve(__dirname, "./dist"),
+  },
+};
+```
+
+修改`package.json`脚本命令：
+
+```json
+{
+  "scripts": {
+    //新增生产环境启动脚本，使用--config指定使用的webpack配置文件
+    "build": "webpack --config webpack.prod.js",
+  },
+}
+```
+
+此时使用`npm run build`即可进行项目打包。
+
+### 3.2.3抽离公共代码
+
+上面配置的`webpack.dev.js`和`webpack.prod.js`配置文件中存在大量重复的代码。因此需要将公共代码进行抽离
+
+- 抽离公共代码
+
+在项目根目录下新建`webpack.common.js`，用于存放公共代码。
+
+```js
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+module.exports = {
+  entry: {
+    main: "./src/main.js",
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
+      // 打包图片文件
+      {
+        test: /\.(jpg|png|gig)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              name: "[name]_[hash:6].[ext]",
+              outputPath: "images/",
+              limit: 10240,
+            },
+          },
+        ],
+      },
+      // 打包css文件
+      { test: /\.css$/, use: ["style-loader", "css-loader", "postcss-loader"] },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: ["style-loader", "css-loader", "less-loader", "postcss-loader"],
+      },
+      // 打包字体文件
+      { test: /\.(eot|ttf|svg)$/, use: "file-loader" },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+  ],
+  output: {
+    filename: "[name]_[hash:6].js",
+    path: path.resolve(__dirname, "./dist"),
+  },
+};
+```
+
+### 3.2.4对开发环境进行改造
+
+删除公共代码已经有的配置：
+
+```js
+//webpack.dev.js
+const webpack = require("webpack");
+module.exports = {
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  devServer: {
+    contentBase: "./dist",
+    open: true,
+    port: 8080,
+    hot: true,
+  },
+  plugins: [new webpack.HotModuleReplacementPlugin()],
+  optimization: {
+    usedExports: true,
+  },
+};
+
+```
+
+此时需要将开发环境代码与公共代码进行合并，才能正确运行。
+
+安装`webpack-merge`插件进行代码合并：
+
+```bash
+npm install webpack-merge -D
+```
+
+使用插件进行合并代码：
+
+```js
+//webpack.dev.js
+//导入merge函数
+const { merge } = require("webpack-merge");
+//导入公共代码
+const commonConfig = require("./webpack.common.js");
+const webpack = require("webpack");
+const devConfig = {
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  devServer: {
+    contentBase: "./dist",
+    open: true,
+    port: 8080,
+    hot: true,
+  },
+  plugins: [new webpack.HotModuleReplacementPlugin()],
+  optimization: {
+    usedExports: true,
+  },
+};
+//将合并后的代码进行导出
+module.exports = merge(commonConfig, devConfig);
+```
+
+### 3.2.5对生产环境进行改造
+
+删除公共代码已经有的配置：
+
+```js
+module.exports = {
+  mode: "production",
+  devtool: "cheap-module-eval-source-map",
+};
+```
+
+此时需要将生产环境代码与公共代码进行合并，才能正确运行。
+
+使用`webpack-merge`插件进行合并代码：
+
+```js
+const { merge } = require("webpack-merge");
+const commonConfig = require("./webpack.common.js");
+const prodConfig = {
+  mode: "production",
+  devtool: "cheap-module-eval-source-map",
+};
+
+module.exports = merge(commonConfig, prodConfig);
+```
+
+此时开发环境和生产环境都已经配置完成了，但是项目根目录下有三个webpack配置文件，不方便进行管理维护。因此需要将webpack配置文件存放在统一文件夹（build）进行管理。
+
+在项目根目录新建`build`文件夹，然后将webpack配置文件移入此文件夹。
+
+![image-20200816234851588](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816234851588.png)
+
+此时需要修改webpack公共代码:
+
+```js
+output: {
+    filename: "[name]_[hash:6].js",
+      //修改输出为上一级目录（根目录下）
+    path: path.resolve(__dirname, "../dist"),
+  },
+```
+
+> 注：`entry`入口路径和`HtmlWebpackPlugin.template`路径不需要修改，默认就是根路径下。
+
+还需要修改打包的命令：
+
+```json
+{
+  "scripts": {
+    //修改webpack配置文件的路径
+    "build": "webpack --config ./build/webpack.prod.js",
+    "dev": "webpack-dev-server --config ./build/webpack.dev.js"
+  },
+}
+```
+
+
+
 ### 3.2.1webpack.common.js
+
+
 
 ```js
 //webpack.common.js
@@ -2228,19 +2974,7 @@ const prodConfig = {
 module.exports = merge(commonConfig, prodConfig);
 ```
 
-### 3.2.4配置package.json
 
-```json
-{
-  "scripts": {
-    "start": "http-server dist",
-    "dev": "webpack-dev-server --config ./build/webpack.dev.js",
-    "build": "webpack --config ./build/webpack.prod.js"
-  }
-}
-```
-
-注：将webpack的所有配置文件统一放在`build`目录下。方便管理。
 
 ## 3.3代码分离
 
