@@ -2313,18 +2313,111 @@ module.exports = {
 
 把一个模块中无用的代码都不打包到最后的文件下。比如`main.js`导出两个方法`add`和`minus`,但是在`index.js`中只引入add方法，此时`minus`方法没使用，但是打包时会默认打包所有。此时就需要借助`tree shaking`来打包。
 
-通过 `package.json` 的 `"sideEffects"` 属性作为标记，向 compiler 提供提示，表明项目中的哪些文件是 "pure(纯的 ES2015 模块)"，由此可以安全地删除文件中未使用的部分。
+通过 `package.json` 的 `"sideEffects"` 属性作为标记，向 compiler 提供提示，表明项目中的哪些文件是 "pure(纯的 ES2015 模块)"，由此可以安全地**删除文件中未使用**的部分。
 
-注意：
+> 注意：只支持ES Module的引入。`import`的引入形式（静态引入）。`require`的形式不支持（动态引入）
 
-- 只支持ES Module的引入。`import`的引入形式（静态引入）。`require`的形式不支持（动态引入）
+### 3.1.1未开启tree shaking
 
-### 3.1.1开发环境
+在开发环境下(`mode: "development"`)时，默认没有开启`tree shaking`。
 
-- 配置：
+例如：
+
+在`src`目录下新建`index.js`,此文件导出两个函数：
+
+目录结构：
+
+```
+webpack-vue-template
+├─ .babelrc
+├─ build
+│  ├─ webpack.common.js
+│  ├─ webpack.dev.js
+│  └─ webpack.prod.js
+├─ package-lock.json
+├─ package.json
+├─ postcss.config.js
+├─ public
+│  └─ index.html
+└─ src
+   ├─ index.js
+   └─ main.js
+```
 
 ```js
-//webpack.config.js
+//	src/index.js
+export function sub() {
+  console.log("我没被导出");
+}
+
+export function add() {
+  console.log("我被导出");
+}
+```
+
+接着，更新入口脚本，使用其中一个新方法:
+
+```js
+//	src/main.js
+import { add } from "./index";
+add();
+```
+
+注意，我们**并未从 `src/index.js` 模块中 `import` 导入 `sub` 方法**。这个功能是所谓的“未引用代码(dead code)”，也就是说，应该删除掉未被引用的 `export`。现在让我们运行我们的npm 脚本 `npm run build`，并检查输出的 bundle：
+
+![image-20200817135208039](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200817135208039.png)
+
+注意，上面的 `exports provided` 注释。如果你看下面的代码，你会注意到 `sub` 没有被导入，但是，它仍然被包含在 bundle 中。
+
+### 3.1.2开发环境开启tree shaking
+
+向 webpack 的 compiler 提供提示哪些代码是“纯粹部分”。
+
+这种方式是通过 package.json 的 `"sideEffects"` 属性来实现的。
+
+```json
+{
+  "name": "your-project",
+  "sideEffects": false
+}
+```
+
+如同上面提到的，如果所有代码都不包含副作用，我们就可以简单地将该属性标记为 `false`，来告知 webpack，它可以安全地删除未用到的 export 导出。
+
+> 「副作用」的定义是，在导入时会执行特殊行为的代码，而不是仅仅暴露一个 export 或多个 export。举例说明，例如 polyfill，它影响全局作用域，并且通常不提供 export。
+
+如果你的代码确实有一些副作用，那么可以改为提供一个数组：
+
+```json
+{
+  "name": "your-project",
+  "sideEffects": [//注：如果某个模块不需要tree shaking ，则将不需要的模块加入sideEffects数组中
+    "./src/index.js"
+  ]
+}
+```
+
+数组方式支持相关文件的相对路径、绝对路径和 glob 模式。
+
+> 注意，任何导入的文件都会受到 tree shaking 的影响。这意味着，如果在项目中使用类似 `css-loader` 并导入 CSS 文件，则需要将其添加到 side effect 列表中，以免在生产模式中无意中将它删除：
+
+```json
+{
+  "name": "your-project",
+  "sideEffects": [
+    "./src/index.js",
+    "*.css"//表示遇到任何css文件，也不要使用tree shaking
+  ]
+}
+
+```
+
+tree shaking会去查看每个文件是否有导出，如果没有导出就不打包，有导出才去打包。但是我们写的css文件没有导出，因此需要将所有css文件添加到`sideEffects`数组中进行排除。
+
+> 注;在开发环境下，还必须在`webpack`中配置`optimization`：
+
+```js
+//webpack.dev.js
 module.exports={
   mode:'development',
   optimization:{//注意是在开发环境
@@ -2333,28 +2426,17 @@ module.exports={
 }
 ```
 
+现在让我们运行我们的npm 脚本 `npm run build`，并检查输出的 bundle：
 
+![image-20200817140935872](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200817140935872.png)
 
-```json
-//package.json
-{
-  "sideEffects":false  //表示对所有模块进行tree shaking。
-}
-```
+注意看上面的`exports used:`注释。只导出了使用的add方法，而sub方法没有被打包。
 
-注：如果某个模块不需要tree shaking ，则将不需要的模块加入`sideEffects`数组中
+>  注意：此时打包后的文件会存在未使用的代码，只是在未使用的代码前面注释未使用。这样主要方便在开发环境下进行调试。
 
-示例：
+### 3.1.2生产环境开启tree shaking
 
-```json
-//如果在main。js中以import "@babel/polyfill";这种方式引入了。而这个模块又没有导出任何内容，因此不需要打包。就可以将这个模块加入数组中。
-{
-  //但是一般情况下不需要将@babel/polyfill添加到sideEffects数组中。
-  "sideEffects":["@babel/polyfill"]
-}
-```
-
-`tree shaking`会去查看每个文件是否有导出，如果没有导出就不打包，有导出才去打包。但是我们写的`css`文件没有导出，因此会存在问题。修改我们的配置如下：
+在生产环境下同样需要在`package.json`中添加`sideEffects`属性：
 
 ```json
 //package.json
@@ -2365,14 +2447,10 @@ module.exports={
 }
 ```
 
-注意：此时打包后的文件会存在未使用的代码，只是在未使用的代码前面注释未使用。这样主要方便在开发环境下进行调试。
-
-### 3.1.2生产环境
-
-配置
+修改生产环境的`webpack`配置：
 
 ```js
-//webpack.config.js
+//webpack.prod.js
 module.exports={
   mode:'production',
     //生产环境就不需要以下配置
@@ -2382,16 +2460,9 @@ module.exports={
 }
 ```
 
-```json
-//package.json
-{
-  "sideEffects":[
-    "*.css"//表示遇到任何css文件，也不要使用tree shaking
-  ]
-}
-```
+> 注：生产环境下(`mode:'production'`)，就不在需要配置`optimization`属性。因为默认开启了。
 
-注意：此时打包后的文件中就不会存在未使用的代码。
+此时打包后的文件中就不会存在未使用的代码。
 
 ## 3.2打包模式区分
 
@@ -2783,207 +2854,14 @@ output: {
 }
 ```
 
-
-
-### 3.2.1webpack.common.js
-
-
-
-```js
-//webpack.common.js
-const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-
-module.exports = {
-	entry: {
-		main: './src/index.js',
-	},
-	module: {
-		rules: [{ 
-			test: /\.js$/, 
-			exclude: /node_modules/,
-			use: [{
-				loader: 'babel-loader'
-			}]
-		}, {
-			test: /\.(jpg|png|gif)$/,
-			use: {
-				loader: 'url-loader',
-				options: {
-					name: '[name]_[hash].[ext]',
-					outputPath: 'images/',
-					limit: 10240
-				}
-			} 
-		}, {
-			test: /\.(eot|ttf|svg)$/,
-			use: {
-				loader: 'file-loader'
-			} 
-		}]
-	},
-	plugins: [
-		new HtmlWebpackPlugin({
-			template: 'src/index.html'
-		}), 
-		new CleanWebpackPlugin(['dist'], {//这个插件的默认的根路径就是代表的当前目录
-			root: path.resolve(__dirname, '../')//配置根路径位置。表示清除上一层的dist目录
-		})
-	],
-	optimization: {
-		runtimeChunk: {
-			name: 'runtime'
-		},
-		usedExports: true,
-		splitChunks: {
-      chunks: 'all',
-      cacheGroups: {
-      	vendors: {
-      		test: /[\\/]node_modules[\\/]/,
-      		priority: -10,
-      		name: 'vendors',
-      	}
-      }
-    }
-	},
-	performance: false,
-	output: {
-		path: path.resolve(__dirname, '../dist')//这里代表上一层目录。因为我们将配置文件统一放在了根目录的build文件夹下
-	}
-}
-```
-
-### 3.2.2开发环境代码
-
-将开发环境与公共代码合并时，需要使用webpack的合并模块。
-
-安装合并模块：
-
-```shell
-npm install webpack-merge -D
-```
-
-开发环境配置：
-
-```js
-//webpack.dev.js
-const webpack = require('webpack');
-const merge = require('webpack-merge');
-const commonConfig = require('./webpack.common.js');
-
-const devConfig = {
-	mode: 'development',
-	devtool: 'cheap-module-eval-source-map',
-	devServer: {
-		contentBase: './dist',
-		open: true,
-		port: 8080,
-		hot: true
-	},
-	module: {
-		rules: [{
-			test: /\.scss$/,
-			use: [
-				'style-loader', 
-				{
-					loader: 'css-loader',
-					options: {
-						importLoaders: 2
-					}
-				},
-				'sass-loader',
-				'postcss-loader'
-			]
-		}, {
-			test: /\.css$/,
-			use: [
-				'style-loader',
-				'css-loader',
-				'postcss-loader'
-			]
-		}]
-	},
-	plugins: [
-		new webpack.HotModuleReplacementPlugin()
-	],
-	output: {
-		filename: '[name].js',
-		chunkFilename: '[name].js',
-	}
-}
-
-module.exports = merge(commonConfig, devConfig);
-```
-
-### 3.2.3生产环境代码
-
-```js
-//webpack.prod.js
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const WorkboxPlugin = require('workbox-webpack-plugin');
-const merge = require('webpack-merge');
-const commonConfig = require('./webpack.common.js');
-
-const prodConfig = {
-	mode: 'production',
-	devtool: 'cheap-module-source-map',
-	module: {
-		rules:[{
-			test: /\.scss$/,
-			use: [
-				MiniCssExtractPlugin.loader, 
-				{
-					loader: 'css-loader',
-					options: {
-						importLoaders: 2
-					}
-				},
-				'sass-loader',
-				'postcss-loader'
-			]
-		}, {
-			test: /\.css$/,
-			use: [
-				MiniCssExtractPlugin.loader,
-				'css-loader',
-				'postcss-loader'
-			]
-		}]
-	},
-	optimization: {
-		minimizer: [new OptimizeCSSAssetsPlugin({})]
-	},
-	plugins: [
-		new MiniCssExtractPlugin({
-			filename: '[name].css',
-			chunkFilename: '[name].chunk.css'
-		}),
-		new WorkboxPlugin.GenerateSW({
-			clientsClaim: true,
-			skipWaiting: true
-		})
-	],
-	output: {
-		filename: '[name].[contenthash].js',
-		chunkFilename: '[name].[contenthash].js'
-	}
-}
-
-module.exports = merge(commonConfig, prodConfig);
-```
-
-
-
 ## 3.3代码分离
 
 此特性能够把代码分离到不同的 bundle 中，然后可以按需加载或并行加载这些文件。代码分离可以用于获取更小的 bundle，以及控制资源加载优先级，如果使用合理，会极大影响加载时间。
 
 有三种常用的代码分离方法：
 
-- 入口起点：使用 [`entry`](https://www.webpackjs.com/configuration/entry-context) 配置手动地分离代码。
-- 防止重复：使用 [`CommonsChunkPlugin`](https://www.webpackjs.com/plugins/commons-chunk-plugin) 去重和分离 chunk。
+- 入口起点：使用 `entry` 配置手动地分离代码。
+- 防止重复：使用 `CommonsChunkPlugin`去重和分离 chunk。
 - 动态导入：通过模块的内联函数调用来分离代码。
 
 ### 3.3.1入口起点
@@ -2991,18 +2869,12 @@ module.exports = merge(commonConfig, prodConfig);
 ```js
 //webpack.config.js
 const path = require('path');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: {//增加两个入口起点
     index: './src/index.js',
-    another: './src/another-module.js'
+    main: './src/main.js'
   },
-  plugins: [
-    new HTMLWebpackPlugin({
-      title: 'Code Splitting'
-    })
-  ],
   output: {//打包输出两个文件
     filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'dist')
@@ -3010,7 +2882,7 @@ module.exports = {
 };
 ```
 
-此时会打包输出两个文件：another.bundle.js和index.bundle.js文件。在html中自动引入的先后顺序与入口文件的先后顺序有关。
+此时会打包输出两个文件：`main.bundle.js`和`index.bundle.js`文件。在html中自动引入的先后顺序与入口文件的先后顺序有关。
 
 存在问题：
 
