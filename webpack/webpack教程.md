@@ -594,6 +594,20 @@ module.exports = config;
 
 在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。
 
+### 2.2.5chunkFilename
+
+如果是通过代码分割，进行间接引入代码的方式，打包输出的名字就是`chunkFilename`配置的内容。
+
+```js
+output:{
+  	filename:'[name].js',
+    chunkFilename:'[name].chunk.js'
+ 	 path:path.resolve(__dirname,'dist')
+	}
+```
+
+
+
 ## 2.3  loader
 
 
@@ -2866,99 +2880,676 @@ output: {
 
 ### 3.3.1入口起点
 
-```js
-//webpack.config.js
-const path = require('path');
+在`src`目录下新建`main.js`:
 
-module.exports = {
-  entry: {//增加两个入口起点
-    index: './src/index.js',
-    main: './src/main.js'
-  },
-  output: {//打包输出两个文件
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist')
-  }
-};
+项目结构：
+
+```
+webpack-vue-template
+├─ .babelrc
+├─ build
+│  ├─ webpack.common.js
+│  ├─ webpack.dev.js
+│  └─ webpack.prod.js
+├─ package-lock.json
+├─ package.json
+├─ postcss.config.js
+├─ public
+│  └─ index.html
+└─ src
+   └─ main.js
 ```
 
-此时会打包输出两个文件：`main.bundle.js`和`index.bundle.js`文件。在html中自动引入的先后顺序与入口文件的先后顺序有关。
+```js
+//main.js
+import _ from "lodash";
+console.log(_.join(["a", "b", "c"], "---"));
+```
+
+打包项目输出信息：
+
+```js
+Hash: 45186d04c12fa395bde1
+Version: webpack 4.44.1
+Time: 593ms
+Built at: 2020-08-17 9:44:09 ├F10: PM┤
+         Asset       Size  Chunks                         Chunk Names
+    index.html  298 bytes          [emitted]              
+main_45186d.js   1.39 MiB    main  [emitted] [immutable]  main
+Entrypoint main = main_45186d.js
+```
+
+由输出信息可知：打包的`main.js`大小为1.39mb。
+
+也就是首次访问页面时，浏览器需要加载1.39mb的`main.js`文件。当页面业务逻辑发生变化时，又要加载1.39mb的内容。
+
+因此可以采用将第三方库与业务逻辑分离的方式进行打包。
+
+在`src`下再新建`lodash.js`文件：用于打包第三方库的入口。
+
+```js
+//lodash.js
+import _ from "lodash";
+//挂载到全局
+window._ = _;
+```
+
+删除`main.js`中引入的`lodash`：
+
+```js
+//main.js
+console.log(_.join(["a", "b", "c"], "---"));
+```
+
+增加webpack的入口：
+
+```js
+//webpack.common.js
+entry: {
+  	//这里必须将lodash第三方打包文件放第一个位置，因为html中引入打包后的js文件顺序默认是以entry入口顺序为准的。否则代码不能正常运行。
+    lodash: "./src/lodash.js",
+    main: "./src/main.js",
+  }
+```
+
+打包输出信息：
+
+```js
+Hash: 2002c8d3868fdf14200a
+Version: webpack 4.44.1
+Time: 596ms
+Built at: 2020-08-17 9:54:58 ├F10: PM┤
+           Asset       Size  Chunks                         Chunk Names
+      index.html  338 bytes          [emitted]              
+lodash_2002c8.js   1.39 MiB  lodash  [emitted] [immutable]  lodash
+  main_2002c8.js   31.5 KiB    main  [emitted] [immutable]  main
+Entrypoint lodash = lodash_2002c8.js
+Entrypoint main = main_2002c8.js
+```
+
+此时`main.js`被拆分成`lodash.js`和`main.js`,`lodash.js`为1.39mb，而`main.js`为31kb。
+
+当页面业务逻辑发生变化时，只需要加载31kb的`main.js`即可。而`lodash.js`代码没发生变化，利用浏览器的缓存机制，就可以不需要重新再加载，从而减少了加载业务代码的时间。
 
 存在问题：
 
 - 如果入口 chunks 之间包含重复的模块，那些重复模块都会被引入到各个 bundle 中。
 - 这种方法不够灵活，并且不能将核心应用程序逻辑进行动态拆分代码。
 
-我们通过使用 `CommonsChunkPlugin` 来移除重复的模块。
+我们通过使用 `SplitChunksPlugin` 来移除重复的模块。
 
 ### 3.3.2防止重复
 
-[`CommonsChunkPlugin`](https://www.webpackjs.com/plugins/commons-chunk-plugin) 插件可以将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。
+`SplitChunksPlugin`插件可以将公共的依赖模块提取到已有的入口 chunk 中，或者提取到一个新生成的 chunk。
 
-使用以下配置，将重复的模块去除，并打包到单独的。
+同步加载的方式。
+
+项目结构：
 
 ```js
-//webpack.config.js
-const path = require('path');
-//1. 引入webpack
-const webpack = require('webpack');
-const HTMLWebpackPlugin = require('html-webpack-plugin');
+webpack-vue-template
+├─ .babelrc
+├─ build
+│  ├─ webpack.common.js
+│  ├─ webpack.dev.js
+│  └─ webpack.prod.js
+├─ package-lock.json
+├─ package.json
+├─ postcss.config.js
+├─ public
+│  └─ index.html
+└─ src
+   └─ main.js
+```
 
-  module.exports = {
-    entry: {
-      index: './src/index.js',
-      another: './src/another-module.js'
+```js
+//main.js
+import _ from "lodash";
+console.log(_.join(["a", "b", "c"], "---"));
+```
+
+修改webpack配置：
+
+```js
+//webpack.common.js
+module.exports = {
+  entry: {
+    main: "./src/main.js",
+  },
+  //使用SplitChunksPlugin插件
+  optimization: {
+    splitChunks: {
+      chunks: "all",
     },
-    plugins: [
-      new HTMLWebpackPlugin({
-        title: 'Code Splitting'
-     }),
-      //2. 使用CommonsChunkPlugin插件
-     new webpack.optimize.CommonsChunkPlugin({
-       name: 'common' // 指定公共 bundle 的名称。
-     })
-    ],
-    output: {
-      filename: '[name].bundle.js',
-      path: path.resolve(__dirname, 'dist')
-    }
-  };
+  },
+  output: {
+    filename: "[name]_[hash:6].js",
+    path: path.resolve(__dirname, "../dist"),
+  },
+};
+```
+
+对项目进行打包，输出以下信息：
+
+```
+Hash: 5a522793c6f286ca585f
+Version: webpack 4.44.1
+Time: 609ms
+Built at: 2020-08-17 10:05:57 ├F10: PM┤
+                 Asset       Size        Chunks                         Chunk Names
+            index.html  344 bytes                [emitted]              
+        main_5a5227.js   34.6 KiB          main  [emitted] [immutable]  main
+vendors~main_5a5227.js   1.36 MiB  vendors~main  [emitted] [immutable]  vendors~main
+Entrypoint main = vendors~main_5a5227.js main_5a5227.js
+```
+
+一个入口，却输出了两个js文件。其中main.js是打包的我们业务代码，而`vendors.js`则是打包的`lodash`。这两个文件也会被引入到html文件中，并且`vendors.js`会被先引入：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Webpack App</title>
+  </head>
+  <body>
+    <!-- 添加根标签 -->
+    <div id="app"></div>
+    <script src="vendors~main_5a5227.js"></script>
+    <script src="main_5a5227.js"></script>
+  </body>
+</html>
 ```
 
 ### 3.3.3动态导入
 
-```js
-////webpack.config.js 
-	const path = require('path');
-  const HTMLWebpackPlugin = require('html-webpack-plugin');
+也叫异步加载，无需做任何配置，会自动进行代码分割，单独生成一个文件`0.js`。
 
-  module.exports = {
-    entry: {
-      index: './src/index.js'
-    },
-    plugins: [
-      new HTMLWebpackPlugin({
-        title: 'Code Splitting'
-      })
-    ],
-    output: {
-      filename: '[name].bundle.js',
-      //使用chunkFilename配置
-      chunkFilename: '[name].bundle.js',
-      path: path.resolve(__dirname, 'dist')
-    }
-  };
+> 注：也需要使用`SplitChunksPlugin`配置项。
+
+```js
+function getComponent() {
+  //异步加载lodash
+  return import( "lodash").then(({ default: _ }) => {
+      const element = document.createElement("div");
+      element.innerHTML = _.join(["Hello", "webpack"], " ");
+      return element;
+    })
+}
+
+getComponent().then((component) => {
+    document.body.appendChild(component);
+});
 ```
 
-注意：这里使用了 `chunkFilename`，它决定非入口 chunk 的名称。
+修改打包第三方包生成的名字：
+
+```js
+function getComponent() {
+  //使用特殊语法修改打包生成的名字为：lodash
+  return import(/* webpackChunkName: "lodash" */ "lodash").then(
+    ({ default: _ }) => {
+      const element = document.createElement("div");
+      element.innerHTML = _.join(["Hello", "webpack"], " ");
+      return element;
+    }
+  );
+}
+
+getComponent().then((component) => {
+  document.body.appendChild(component);
+});
+```
+
+此时打包生成的名字为`vendors~lodash.js`
+
+### 3.3.4SplitChunksPlugin配置参数详解
+
+以下是插件的默认配置。如果配置`optimization: {splitChunks: {}}`就是使用的如下默认配置。
+
+```js
+module.exports = {
+  //...
+  optimization: {
+    splitChunks: {
+      chunks: 'async',//async表示异步引入方式才进行代码分割。all则表示同步和异步都会进行代码分割。initial表示同步代码进行分割
+      minSize: 30000,//表示小于30kb就不做代码分割，只有大于30kb才做代码分割。
+      minRemainingSize: 0,
+      maxSize: 0,//表示如果打包引入的包大于这个值，就会将引入的包二次拆分。不建议配置此项。
+      minChunks: 1,//表示将一个模块用了多少次才进行代码分割。这里表示使用了1次就进行代码分割。
+      maxAsyncRequests: 30,//表示同时加载的模块数。如果打包的模块超过了这个数就不会再进行代码分割。
+      maxInitialRequests: 30,//表示入口文件最多只能进行代码分割的数量，超过就不会做代码分割。
+      automaticNameDelimiter: '~',//做文件名连接的时候要用这个符号，比如vendors~lodash.js 
+      enforceSizeThreshold: 50000,
+      cacheGroups: {//叫缓存组。比如引入jquery和lodash，如果没有此项，就会别打包出jquery.js和lodash.js。如果想打包成一个文件，就需要此配置项。遇到jquery先缓存，再此分析遇到lodash又缓存，当所有模块分析完毕后，符合defaultVendors组的打包到一起（vendors.js），符合default的打包到一起（common.js）。
+        
+        //代表打包同步代码的时候会执行这个，与chunks配合使用。决定代码分割出来放在哪个文件里面去。
+        defaultVendors: {//组名称
+          test: /[\\/]node_modules[\\/]/,//查看是否在node_modules
+          priority: -10,//值越大，优先级越高。比如jquery即符合这个组，又符合下面个组（没验证规则），所有jquery会被打包到优先级高的组。
+          filename:'vendors.js',//如果test验证通过就会打包到此js文件中，
+        },
+        default: {//组名称
+          //如果不符合上面组验证规则，则执行这个打包操作
+          minChunks: 2,
+          priority: -20,
+          reuseExistingChunk: true,//如果一个模块被打包了，当再次遇到其他模块引入此文件时，就不会进行重新打包（忽略此模块），而是复用之前打包的代码。
+          filename:'common.js',//没在node_modules就打包到common.js
+        }
+      }
+    }
+  }
+};
+```
+
+
+
+
 
 ## 3.4懒加载
 
 懒加载或者按需加载，是一种很好的优化网页或应用的方式。这种方式实际上是先把你的代码在一些逻辑断点处分离开，然后在一些代码块中完成某些操作后，立即引用或即将引用另外一些新的代码块。这样加快了应用的初始加载速度，减轻了它的总体体积，因为某些代码块可能永远不会被加载。
 
+实际上是使用import语法：
+
+```js
+function getComponent() {
+  //使用这种import语法实现懒加载
+  return import(/* webpackChunkName: "lodash" */ "lodash").then(
+    ({ default: _ }) => {
+      const element = document.createElement("div");
+      element.innerHTML = _.join(["Hello", "webpack"], " ");
+      return element;
+    }
+  );
+}
+
+document.addEventListener("click", () => {
+  getComponent().then((component) => {
+    document.body.appendChild(component);
+  });
+});
+```
+
+>  注：上面使用了promise，记得使用babel转换才能使用到低版本浏览器
+
+将上面代码改造成异步执行方式：
+
+```JS
+function getComponent() {
+  //使用这种import语法实现懒加载
+  const { default: _ }=await import(/* webpackChunkName: "lodash" */ "lodash")
+      const element = document.createElement("div");
+      element.innerHTML = _.join(["Hello", "webpack"], " ");
+      return element;
+}
+
+document.addEventListener("click", () => {
+  getComponent().then((component) => {
+    document.body.appendChild(component);
+  });
+});
+```
 
 
 
+此时打包生成的文件：
+
+
+
+![image-20200817232341498](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200817232341498.png)
+
+此时打开浏览器的network:
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200817232517020.png" alt="image-20200817232517020" style="zoom:50%;" />
+
+只加载了两个文件。当我们点击页面时：
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200817232605082.png" alt="image-20200817232605082" style="zoom:50%;" />
+
+当我们执行某个模块时，才加载某个文件。从而减少了首屏渲染的时间。
+
+## 3.5css代码分割
+
+该插件将CSS提取到单独的文件中。它为每个包含CSS的JS文件创建一个CSS文件。它支持CSS和SourceMap的按需加载。
+
+与extract-text-webpack-plugin相比：
+
+- 异步加载
+- 没有重复的编译（性能）
+- 更容易使用
+- 特定于CSS
+
+安装：
+
+```bash
+npm install --save-dev mini-css-extract-plugin
+```
+
+建议`mini-css-extract-plugin`与`css-loader`使用。
+
+在`src`下新建`style.css`：
+
+```css
+body{
+  background:red;
+}
+```
+
+项目结构：
+
+```
+webpack-vue-template
+├─ .babelrc
+├─ build
+│  ├─ webpack.common.js
+│  ├─ webpack.dev.js
+│  └─ webpack.prod.js
+├─ package-lock.json
+├─ package.json
+├─ postcss.config.js
+├─ public
+│  └─ index.html
+└─ src
+   ├─ main.js
+   └─ style.css
+```
+
+在`main.js`中引入css文件：
+
+```js
+import './style.css'
+```
+
+在webpack中配置插件：
+
+```js
+//webpack.common.js
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+module.exports = {
+  entry: {
+    main: "./src/main.js",
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
+      // 打包图片文件
+      {
+        test: /\.(jpg|png|gig)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              name: "[name]_[hash:6].[ext]",
+              outputPath: "images/",
+              limit: 10240,
+            },
+          },
+        ],
+      },
+
+      // 打包字体文件
+      { test: /\.(eot|ttf|svg)$/, use: "file-loader" },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+  ],
+  optimization: {
+    usedExports: true,
+    splitChunks: {
+      chunks: "all",
+    },
+  },
+  output: {
+    filename: "[name]_[hash:6].js",
+    path: path.resolve(__dirname, "../dist"),
+  },
+};
+
+```
+
+配置生产环境
+
+```js
+//webpack.prod.js
+const { merge } = require("webpack-merge");
+const commonConfig = require("./webpack.common.js");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const prodConfig = {
+  mode: "production",
+  devtool: "cheap-module-eval-source-map",
+  module: {
+    rules: [
+      // 打包css文件
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
+      },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "less-loader",
+          "postcss-loader",
+        ],
+      },
+    ],
+  },
+  plugins: [new MiniCssExtractPlugin()],
+};
+
+module.exports = merge(commonConfig, prodConfig);
+
+```
+
+配置开发环境：
+
+```js
+//webpack.dev.js
+const { merge } = require("webpack-merge");
+const commonConfig = require("./webpack.common.js");
+const webpack = require("webpack");
+const devConfig = {
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  devServer: {
+    contentBase: "./dist",
+    open: true,
+    port: 8080,
+    hot: true,
+  },
+  module: {
+    rules: [
+      // 打包css文件
+      { test: /\.css$/, use: ["style-loader", "css-loader", "postcss-loader"] },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: ["style-loader", "css-loader", "less-loader", "postcss-loader"],
+      },
+    ],
+  },
+  plugins: [new webpack.HotModuleReplacementPlugin()],
+};
+
+module.exports = merge(commonConfig, devConfig);
+
+```
+
+修改`package.json`文件：
+
+```json
+{
+  "name": "webpack-vue-template",
+  "version": "1.0.0",
+  //排除css文件
+  "sideEffects": [
+    "*.css"
+  ],
+}
+```
+
+此时打包输出的文件：
+
+```js
+Hash: 1a7499e07388b69dd61d
+Version: webpack 4.44.1
+Time: 993ms
+Built at: 2020-08-18 12:15:59 ├F10: AM┤
+             Asset        Size  Chunks                         Chunk Names
+        index.html   278 bytes          [emitted]              
+          main.css    71 bytes       0  [emitted]              main
+      main.css.map   188 bytes       0  [emitted] [dev]        main
+    main_1a7499.js  1010 bytes       0  [emitted] [immutable]  main
+main_1a7499.js.map    4.59 KiB       0  [emitted] [dev]        main
+Entrypoint main = main.css main_1a7499.js main.css.map main_1a7499.js.map
+```
+
+![image-20200818001820001](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818001820001.png)
+
+同时也会自动引入到html文件中：
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Webpack App</title>
+    <link href="main.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script src="main_1a7499.js"></script>
+  </body>
+</html>
+
+```
+
+### 3.5.2参数详解
+
+```js
+plugins: [
+    new MiniCssExtractPlugin({
+      filename: '[name].css',//如果直接被页面使用使用这个名称
+      chunkFilename: '[name].chunk.css',//如果间接被页面使用就走这个名称
+    }),
+  ],
+```
+
+### 3.5.3css代码压缩
+
+安装插件：
+
+```bash
+npm install optimize-css-assets-webpack-plugin --save-dev
+```
+
+使用插件：
+
+```js
+//webpack.prod.js
+const { merge } = require("webpack-merge");
+const commonConfig = require("./webpack.common.js");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+//1.导入插件
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const prodConfig = {
+  mode: "production",
+  devtool: "source-map",
+  module: {
+    rules: [
+      // 打包css文件
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
+      },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "less-loader",
+          "postcss-loader",
+        ],
+      },
+    ],
+  },
+  //2.使用插件
+  optimization: {
+    minimizer: [new OptimizeCSSAssetsPlugin({})],
+  },
+  plugins: [new MiniCssExtractPlugin()],
+};
+
+module.exports = merge(commonConfig, prodConfig);
+
+```
+
+此时打包出的css代码就进过压缩的。
+
+### 3.5.4多个入口css文件打包到一个css文件
+
+### 3.5.5多个入口css文件分别打包到各自css文件中
 
 ## 3.5缓存
 
