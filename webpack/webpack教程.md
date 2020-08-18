@@ -3487,6 +3487,8 @@ plugins: [
 
 ### 3.5.3css代码压缩
 
+对抽离的css进行压缩合并。使用插件`optimize-css-assets-webpack-plugin`
+
 安装插件：
 
 ```bash
@@ -3556,13 +3558,15 @@ module.exports = merge(commonConfig, prodConfig);
 
 ### 3.5.5多个入口css文件分别打包到各自css文件中
 
-## 3.5缓存
+
+
+## 3.5webpack与浏览器缓存
 
 可以通过命中缓存，以降低网络流量，使网站加载速度更快，然而，如果我们在部署新版本时不更改资源的文件名，浏览器可能会认为它没有被更新，就会使用它的缓存版本。由于缓存的存在，当你需要获取新的代码时，就会显得很棘手。
 
 ### 3.5.1输出文件的文件名
 
-通过使用 `output.filename` 进行[文件名替换](https://www.webpackjs.com/configuration/output#output-filename)，可以确保浏览器获取到修改后的文件。`[hash]` 替换可以用于在文件名中包含一个构建相关(build-specific)的 hash，但是更好的方式是使用 `[chunkhash]` 替换，在文件名中包含一个 chunk 相关(chunk-specific)的哈希。
+通过使用 `output.filename` 进行文件名替换，可以确保浏览器获取到修改后的文件。`[hash]` 替换可以用于在文件名中包含一个构建相关(build-specific)的 hash，但是更好的方式是使用 `[chunkhash]` 替换，在文件名中包含一个 chunk 相关(chunk-specific)的哈希。
 
 ```js
 //webpack.prod.js
@@ -3575,35 +3579,67 @@ module.exports = merge(commonConfig, prodConfig);
 }
 ```
 
+只有文件内容发生变化时，打包后`contenthash`才会变化。
+
 ### 3.5.2提取模板
 
-就像我们之前从[代码分离](https://www.webpackjs.com/guides/code-splitting)了解到的，[`CommonsChunkPlugin`](https://www.webpackjs.com/plugins/commons-chunk-plugin) 可以用于将模块分离到单独的文件中。然而 `CommonsChunkPlugin` 有一个较少有人知道的功能是，能够在每次修改后的构建结果中，将 webpack 的样板(boilerplate)和 manifest 提取出来。通过指定 `entry` 配置中未用到的名称，此插件会自动将我们需要的内容提取到单独的包中：
+正如我们在代码拆分中学到的那样，`SplitChunksPlugin`可以用于将模块拆分为单独的包。webpack提供了一种优化功能，可以使用该`optimization.runtimeChunk`选项将运行时代码分成单独的块。对其进行设置`single`为所有块创建单个运行时捆绑包：
 
 ```js
-//webpack.config.js
- const path = require('path');
-// 1. 引入webpack
- const webpack = require('webpack');
-  const CleanWebpackPlugin = require('clean-webpack-plugin');
-  const HtmlWebpackPlugin = require('html-webpack-plugin');
+//webpack.common.js
+ const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+module.exports = {
+  entry: {
+    main: "./src/main.js",
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: "babel-loader",
+      },
+      // 打包图片文件
+      {
+        test: /\.(jpg|png|gig)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              name: "[name]_[hash:6].[ext]",
+              outputPath: "images/",
+              limit: 10240,
+            },
+          },
+        ],
+      },
 
-  module.exports = {
-    entry: './src/index.js',
-    plugins: [
-      new CleanWebpackPlugin(['dist']),
-      new HtmlWebpackPlugin({
-        title: 'Caching'
-      }),
-      //2. 配置manifest
-      new webpack.optimize.CommonsChunkPlugin({
-        name: 'manifest'
-      })
+      // 打包字体文件
+      { test: /\.(eot|ttf|svg)$/, use: "file-loader" },
     ],
-    output: {
-      filename: '[name].[chunkhash].js',
-      path: path.resolve(__dirname, 'dist')
-    }
-  };
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+  ],
+  optimization: {
+    usedExports: true,
+    splitChunks: {
+      chunks: "all",
+    },
+    //配置runtime
+    runtimeChunk: "single",
+  },
+  output: {
+    filename: "[name]_[contenthash].js",
+    path: path.resolve(__dirname, "../dist"),
+  },
+};
+
 ```
 
 将第三方库(library)（例如 `lodash` 或 `react`）提取到单独的 `vendor` chunk 文件中，是比较推荐的做法，这是因为，它们很少像本地的源代码那样频繁修改。因此通过实现以上步骤，利用客户端的长效缓存机制，可以通过命中缓存来消除请求，并减少向服务器获取资源，同时还能保证客户端代码和服务器端代码版本一致。这可以通过使用新的 `entry(入口)` 起点，以及再额外配置一个 `CommonsChunkPlugin` 实例的组合方式来实现：
@@ -3654,33 +3690,420 @@ module.exports = merge(commonConfig, prodConfig);
 
 ## 3.6shimming
 
+`webpack` 编译器(compiler)能够识别遵循 ES2015 模块语法、CommonJS 或 AMD 规范编写的模块。然而，一些第三方的库(library)可能会引用一些全局依赖（例如 `jQuery` 中的 `$`）。这些库也可能创建一些需要被导出的全局变量。这些“不符合规范的模块”就是 `shimming`发挥作用的地方。
+
+`shimming` 另外一个使用场景就是，当你希望 `polyfill`浏览器功能以支持更多用户时。在这种情况下，你可能只想要将这些 `polyfill`提供给到需要修补(patch)的浏览器（也就是实现按需加载）。
+
+### 3.6.1模块是封闭环境
+
+在一个模块中不能使用另一个模块中的变量。
+
+项目结构:
+
+```
+webpack-vue-template
+├─ .babelrc
+├─ build
+│  ├─ webpack.common.js
+│  ├─ webpack.dev.js
+│  └─ webpack.prod.js
+├─ package-lock.json
+├─ package.json
+├─ postcss.config.js
+├─ public
+│  └─ index.html
+└─ src
+   ├─ index.js
+   └─ main.js
+```
+
+```js
+//index.js
+export function changeColor() {
+  $("body").css("background", "red");
+}
+```
+
+在`main.js`中导入：
+
+```js
+import $ from "jquery";
+import _ from "lodash";
+import { changeColor } from "./index";
+changeColor();
+```
+
+打包代码，并打开html查看页面：
 
 
-## 3.7环境变量
 
-不推荐使用环境变量的方式进行打包配置
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818220926506.png" alt="image-20200818220926506" style="zoom:50%;" />
 
-```json
-//package.json
-{
-  scripts:{
-    "dev":'',
-    "build":''
-  }
+报错原因：
+
+在webpack中是基于模块打包的，模块中的变量只能在当前模块中使用，而不能在其他模块使用。
+
+修改`index.js`:
+
+```js
+//index.js
+//导入jquery
+import $ from "jquery";
+export function changeColor() {
+  $("body").css("background", "red");
+}
+```
+
+此时重新进行打包，并打开浏览器：
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818221343879.png" alt="image-20200818221343879" style="zoom:50%;" />
+
+控制台没报错，并且样式正常显示。
+
+因此，模块是一个封闭的环境，只能使用自己模块的变量。这样保证了模块与模块之间没有任何的耦合，同时模块出了错误也方便查找。
+
+### 3.6.2shimming 全局变量
+
+使用 `ProvidePlugin` 后，能够在通过 webpack 编译的每个模块中，通过访问一个变量来获取到 package 包。如果 webpack 知道这个变量在某个模块中被使用了，那么 webpack 将在最终 bundle 中引入我们给定的 package。
+
+修改webpack配置
+
+```js
+//webpack.common.js
+//1.导入webpack
+const webpack = require("webpack");
+module.exports = {
+  /....
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+    new webpack.ProvidePlugin({
+      //表示：如果在一个模块中发现使用了$,webpack就会在该模块中自动引入jquery这个模块，然后模块名字叫$。
+      //实际上在底层完成了import $ from "jquery";这部操作，而不用自己写
+      $: "jquery",
+    }),
+  ],
+}
+```
+
+本质上，我们所做的，就是告诉 webpack……
+
+> 如果你遇到了至少一处用到 `lodash` 变量的模块实例，那请你将 `lodash` package 包引入进来，并将其提供给需要用到它的模块。
+
+此时我们修改`index.js`:
+
+```js
+//index.js
+export function changeColor() {
+  $("body").css("background", "red");
+}
+```
+
+重新打包，并打开浏览器：
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818222724808.png" alt="image-20200818222724808" style="zoom:50%;" />
+
+此时没有任何报错，并能正常显示。
+
+我们还可以使用 `ProvidePlugin` 暴露某个模块中单个导出值，只需通过一个“数组路径”进行配置（例如 `[module, child, ...children?]`）。所以，让我们做如下设想，无论 `join` 方法在何处调用，我们都只会得到的是 `lodash` 中提供的 `join` 方法。
+
+```js
+//webpack.common.js
+//1.导入webpack
+const webpack = require("webpack");
+module.exports = {
+  /....
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+    new webpack.ProvidePlugin({
+      $: "jquery",
+      //发现在模块中使用了join方法，就会自动将lodash中的join方法引入
+      join: ['lodash', 'join'],
+      //遇到模块中使用了_,就会自动导入lodash
+      -:'lodash'
+    }),
+  ],
 }
 ```
 
 
 
+### 3.6.3模块中的this
+
+模块中的`this`默认指向模块自身，而不是指向`window`。
+
+我们可以使用`imports-loader`让模块中的`this`指向`window`:
+
+安装
+
+```bash
+npm install imports-loader --save-dev
+```
+
+配置webpack：
+
+```js
+//webpack.common.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "babel-loader",
+          },
+          {
+            //使用imports-loader
+            loader: "imports-loader?this=>window",
+          },
+        ],
+      },
+      ]
+  }
+}
+```
+
+表示：遇到js文件时，先使用`imports-loader`将模块中this指向window，然后在使用`babel-loader`做编译。
 
 
 
 
 
+
+
+## 3.7环境变量
+
+使用环境变量进行打包。
+
+webpack配置文件结构：
+
+```
+build
+   ├─ webpack.common.js
+   ├─ webpack.dev.js
+   └─ webpack.prod.js
+```
+
+修改`webpack.dev.js`:
+
+```js
+//webpack.dev.js
+const webpack = require("webpack");
+const devConfig = {
+  mode: "development",
+  devtool: "cheap-module-eval-source-map",
+  devServer: {
+    contentBase: "./dist",
+    open: true,
+    port: 8080,
+    hot: true,
+  },
+  module: {
+    rules: [
+      // 打包css文件
+      { test: /\.css$/, use: ["style-loader", "css-loader", "postcss-loader"] },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          "style-loader",
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: ["style-loader", "css-loader", "less-loader", "postcss-loader"],
+      },
+    ],
+  },
+  plugins: [new webpack.HotModuleReplacementPlugin()],
+};
+
+module.exports = devConfig;
+```
+
+修改`webpack.prod.js`:
+
+```js
+//webpack.prod.js
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+const prodConfig = {
+  mode: "production",
+  devtool: "source-map",
+  module: {
+    rules: [
+      // 打包css文件
+      {
+        test: /\.css$/,
+        use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
+      },
+      //   打包scss文件
+      {
+        test: /\.scss$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          {
+            loader: "css-loader",
+            options: {
+              importLoaders: 2,
+            },
+          },
+          "sass-loader",
+          "postcss-loader",
+        ],
+      },
+      // 打包less文件
+      {
+        test: /\.less$/,
+        use: [
+          MiniCssExtractPlugin.loader,
+          "css-loader",
+          "less-loader",
+          "postcss-loader",
+        ],
+      },
+    ],
+  },
+  optimization: {
+    minimizer: [new OptimizeCSSAssetsPlugin({})],
+  },
+  plugins: [new MiniCssExtractPlugin()],
+};
+
+module.exports = prodConfig;
+```
+
+修改`webpack.common.js`:
+
+```js
+//webpack.common.js
+const path = require("path");
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const webpack = require("webpack");
+const { merge } = require("webpack-merge");
+const devConfig = require("./webpack.dev");
+const prodConfig = require("./webpack.prod");
+const commonConfig = {
+  entry: {
+    main: "./src/main.js",
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "babel-loader",
+          },
+
+          // {
+          //   // loader: "imports-loader?this=>window",
+          // },
+        ],
+      },
+      // 打包图片文件
+      {
+        test: /\.(jpg|png|gig)$/,
+        use: [
+          {
+            loader: "url-loader",
+            options: {
+              name: "[name]_[hash:6].[ext]",
+              outputPath: "images/",
+              limit: 10240,
+            },
+          },
+        ],
+      },
+
+      // 打包字体文件
+      { test: /\.(eot|ttf|svg)$/, use: "file-loader" },
+    ],
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./public/index.html",
+    }),
+    new CleanWebpackPlugin(),
+    new webpack.ProvidePlugin({
+      $: "jquery",
+    }),
+  ],
+  optimization: {
+    usedExports: true,
+    splitChunks: {
+      chunks: "all",
+    },
+    runtimeChunk: "single",
+  },
+  output: {
+    filename: "[name]_[contenthash:6].js",
+    path: path.resolve(__dirname, "../dist"),
+  },
+};
+
+module.exports = (env) => {
+  if (env && env.production) {
+    return merge(commonConfig, prodConfig);
+  } else {
+    return merge(commonConfig, devConfig);
+  }
+};
+```
+
+修改`package.json`:使用webpack传递环境变量
+
+```json
+//package.json
+{
+  "scripts": {
+    "test": "webpack --config ./build/webpack.common.js",
+    //通过全局变量env向webpack的配置文件里传递一个属性production，它的值默认就是true
+    //"build": "webpack --config --env.production ./build/webpack.common.js",
+    "build": "webpack --env.production --config  ./build/webpack.common.js",
+    "dev": "webpack-dev-server --config ./build/webpack.common.js"
+  },
+}
+```
+
+注：不能将`--env.production`写在`—config`后面。因为`--config`后面指定的是webpack的配置文件
+
+此时执行打包命令就能正常打包：
+
+```js
+Hash: 3cad34bf14d04017f2bf
+Version: webpack 4.44.1
+Time: 437ms
+             Asset       Size  Chunks                         Chunk Names
+        index.html  239 bytes          [emitted]              
+    main_8fa4ef.js   3.64 KiB       0  [emitted] [immutable]  main
+main_8fa4ef.js.map   3.64 KiB       0  [emitted] [dev]        main
+Entrypoint main = main_8fa4ef.js main_8fa4ef.js.map
+```
 
 # 四.实战配置
 
 ## 4.1library的打包
+
+### 4.1.1编写自己的库并打包
 
 对编写的库代码或者工具函数进行打包。
 
@@ -3698,18 +4121,39 @@ module.exports = merge(commonConfig, prodConfig);
 
 ```js
 //math.js
+export function add(a, b) {
+  return a + b;
+}
+export function minus(a, b) {
+  return a - b;
+}
+export function multiply(a, b) {
+  return a * b;
+}
+export function division(a, b) {
+  return a / b;
+}
+
 ```
 
 
 
 ```js
 //string.js
+export function join(a, b) {
+  return a + "" + b;
+}
+
 ```
 
 
 
 ```js
 //index.js
+import * as math from "./math";
+import * as string from "./string";
+export default { math, string };
+
 ```
 
 
@@ -3733,6 +4177,95 @@ const path = require('path');
       libraryTarget:'umd'//使用import，require方式导入项目使用时的配置
     }
   };
+```
+
+### 4.1.2打包库中使用 lodash
+
+我们在自己编写的库中使用lodash第三方库的一些方法。但是用户使用我们编写的库，同时又再次去使用lodash库，因为我们库已经打包了lodash，但是用户又去引入lodash，就会导致再次打包一次lodash。
+
+我们库打包了lodash的输出信息：
+
+```
+Hash: 077a2a49f69dca8cc6df
+Version: webpack 4.44.1
+Time: 1467ms
+Built at: 2020-08-19 12:04:35 ├F10: AM┤
+     Asset      Size  Chunks             Chunk Names
+library.js  72.8 KiB       0  [emitted]  main
+Entrypoint main = library.js
+```
+
+打包出的library有72kb。
+
+不打包lodash，修改webpack配置：
+
+```js
+const path = require("path");
+module.exports = {
+  mode: "production",
+  entry: "./src/index.js",
+  output: {
+    filename: "library.js",
+    path: path.resolve(__dirname, "dist"),
+    //任何形式引入这个库都可以，require import
+    libraryTarget: "umd",
+    //配置此项可以使用script标签引入，并且会在全局中增加一个library变量
+    library: "library",
+  },
+  //表示：在打包的过程中遇到lodash这个库就忽略，同时用户引入lodash时必须使用lodash变量接收
+  externals: ['lodash']
+};
+```
+
+打包输出信息：
+
+```
+Hash: 25f9a6ed37eef46ecba8
+Version: webpack 4.44.1
+Time: 208ms
+Built at: 2020-08-19 12:15:14 ├F10: AM┤
+     Asset      Size  Chunks             Chunk Names
+library.js  1.64 KiB       0  [emitted]  main
+Entrypoint main = library.js
+```
+
+打包出的library有1kb。
+
+用户使用方式：
+
+```js
+//使用lodash变量接收
+import lodash from "lodash";
+import library from 'library'
+```
+
+> 注意：必须在引入library库之前引入lodash，因为我们的库代码中没有打包lodash。
+
+### 4.1.3发布到npm
+
+修改package.json
+
+```json
+{
+  "name": "library",
+  "version": "1.0.0",
+  "description": "",
+  //修改入口为我们打包生成的文件
+  "main": "./dist/library.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "lodash": "^4.17.20",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
+  }
+}
+
 ```
 
 
