@@ -3143,17 +3143,14 @@ module.exports = {
 };
 ```
 
-
-
-
-
 ## 3.4懒加载
 
 懒加载或者按需加载，是一种很好的优化网页或应用的方式。这种方式实际上是先把你的代码在一些逻辑断点处分离开，然后在一些代码块中完成某些操作后，立即引用或即将引用另外一些新的代码块。这样加快了应用的初始加载速度，减轻了它的总体体积，因为某些代码块可能永远不会被加载。
 
-实际上是使用import语法：
+实际上是使用`import`动态加载语法：
 
 ```js
+//main.js
 function getComponent() {
   //使用这种import语法实现懒加载
   return import(/* webpackChunkName: "lodash" */ "lodash").then(
@@ -3177,6 +3174,7 @@ document.addEventListener("click", () => {
 将上面代码改造成异步执行方式：
 
 ```JS
+//main.js
 function getComponent() {
   //使用这种import语法实现懒加载
   const { default: _ }=await import(/* webpackChunkName: "lodash" */ "lodash")
@@ -3191,8 +3189,6 @@ document.addEventListener("click", () => {
   });
 });
 ```
-
-
 
 此时打包生成的文件：
 
@@ -3212,9 +3208,9 @@ document.addEventListener("click", () => {
 
 ## 3.5css代码分割
 
-该插件将CSS提取到单独的文件中。它为每个包含CSS的JS文件创建一个CSS文件。它支持CSS和SourceMap的按需加载。
+`mini-css-extract-plugin`插件将CSS提取到单独的文件中。它为每个包含CSS的JS文件创建一个CSS文件。它支持CSS和SourceMap的按需加载。
 
-与extract-text-webpack-plugin相比：
+与`extract-text-webpack-plugin`相比：
 
 - 异步加载
 - 没有重复的编译（性能）
@@ -3263,6 +3259,8 @@ import './style.css'
 ```
 
 在webpack中配置插件：
+
+抽离公共代码`module.rules`数组中less、scss、css相关loader配置。
 
 ```js
 //webpack.common.js
@@ -3319,12 +3317,15 @@ module.exports = {
 
 ```
 
-配置生产环境
+配置生产环境：
+
+将抽离的相关loader放在生产环境下的`module.rules`数组中，同时使用css代码分割插件。
 
 ```js
 //webpack.prod.js
 const { merge } = require("webpack-merge");
 const commonConfig = require("./webpack.common.js");
+//1.引入css分割插件
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const prodConfig = {
   mode: "production",
@@ -3334,6 +3335,7 @@ const prodConfig = {
       // 打包css文件
       {
         test: /\.css$/,
+        //3.使用css分割插件:将style-loader替换为MiniCssExtractPlugin.loader
         use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],
       },
       //   打包scss文件
@@ -3363,6 +3365,7 @@ const prodConfig = {
       },
     ],
   },
+  //2.实例化css分割插件
   plugins: [new MiniCssExtractPlugin()],
 };
 
@@ -3371,6 +3374,8 @@ module.exports = merge(commonConfig, prodConfig);
 ```
 
 配置开发环境：
+
+将抽离的相关loader放在开发环境下的`module.rules`数组中。
 
 ```js
 //webpack.dev.js
@@ -3419,7 +3424,7 @@ module.exports = merge(commonConfig, devConfig);
 
 ```
 
-修改`package.json`文件：
+> 注意：修改`package.json`文件：如果配置sideEffects排除css，sideEffects就会检测到css未使用，从而不会打包，从而就不会进行代码分割。因为在生产环境下默认开启了`tree shaking`。
 
 ```json
 {
@@ -3475,7 +3480,7 @@ Entrypoint main = main.css main_1a7499.js main.css.map main_1a7499.js.map
 plugins: [
     new MiniCssExtractPlugin({
       filename: '[name].css',//如果直接被页面使用使用这个名称
-      chunkFilename: '[name].chunk.css',//如果间接被页面使用就走这个名称
+      chunkFilename: '[name].chunk.css',//如果间接被页面使用就走这个名称。比如通过事件调用
     }),
   ],
 ```
