@@ -4272,6 +4272,10 @@ import library from 'library'
 
 ## 4.2PWA的打包配置
 
+pwa技术：如果你访问一个网站，第一次访问成功了，突然服务器挂了，第二次重新访问这个网站的时候，他可以在本地有一份缓存，可以直接使用这份缓存，把之前访问的页面展示出来。这样即使服务器异常关闭了，在本地还是能够看到之前的那个页面。
+
+模拟后端服务器
+
 安装http-server
 
 ```shell
@@ -4289,13 +4293,177 @@ Package.json配置
 }
 ```
 
+执行：`npm run start`
+
+```js
+> webpack-vue-template@1.0.0 start /Users/xujian/笔记/webpack-vue-template
+> http-server dist
+
+Starting up http-server, serving dist
+Available on:
+  http://127.0.0.1:8080
+  http://192.168.3.2:8080
+Hit CTRL-C to stop the server
+```
+
+可以通过以上两个网址访问。
+
+但是如果关闭http-server，就不能访问页面了。
+
+
+
 安装插件:实现pwa
 
 ```shell
 npm install workbox-webpack-plugin --save-dev
 ```
 
-## 4.3使用webpackdevserver实现请求转发
+只有要上线的版本才做pwa处理。
+
+修改`webpack.prod.js`:
+
+```js
+//webpack.prod.js
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
+//1.导入workbox-webpack-plugin插件的GenerateSW函数
+const { GenerateSW } = require("workbox-webpack-plugin");
+const prodConfig = {
+  mode: "production",
+  devtool: "cheap-module-eval-source-map",
+  optimization: {
+    minimizer: [new OptimizeCSSAssetsPlugin({})],
+  },
+  //....省略loader配置
+  //
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: "[name].css",
+      chunkFilename: "[name].chunk.css",
+    }),
+    //2.实例化
+    //配置pwa
+    new GenerateSW({
+      clientsClaim: true,
+      skipWaiting: true,
+    }),
+  ],
+};
+
+module.exports = prodConfig;
+```
+
+此时打包：
+
+```js
+Hash: 50a087198b2c33c5ae8d
+Version: webpack 4.44.1
+Time: 1499ms
+                  Asset       Size  Chunks                         Chunk Names
+             index.html  326 bytes          [emitted]              
+         main_e0a185.js   2.75 KiB       0  [emitted] [immutable]  main
+      runtime_b15356.js   6.11 KiB       1  [emitted] [immutable]  runtime
+      service-worker.js   1.16 KiB          [emitted]              
+  service-worker.js.map   1.78 KiB          [emitted]              
+ vendors~main_37f034.js    216 KiB       2  [emitted] [immutable]  vendors~main
+    workbox-468c4d03.js   7.74 KiB          [emitted]              
+workbox-468c4d03.js.map   71.4 KiB          [emitted]              
+Entrypoint main = runtime_b15356.js vendors~main_37f034.js main_e0a185.js
+```
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200819220857796.png" alt="image-20200819220857796" style="zoom:50%;" />
+
+
+
+图中标注的两个文件就可以使这个项目实现pwa。
+
+在业务代码中应用：
+
+```js
+//main.js
+//如果浏览器支持serviceWorker，就进行注册。
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/service-worker.js")
+      .then((registration) => {
+        console.log("注册");
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+}
+```
+
+重新打包并启动服务器（`npm run start`），能够正常访问。然后关闭服务器，也能正常访问。
+
+## 4.3TypeScript的打包配置
+
+项目结构：
+
+```
+
+```
+
+`index.tsx`:
+
+```tsx
+class Greeter {
+  greeting: string;
+  constructor(message: string) {
+    this.greeting = message;
+  }
+  greet() {
+    return "Hello, " + this.greeting;
+  }
+}
+
+let greeter = new Greeter("world");
+
+let button = document.createElement("button");
+button.textContent = "Say Hello";
+button.onclick = function () {
+  alert(greeter.greet());
+};
+
+document.body.appendChild(button);
+```
+
+webpack配置：
+
+```js
+//webpack.config.js
+const path = require("path");
+module.exports = {
+  mode: "production",
+  entry: "./src/index.tsx",
+  module: {
+    rules: [{ test: /\.tsx$/, use: "ts-loader", exclude: /node_modules/ }],
+  },
+  output: {
+    filename: "[name].[contenthash:6].js",
+    path: path.resolve(__dirname, "dist"),
+  },
+};
+```
+
+此时还不能打包成功，必须配置typescript的配置文件。
+
+在根目录新建`tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "outDir": "./dist",
+    "target": "ES5",
+    "allowJs": true,
+    "module": "es6"
+  }
+}
+```
+
+## 4.4使用webpackdevserver实现请求转发
 
 发送请求：
 
@@ -4306,10 +4474,6 @@ axios.get('/api/header.json').then((res)=>{
 })
 ```
 
-
-
-
-
 请求转发配置：
 
 ```js
@@ -4317,10 +4481,13 @@ axios.get('/api/header.json').then((res)=>{
 module.exports={
   devserver:{
     proxy:{
-      //当访问/api路径时，就会在target配置的路径下去访问（http://192.168.3.208/api）。
+      //当访问以/api开头的路径时，就会在target配置的路径下去访问（http://192.168.3.208/api）。
       '/api':{
         target:'http://192.168.3.208',//转发的地址
+        //如果是访问https的地址，需要配置此项
+        secure:false,
         pathRewrite:{
+          //如果不需要转发时，注释这条语句即可
           'header.json':'demo.json'//当访问header.json文件时，转发去访问demo.json文件
         }
       }
@@ -4329,11 +4496,39 @@ module.exports={
 }
 ```
 
+其他参数：
+
+```js
+devServer: {
+  //如果
+    index: '', 
+    host: '...',
+    contentBase: '...',
+    proxy: {
+      
+      context: () => true,
+      target: 'http://localhost:1234'
+    }
+  }
+```
+
+解决单页面应用路由问题：
+
+当使用 HTML5 History API 时，任意的 `404` 响应都可能需要被替代为 `index.html`。通过传入以下启用：
+
+```js
+module.exports = {
+  //...
+  devServer: {
+    //
+    historyApiFallback: true
+  }
+};
+```
 
 
-## 4.4eslint在webpack中的配置
 
-
+## 4.5eslint在webpack中的配置
 
 项目中安装：
 
