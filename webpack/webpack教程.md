@@ -4565,6 +4565,7 @@ module.exports={
     "规则名字":0//0代表不遵守这个规则
   },
   globals:{
+    //document设置为false表示后来不能够被覆盖
     document:false
   }
 }
@@ -4607,27 +4608,21 @@ module.exports={
 
 ## 4.5webpack性能优化
 
-### 4.5.1使用最新的Node,Npm等工具
+> 1. 使用最新的`Node`,`Npm`等工具
 
+升级版本会提升打包的速度。
 
-
-### 4.5.2在尽可能少的模块上应用Loader
+> 2.在尽可能少的模块上应用Loader
 
 减少loader 的使用。
 
-比如打包js文件时，推荐使用excluded排除不需要进行打包的模块。
+比如打包js文件时，推荐使用excluded排除不需要进行打包的模块。使用include配置包含的文件。
 
-```js
+> 3. plugin尽可能精简并确保可靠
 
-```
+比如在开发阶段不需要对抽离css代码进行压缩，只需要线上时压缩。使用官方推荐的插件，因为性能比较高。
 
-
-
-### 4.5.3plugin尽可能精简并确保可靠
-
-
-
-### 4.5.4resolve参数合理配置
+> 4. resolve参数合理配置
 
 使用import引入逻辑文件时省略后缀的配置：
 
@@ -4635,6 +4630,7 @@ module.exports={
 //webpack.config.js
 module.exports={
   resolve:{
+    //表示：当我们引入其他模块的时候，会先查找以.vue结尾的，如果不存在，则查找.js文件，这样直到查到为止。如果最后没找到，就报错。
     extensions:['.vue','.js','.jsx']//从前往后执行
   }
 }
@@ -4646,7 +4642,7 @@ module.exports={
 //index.js
 //此时可以省略后缀名
 import index from './index'
-//此时会先去文件找当前文件夹下是否有index.vue文件，没有就继续查找是否有index.js文件，如果没有就查找index,jsx文件。如果所有的都没找的，则报错。
+//此时会先去文件找当前文件夹下是否有index.vue文件，没有就继续查找是否有index.js文件，如果没有就查找index.jsx文件。如果所有的都没找到，则报错。
 ```
 
 注：`.jpg`和`.css`等非逻辑文件，不建议配置此项。因为会对打包性能造成一定影响。
@@ -4671,7 +4667,7 @@ import child from './child/'
 //当配置了上面的，则依次会去找child文件夹下的index.vue,index.js.index.jsx,child.vue,child.js.child.jsx
 ```
 
-注：也会对性能造成影响
+注：也会对性能造成影响。因为会去调用node去查找文件。
 
 配置路径别名：
 
@@ -4679,7 +4675,9 @@ import child from './child/'
 //webpack.config.js
 module.exports={
   resolve:{
+    //配置别名
     alias:{
+      //当看到@时，就会去../src下面查找
       @:path.resolve(__dirname,'../src')
     }
   }
@@ -4693,7 +4691,7 @@ module.exports={
 import home from '@/view/home'
 ```
 
-### 4.5.5使用DllPlugin提高打包速度
+> 5. 使用DllPlugin提高打包速度
 
 在项目中使用的第三方模块（比如`vue`,`react`,`lodash`等），实际上是不会变的。因此我们只需要在第一次打包时对依赖的第三方模块进行分析并打包成库文件，最后借助插件添加到生成的html文件中。
 
@@ -4715,7 +4713,7 @@ module.exports={
   output:{
     filename:'[name].dll.js',//打包后的名字为vendors.dll.js
     path:path.resolve(__dirname,'../dll'),//打包后的文件存放路径
-    library:'[name]'//将打包好的文件通过全局变量暴露出来，这个全局变量叫vendors
+    library:'[name]'//将打包好的文件通过全局变量暴露出来，这个全局变量叫[name],也就是vendors
   }
 }
 ```
@@ -4758,7 +4756,7 @@ module.exports={
 }
 ```
 
-此时在控制台输入`vendors`,控制台就会打印出内容。
+此时在控制台输入`vendors`,控制台就会打印出内容。并且html源代码中也引入了第三方模块。
 
 但是这个打包生成的第三方模块，在webpack打包的过程中并没有使用它。目前还只是在html文件中引入了。
 
@@ -4789,7 +4787,7 @@ module.exports={
 }
 ```
 
-此时执行打包命令，在dll文件夹下就会生成一个映射文件。此时还需要在打包的`webpack.common.js`配置中进行配置：
+此时执行打包命令（`npm run build:dll`），在dll文件夹下就会生成一个映射文件。此时还需要在打包的`webpack.common.js`配置中进行配置：
 
 ```js
 //webpack.common.js
@@ -4914,21 +4912,25 @@ module.exports={
 
 此时在webpack.dll.js配置中拆分模块并且打包后，webpack.common.js就会自动的去分析并向全局暴露。
 
-### 4.5.6控制包文件的大小
+> 6. 控制包文件的大小
 
 使用treeshiking
 
-### 4.5.7thread-loader,parallel-webpack,happypack多进程打包
-
-### 4.5.8合理使用sourcemap
-
-### 4.5.9结合stats分析打包结果
-
-### 4.5.10开发环境内存编译
-
-### 4.5.11开发环境无用插件剔除
+> 7. thread-loader,parallel-webpack,happypack多进程打包
 
 
+
+> 8. 合理使用sourcemap
+
+越详细越慢。
+
+> 9. 结合stats分析打包结果
+
+> 10. 开发环境内存编译
+
+> 11. 开发环境无用插件剔除
+
+比如开发时不需要设置mode为production
 
 ## 4.6多页面打包配置
 
@@ -4967,6 +4969,7 @@ const plugins=[
 
 module.exports={
   //1.配置多个入口文件
+  //一个页面引入main.js,另一个页面引入list.js
   entry:{
     main:'./src/index.js',
     list:'./src/list.js'
