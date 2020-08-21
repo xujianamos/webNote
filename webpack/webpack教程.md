@@ -96,11 +96,12 @@ $ npx webpack index.js(入口文件)
     "keywords": [],
     "author": "",//作者
     "license": "ISC",//开源
-    "devDependencies": {
+    "devDependencies": {//开发依赖
       "webpack": "^4.0.1",
       "webpack-cli": "^2.0.9"
     },
-    "dependencies": {}
+    "dependencies": {//生产依赖
+    }
   }
 ```
 
@@ -108,7 +109,7 @@ $ npx webpack index.js(入口文件)
 
 使用 `npx webpack index.js`时将使用**webpack的默认配置**进行打包`index.js`文件。
 
-### 1.2.1配置打包文件
+### 1.2.1webpack基本配置
 
 在**项目根目录**下新建`webpack.config.js`用于编写webpack的配置。
 
@@ -133,11 +134,11 @@ module.exports = {
 
 ==注意==：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。也就是执行`npx webpack`打包命令，则webpack的默认配置文件就必须是`webpack.config.js`。否则就会打包错误。
 
-> 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示webpack此时以webpackconfig.js为配置文件进行打包。
+> 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示`webpack`此时以`webpackconfig.js`为配置文件进行打包。
 
 ### 1.2.2配置打包命令
 
-在`package.json`文件的`scripts`脚本下添加打包命令。避免每次输`npx webpack`命令。
+在`package.json`文件的`scripts`脚本下添加打包命令。避免每次在控制台运行`npx webpack`命令。
 
 ```js
 //package.json
@@ -157,7 +158,7 @@ module.exports = {
 
 如果没有安装`webpack-cli`这个文件，就无法在命令行下执行全局安装的`webpack`命令和局部安装的`npx webpack`命令
 
-作用：使我们能在命令行使用`webpack`命令。
+作用：使我们能在命令行使用`webpack`相关命令。
 
 ## 1.4打包输出信息
 
@@ -171,9 +172,10 @@ Time: 47ms	//打包耗时
 * Chunks：打包文件对应的id值
 * Chunk Names：打包文件对应的文件。此时这里是main，是因为我们入口文件entry:{main:'./src/main.js'}中对应的main
 */
-Built at: 2020-08-12 10:03:52 ├F10: PM┤
+Built at: 2020-08-12 10:03:52 ├F10: PM┤//打包时间
     Asset      Size  Chunks             Chunk Names
 bundle.js  3.79 KiB    main  [emitted]  main
+
 Entrypoint main = bundle.js	//入口文件
 [./src/main.js] 20 bytes {main} [built]//需要打包的文件列表
 ```
@@ -194,7 +196,7 @@ webpack-vue-template
 
 ## 2.1  entry
 
-指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的==开始==。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
+指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的**开始**。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
 
 可以通过在 webpack 配置中配置 `entry` 属性，来指定一个入口起点（或多个入口起点）。
 
@@ -213,7 +215,7 @@ module.exports = {
 
 ### 2.1.1 单个入口(简写)语法
 
-属性值为字符串形式。
+属性值为**字符串**形式。
 
 ```js
 //webpack.config.js
@@ -241,7 +243,6 @@ module.exports={
 Hash: 12a7fbc8a81fc16aecea
 Version: webpack 4.44.1
 Time: 372ms
-Built at: 2020-08-13 11:27:09
   Asset     Size  Chunks             Chunk Names
 main.js  554 KiB    main  [emitted]  main
 Entrypoint main = main.js
@@ -256,7 +257,7 @@ Entrypoint main = main.js
 
 ### 2.1.2数组语法
 
-属性值为数组形式。
+属性值为**数组**形式。
 
 ```js
 //webpack.config.js
@@ -303,7 +304,7 @@ Entrypoint main = main.js
 
 ### 2.1.3多个入口（对象语法）
 
-属性值为对象形式。这个是**最完整的entry配置**，其他形式只是它的简化形式而已。
+属性值为**对象**形式。这个是**最完整的entry配置**，其他形式只是它的简化形式而已。
 
 ```js
 //webpack.config.js
@@ -313,7 +314,7 @@ module.exports={
     main: './src/main.js'
   	},
   output:{
-    //[name]占位符，根据entry的属性决定
+    //[name]占位符，根据entry的属性名决定
   	filename:'[name].js',
   	path:path.resolve(__dirname,'dist')
 	}
@@ -390,18 +391,18 @@ module.exports = config;
 
 ## 2.2  output
 
-**output** 属性告诉 webpack 在哪里输出它所创建的 ==bundles==，以及如何命名这些文件，默认值为 `./dist`。
+**output** 属性告诉 webpack 在哪里输出它所创建的 `bundles`，以及如何命名这些文件，默认值为 `./dist`。
 
 基本上，整个应用程序结构，都会被编译到你指定的输出路径的文件夹中。你可以通过在配置中指定一个 `output` 字段，来配置这些处理过程。
 
-> 注意，即使可以存在多个`入口`起点，但只指定一个`输出`配置。
+> 注意，即使可以存在多个`入口`起点，但只能指定一个`输出`配置。
 
 ### 2.2.1基本用法
 
 在 webpack 中配置 `output` 属性的最低要求是：将它的值设置为一个对象，包括以下两点：
 
-- `filename` 用于输出文件的文件名。
-- 目标输出目录 `path` 的绝对路径。
+- `filename`： 用于输出文件的文件名。
+- `path`：目标输出目录 `path` 的绝对路径。
 
 对于**单个入口**起点，`filename` 会是一个静态名称。
 
@@ -475,8 +476,8 @@ Version: webpack 4.44.1
 Time: 375ms
 Built at: 2020-08-13 13:53:48
           Asset      Size  Chunks             Chunk Names
-index.bundle.js  3.79 KiB   index  [emitted]  index
- main.bundle.js   554 KiB    main  [emitted]  main
+`index.bundle.js`  3.79 KiB   index  [emitted]  index
+ `main.bundle.js`   554 KiB    main  [emitted]  main
 Entrypoint main = main.bundle.js
 Entrypoint index = index.bundle.js
 [./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
@@ -506,14 +507,14 @@ filename: "[name].[hash:6].bundle.js"
 
 输出信息：
 
-```
+```bash
 Hash: e8f77d56163515053f38
 Version: webpack 4.44.1
 Time: 666ms
 Built at: 2020-08-13 13:59:54
                                Asset      Size  Chunks                         Chunk Names
-index.e8f77d56163515053f38.bundle.js  3.79 KiB   index  [emitted] [immutable]  index
- main.e8f77d56163515053f38.bundle.js   554 KiB    main  [emitted] [immutable]  main
+`index.e8f77d56163515053f38.bundle.js`  3.79 KiB   index  [emitted] [immutable]  index
+ `main.e8f77d56163515053f38.bundle.js`   554 KiB    main  [emitted] [immutable]  main
 Entrypoint main = main.e8f77d56163515053f38.bundle.js
 Entrypoint index = index.e8f77d56163515053f38.bundle.js
 [./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
@@ -532,14 +533,14 @@ filename: "[chunkhash].bundle.js"
 
 输出信息：
 
-```
+```bash
 Hash: e8f77d56163515053f38
 Version: webpack 4.44.1
 Time: 382ms
 Built at: 2020-08-13 13:57:05
                          Asset      Size  Chunks                         Chunk Names
-089a5654d56f6f28f211.bundle.js  3.79 KiB   index  [emitted] [immutable]  index
-795b0c772923ff2f92de.bundle.js   554 KiB    main  [emitted] [immutable]  main
+`089a5654d56f6f28f211.bundle.js`  3.79 KiB   index  [emitted] [immutable]  index
+`795b0c772923ff2f92de.bundle.js`   554 KiB    main  [emitted] [immutable]  main
 Entrypoint main = 795b0c772923ff2f92de.bundle.js
 Entrypoint index = 089a5654d56f6f28f211.bundle.js
 [./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
@@ -602,15 +603,11 @@ module.exports = config;
 output:{
   	filename:'[name].js',
     chunkFilename:'[name].chunk.js'
- 	 path:path.resolve(__dirname,'dist')
+ 	  path:path.resolve(__dirname,'dist')
 	}
 ```
 
-
-
 ## 2.3  loader
-
-
 
 webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，css等文件时，就需要使用loader告诉webpack怎么去打包。
 
@@ -622,8 +619,8 @@ webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，cs
 
 在 webpack 的配置中 **loader** 有两个目标：
 
-1. `test` 属性，用于标识出应该被对应的 loader 进行转换的某个或某些文件。
-2. `use` 属性，表示进行转换时，应该使用哪个 loader。
+1. `test` 属性：用于标识出应该被对应的 loader 进行转换的某个或某些文件。
+2. `use` 属性：表示进行转换时，应该使用哪个 loader。
 
 ```js
 //webpack.config.js
@@ -644,8 +641,6 @@ module.exports = config;
 > “嘿，webpack 编译器，当你碰到「在 `require()`/`import` 语句中被解析为 '.txt' 的路径」时，在你对它打包之前，先**使用** `raw-loader` 转换一下。”
 
 - test值类型
-
-
 
 
 
@@ -728,12 +723,11 @@ npm install --save-dev file-loader
 {
          loader:'file-loader',
          options:{
-           //placeholder 占位符
            //配置打包后文件的名字
            name:'[name]_[hash].[ext]',
            //配置打包后存放位置
            //表示打包后的图片文件存放在images/文件夹下。
-             //注意：此时images文件夹在打包输出的根目录下
+             //注意：此时images文件夹在打包输出的根目录下。也就是以output配置的path为根路径。
            outputPath:'images/'
          }
        }
@@ -768,7 +762,6 @@ npm install --save-dev url-loader
 {
          loader:'url-loader',
          options:{
-           //placeholder 占位符
            //配置打包后文件的名字
            name:'[name]_[hash].[ext]',
            //配置打包后存放位置
