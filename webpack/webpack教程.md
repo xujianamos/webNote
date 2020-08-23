@@ -239,7 +239,7 @@ module.exports={
 
 打包输出信息：
 
-```js
+```bash
 Hash: 12a7fbc8a81fc16aecea
 Version: webpack 4.44.1
 Time: 372ms
@@ -529,6 +529,7 @@ Entrypoint index = index.e8f77d56163515053f38.bundle.js
 
 ```js
 filename: "[chunkhash].bundle.js"
+filename: "[chunkhash:6].bundle.js"
 ```
 
 输出信息：
@@ -674,7 +675,7 @@ npm install --save-dev file-loader
  module:{
     rules:[
       {
-       test:/\.jpg$/,
+       test:/\(.jpg|png|gif)$/,
        use:{
          loader:'file-loader'
        }
@@ -5155,6 +5156,7 @@ module.exports={
       //使用编写的loader
       {
         test:/\.js/,
+        //在本项目编写的loader，则需要使用绝对路径
         use:[path.resolve(__dirname,'./loaders/replaceLoaders.js')]
       }
     ]
@@ -5252,7 +5254,7 @@ module.exports=function(source){
 
 ### 5.1.4使用多个loader
 
-
+只需要在rules中配置多个loader。
 
 
 
