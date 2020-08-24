@@ -55,7 +55,7 @@ data.a = 3
 vm.a // => 3
 ```
 
-当这些数据改变时，视图会进行重渲染。值得注意的是只有当实例被创建时就已经存在于 `data` 中的 property 才是**响应式**的。也就是说如果你添加一个新的 property，比如：
+当这些数据改变时，视图会进行重渲染。值得注意的是只有当实例被创建时就已经存在于 `data` 中的 `property` 才是**响应式**的。也就是说如果你添加一个新的 `property`，比如：
 
 ```js
 vm.b = 'hi'
@@ -171,7 +171,7 @@ div>{{msg}}</div>
 
 双大括号会将数据解释为普通文本，而非 HTML 代码。为了输出真正的 HTML，你需要使用 `v-html` 指令。
 
-存在安全问题
+存在安全问题。
 
 ```html
 <h4 v-html="msg">=============</h4>
@@ -185,7 +185,7 @@ div>{{msg}}</div>
 
 ### 2.6v-pre
 
-v-pre用于==跳过==这个元素和它子元素的==编译过程==，用于显示原本的Mustache语法。
+`v-pre`用于==跳过==这个元素和它子元素的==编译过程==，用于显示原本的Mustache语法。
 
 ### 2.7v-bind
 
@@ -329,11 +329,11 @@ methods: {
 
 #### 2.9.2v-model结合radio使用
 
-绑定的是`value`值
+绑定的是`value`值。
 
 说明：
 
-1. 表单类型`radio`元素只有在`name`相同时，才会产生互斥。但是使用`v-model`指令也会实现互斥
+1. 表单类型`radio`元素只有在`name`相同时，才会产生互斥。但是使用`v-model`指令也会实现互斥。
 
 ```html
 <div id="app">
@@ -515,7 +515,7 @@ const app = new Vue({
 
 可以用方括号括起来的 JavaScript 表达式作为一个指令的参数：
 
-```js
+```html
 <!--
 注意，参数表达式的写法存在一些约束，如之后的“对动态参数表达式的约束”章节所述。
 -->
@@ -549,7 +549,7 @@ const app = new Vue({
 
 在 DOM 中使用模板时 (直接在一个 HTML 文件里撰写模板)，还需要避免使用大写字符来命名键名，因为浏览器会把 attribute 名全部强制转为小写：
 
-```js
+```html
 <!--
 在 DOM 中使用模板时这段代码会被转换为 `v-bind:[someattr]`。
 除非在实例中有一个名为“someattr”的 property，否则代码不会工作。
@@ -561,9 +561,9 @@ const app = new Vue({
 
 对于任何复杂逻辑，你都应当使用**计算属性**。
 
-1. 在 computed 中，可以定义一些属性，这些属性叫做【计算属性】， 计算属性的本质就是一个方法，只不过，我们在使用这些计算属性的时候，是把它们的名称，直接当作属性来使用的；并不会把计算属性当作方法去调用；
+1. 在 `computed` 中，可以定义一些属性，这些属性叫做【计算属性】， 计算属性的本质就是一个方法，只不过，我们在使用这些计算属性的时候，是把它们的名称，直接当作属性来使用的；并不会把计算属性当作方法去调用；
 2. 注意1： 计算属性在引用的时候，一定不要加 `()` 去调用，直接把它当作普通属性去使用就好了；
-3. 注意2： 只要计算属性，这个 function 内部，所用到的任何 data 中的数据发生了变化，就会立即重新计算这个计算属性的值
+3. 注意2： 只要计算属性，这个 function 内部，所用到的任何 data 中的数据发生了变化，就会立即重新计算这个计算属性的值；
 4. 注意3： 计算属性的求值结果，会被缓存起来，方便下次直接使用； 如果计算属性方法中，所使用的任何数据，都没有发生过变化，则不会重新对计算属性求值；
 
 ### 3.1基础用法
@@ -749,7 +749,7 @@ var watchExampleVM = new Vue({
     answer: 'I cannot give you an answer until you ask a question!'
   },
   watch: {
-    // 如果 `question` 发生改变，这个函数就会运行
+    // 如果 question 发生改变，这个函数就会运行
     question: function (newQuestion, oldQuestion) {
       this.answer = 'Waiting for you to stop typing...'
       this.debouncedGetAnswer()
@@ -804,8 +804,8 @@ var watchExampleVM = new Vue({
 
 ```html
 <h2 v-bind:class="{key1: value1, key2: value2}">{{message}}</h2>
-# 由于类名是对象的键，因此可以省略引号
-# 键值可以写变量（变量值也需要是Boolean值），也可以直接写Boolean值
+<!--由于类名是对象的键，因此可以省略引号-->
+<!--键值可以写变量（变量值也需要是Boolean值），也可以直接写Boolean值-->
 <h2 v-bind:class="{类名1: true, 类名2: boolean}">{{message}}</h2>
 ```
 
@@ -886,37 +886,37 @@ computed: {
 
 用法介绍：
 
-```bash
-#用法一：直接通过[]绑定一个类
-	#此时active是类名字符串
+```html
+<!--用法一：直接通过[]绑定一个类-->
+	<!--此时active是类名字符串-->
 <h2 :class="['active']">Hello World</h2>
-	#此时 active line都是在data中定义的变量，变量的值为类名字符串
+	<!--此时 active line都是在data中定义的变量，变量的值为类名字符串-->
 <h2 :class="[active, line]">{{message}}</h2>
 	data{
 		active: 'aaaaaa',
     line: 'bbbbbbb'
 	}
-#用法二：也可以传入多个值,绑定多个类
-<h2 :class=“[‘active’, 'line']">Hello World</h2>
+<!--用法二：也可以传入多个值,绑定多个类-->
+<h2 :class="[‘active’, 'line']">Hello World</h2>
+                               
+<!--用法三：和普通的类同时存在，并不冲突-->
+<!--注：会有title/active/line三个类-->
+<h2 class="title" :class="[‘active’, 'line']">Hello World</h2>
 
-#用法三：和普通的类同时存在，并不冲突
-#注：会有title/active/line三个类
-<h2 class="title" :class=“[‘active’, 'line']">Hello World</h2>
-
-#用法四：如果过于复杂，可以放在一个methods或者computed中-->
-#注：classes是一个计算属性
+<!--用法四：如果过于复杂，可以放在一个methods或者computed中-->
+<!--注：classes是一个计算属性-->
 <h2 class="title" :class="classes">Hello World</h2>
-# getClasses()是一个方法，必须加括号进行调用
+<!--getClasses()是一个方法，必须加括号进行调用-->
 <h2 class="title" :class="getClasses()">{{message}}</h2>
 	methods: {
           getClasses: function() {
-          #返回的是数组
+          //返回的是数组
             return [this.active, this.line]
           }
         }
-#用法五：在数组中使用三元表达式，进行按需添加类
+<!--用法五：在数组中使用三元表达式，进行按需添加类-->
 <h1 :class="['thin', 'italic', flag?'active':'']">这是一个很大很大的H1</h1>
-#用法六：在数组中使用 对象来代替三元表达式，提高代码的可读性
+<!--用法六：在数组中使用 对象来代替三元表达式，提高代码的可读性-->
 <h1 :class="['thin', 'italic', {'active':flag} ]">这是一个很大很大的H1！</h1>
 ```
 
@@ -955,7 +955,7 @@ data: {
 
 #### 4.1.3用在组件上
 
-当在一个自定义组件上使用 `class` property 时，这些 class 将被添加到该组件的根元素上面。这个元素上已经存在的 class 不会被覆盖。
+当在一个自定义组件上使用 `class` property 时，==这些 class 将被添加到该组件的**根元素**上面==。这个元素上已经存在的 class 不会被覆盖。
 
 例如，如果你声明了这个组件：
 
@@ -1185,7 +1185,7 @@ Vue 会尽可能高效地渲染元素，通常会复用已有元素而不是从�
 
 注意：`<label>` 元素仍然会被高效地复用，因为它们没有添加 `key` attribute。
 
-如果需要复用元素，则不加`key`值，如果不需要复用元素，则添加唯一的`key`值。
+> 如果需要复用元素，则不加`key`值，如果不需要复用元素，则添加唯一的`key`值。
 
 ### 5.2`v-show`
 
@@ -1341,11 +1341,11 @@ var vm = new Vue({
 
 ### 6.2循环数组对象
 
-```
+```html
 <p v-for="(user, i) in list">Id：{{ user.id }} --- 名字：{{ user.name }} --- 索引：{{i}}</p>
 ```
 
-```
+```js
 var vm = new Vue({
       el: '#app',
       data: {
@@ -1432,7 +1432,7 @@ Vue 将被侦听的数组的变更方法进行了包裹，所以它们也将会�
 
 #### 6.6.2替换数组
 
-变更方法，顾名思义，会变更调用了这些方法的原始数组。相比之下，也有非变更方法，例如 `filter()`、`concat()` 和 `slice()`。它们不会变更原始数组，而**总是返回一个新数组**。当使用非变更方法时，可以用新数组替换旧数组：
+变更方法，顾名思义，会变更调用了这些方法的原始数组。相比之下，也有非变更方法，例如 `filter()`、`concat()` 和 `slice()`。它们不会变更原始数组，而**总是返回一个新数组**。==当使用非变更方法时，可以用新数组替换旧数组==：
 
 ```js
 example1.items = example1.items.filter(function (item) {
@@ -1824,15 +1824,13 @@ filters: { // 定义私有过滤器,过滤器有两个条件:【过滤器名称 
       }
 ```
 
-
-
 ## 9.自定义指令
 
 `Vue`中所有的指令，在调用的时候，都以 `v- `开头
 
 语法：
 
-```vue
+```js
 //定义全局的指令
 Vue.directive()
 ```
@@ -1907,8 +1905,6 @@ Vue.directive('color', {
         }
       }
 ```
-
-
 
 ## 10.生命周期
 

@@ -2583,7 +2583,7 @@ module.exports = {
 
 此时使用`npm run dev`即可进行项目开发。
 
-### 3.2.2生成环境配置
+### 3.2.2生产环境配置
 
 在项目根目录下新建`webpack.prod.js`:
 
@@ -2594,7 +2594,7 @@ const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const webpack = require("webpack");
 module.exports = {
   mode: "development",
-  devtool: "cheap-module-eval-source-map",
+  devtool: "cheap-module-source-map",
   entry: {
     main: "./src/main.js",
   },
@@ -2813,7 +2813,7 @@ module.exports = merge(commonConfig, devConfig);
 ```js
 module.exports = {
   mode: "production",
-  devtool: "cheap-module-eval-source-map",
+  devtool: "cheap-module-source-map",
 };
 ```
 
