@@ -1,20 +1,20 @@
 ## **1.那你能讲一讲MVVM吗？**
 
-MVVM是`Model-View-ViewModel`缩写，也就是把`MVC`中的`Controller`演变成`ViewModel`。Model层代表数据模型，View代表UI组件，ViewModel是View和Model层的桥梁，数据会绑定到viewModel层并自动将数据渲染到页面中，视图变化的时候会通知viewModel层更新数据。
+MVVM是`Model-View-ViewModel`缩写，也就是把`MVC`中的`Controller`演变成`ViewModel`。`Model`层代表数据模型，`View`代表UI组件，`ViewModel`是View和Model层的桥梁，数据会绑定到viewModel层并自动将数据渲染到页面中，视图变化的时候会通知viewModel层更新数据。
 
 ## **2.简单说一下Vue2.x响应式数据原理**
 
-Vue在初始化数据时，会使用`Object.defineProperty`重新定义data中的所有属性，当页面使用对应属性时，首先会进行依赖收集(收集当前组件的`watcher`)如果属性发生变化会通知相关依赖进行更新操作(`发布订阅`)。
+Vue在初始化数据时，会使用`Object.defineProperty`重新定义data中的所有属性，当页面使用对应属性时，首先会进行依赖收集(收集当前组件的`watcher`)，如果属性发生变化会通知相关依赖进行更新操作(`发布订阅`)。
 
 ## **3.那你知道Vue3.x响应式数据原理吗？**
 
-Vue3.x改用`Proxy`替代Object.defineProperty。因为Proxy可以直接监听对象和数组的变化，并且有多达13种拦截方法。并且作为新标准将受到浏览器厂商重点持续的性能优化。
+Vue3.x改用`Proxy`替代`Object.defineProperty`。因为`Proxy`可以直接监听对象和数组的变化，并且有多达13种拦截方法。并且作为新标准将受到浏览器厂商重点持续的性能优化。
 
 > Proxy只会代理对象的第一层，那么Vue3又是怎样处理这个问题的呢？
 
-判断当前Reflect.get的返回值是否为Object，如果是则再通过`reactive`方法做代理， 这样就实现了深度观测。
+判断当前`Reflect.get`的返回值是否为Object，如果是则再通过`reactive`方法做代理， 这样就实现了深度观测。
 
-> 监测数组的时候可能触发多次get/set，那么如何防止触发多次呢？
+> 监测数组的时候可能触发多次`get/set`，那么如何防止触发多次呢？
 
 我们可以判断key是否为当前被代理对象target自身属性，也可以判断旧值与新值是否相等，只有满足以上两个条件之一时，才有可能执行trigger。
 
@@ -31,7 +31,7 @@ Vue3.x改用`Proxy`替代Object.defineProperty。因为Proxy可以直接监听�
 - setImmediate
 - 如果以上都不行则采用setTimeout
 
-定义了一个异步方法，多次调用nextTick会将方法存入队列中，通过这个异步方法清空当前队列。
+定义了一个异步方法，多次调用`nextTick`会将方法存入队列中，通过这个异步方法清空当前队列。
 
 ## 6.说一下Vue的生命周期
 
