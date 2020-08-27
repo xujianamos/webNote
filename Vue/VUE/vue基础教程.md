@@ -2006,7 +2006,7 @@ new Vue({ el: '#components-demo' })
 </div>
 ```
 
-注意当点击按钮时，每个组件都会各自独立维护它的 `count`。因为你每用一次组件，就会有一个它的新**实例**被创建。
+注意当点击按钮时，每个组件都会各自独立维护它的 `count`。因为你每用一次组件，就会有一个它的**新实例**被创建。
 
 > `data`必须是一个函数
 
@@ -2028,7 +2028,7 @@ data: function () {
 }
 ```
 
-如果 Vue 没有这条规则，点击一个按钮就可能会像如下代码一样影响到*其它所有实例*：
+如果 Vue 没有这条规则，点击一个按钮就可能会影响到其它所有实例。
 
 ### 11.3组件的组织
 
@@ -2050,7 +2050,7 @@ Vue.component('my-component-name', {
 
 早些时候，我们提到了创建一个博文组件的事情。问题是如果你不能向这个组件传递某一篇博文的标题或内容之类的我们想展示的数据的话，它是没有办法使用的。这也正是 prop 的由来。
 
-Prop 是你可以在组件上注册的一些自定义 attribute。当一个值传递给一个 prop attribute 的时候，它就变成了那个组件实例的一个 property。为了给博文组件传递一个标题，我们可以用一个 `props` 选项将其包含在该组件可接受的 prop 列表中：
+`Prop `是你可以在组件上注册的一些自定义 `attribute`。**当一个值传递给一个` prop attribute` 的时候，它就变成了那个组件实例的一个 `property`**。为了给博文组件传递一个标题，我们可以用一个 `props` 选项将其包含在该组件可接受的 prop 列表中：
 
 ```js
 Vue.component('blog-post', {
@@ -2059,11 +2059,12 @@ Vue.component('blog-post', {
 })
 ```
 
-一个组件默认可以拥有任意数量的 prop，任何值都可以传递给任何 prop。在上述模板中，你会发现我们能够在组件实例中访问这个值，就像访问 `data` 中的值一样。
+**一个组件默认可以拥有任意数量的 prop，任何值都可以传递给任何 prop**。在上述模板中，你会发现我们能够在组件实例中访问这个值，就像访问 `data` 中的值一样。
 
 一个 prop 被注册之后，你就可以像这样把数据作为一个自定义 attribute 传递进来：
 
 ```html
+<!--此时传递的title为字符串类型-->
 <blog-post title="My journey with Vue"></blog-post>
 <blog-post title="Blogging with Vue"></blog-post>
 <blog-post title="Why Vue is so fun"></blog-post>
@@ -2120,7 +2121,7 @@ new Vue({
 </div>
 ```
 
-看起来当组件变得越来越复杂的时候，我们的博文不只需要标题和内容，还需要发布日期、评论等等。为每个相关的信息定义一个 prop 会变得很麻烦：
+看起来当组件变得越来越复杂的时候，我们的博文不只需要标题和内容，还需要发布日期、评论等等。**为每个相关的信息定义一个 `prop `会变得很麻烦**：
 
 ```html
 <blog-post
@@ -2141,6 +2142,7 @@ new Vue({
   v-bind:key="post.id"
   v-bind:post="post"
 ></blog-post>
+
 Vue.component('blog-post', {
   props: ['post'],
   template: `
@@ -2218,7 +2220,7 @@ Vue.component('blog-post', {
 ></blog-post>
 ```
 
-同时子组件可以通过调用内建的 [**`$emit`** 方法](https://cn.vuejs.org/v2/api/#vm-emit)并传入事件名称来触发一个事件：
+同时子组件可以通过调用内建的 **`$emit`** 方法并传入事件名称来触发一个事件：
 
 ```html
 <button v-on:click="$emit('enlarge-text')">
@@ -2356,7 +2358,7 @@ Vue.component('alert-box', {
 
 在上述示例中，`currentTabComponent` 可以包括
 
-- 已注册组件的名字，或
+- 已注册组件的名字
 - 一个组件的选项对象
 
 ## 12.组件高级
@@ -2373,25 +2375,27 @@ Vue.component('my-component-name', { /* ... */ })
 
 该组件名就是 `Vue.component` 的第一个参数。
 
-你给予组件的名字可能依赖于你打算拿它来做什么。当直接在 DOM 中使用一个组件 (而不是在字符串模板或[单文件组件](https://cn.vuejs.org/v2/guide/single-file-components.html)) 的时候，我们强烈推荐遵循 [W3C 规范](https://html.spec.whatwg.org/multipage/custom-elements.html#valid-custom-element-name)中的自定义组件名 (字母全小写且必须包含一个连字符)。这会帮助你避免和当前以及未来的 HTML 元素相冲突。
+你给予组件的名字可能依赖于你打算拿它来做什么。**当直接在 DOM 中使用一个组件 (而不是在字符串模板或单文件组件) 的时候，我们强烈推荐遵循 W3C 规范中的自定义组件名 (字母全小写且必须包含一个连字符)**。这会帮助你避免和当前以及未来的 HTML 元素相冲突。
 
 定义组件名的方式有两种：
 
-> 使用 kebab-case
+> 1. 使用短横线分隔命名
 
 ```js
 Vue.component('my-component-name', { /* ... */ })
 ```
 
-当使用 kebab-case (短横线分隔命名) 定义一个组件时，你也必须在引用这个自定义元素时使用 kebab-case，例如 `<my-component-name>`。
+当使用 短横线分隔命名定义一个组件时，你也必须在引用这个自定义元素时使用 kebab-case，例如 `<my-component-name>`。
 
-> 使用 PascalCase
+> 2. 使用驼峰命名
 
 ```js
 Vue.component('MyComponentName', { /* ... */ })
 ```
 
-当使用 PascalCase (首字母大写命名) 定义一个组件时，你在引用这个自定义元素时两种命名法都可以使用。也就是说 `<my-component-name>` 和 `<MyComponentName>` 都是可接受的。注意，尽管如此，直接在 DOM (即非字符串的模板) 中使用时只有 kebab-case 是有效的。
+当使用驼峰命名(首字母大写命名) 定义一个组件时，你在引用这个自定义元素时两种命名法都可以使用。也就是说 `<my-component-name>` 和 `<MyComponentName>` 都是可接受的。
+
+注意：尽管如此，直接在 DOM (即非字符串的模板) 中使用时只有短横线分隔命名是有效的。
 
 #### 12.1.2全局注册
 
@@ -2422,7 +2426,7 @@ new Vue({ el: '#app' })
 </div>
 ```
 
-在所有子组件中也是如此，也就是说这三个组件*在各自内部*也都可以相互使用。
+在所有子组件中也是如此，也就是说这三个组件在各自内部也都可以相互使用。
 
 #### 12.1.3局部注册
 
@@ -2448,9 +2452,9 @@ new Vue({
 })
 ```
 
-对于 `components` 对象中的每个 property 来说，其 property 名就是自定义元素的名字，其 property 值就是这个组件的选项对象。
+对于 `components` 对象中的每个 property 来说，其 `property `名就是自定义元素的名字，其 `property `值就是这个组件的选项对象。
 
-注意**局部注册的组件在其子组件中\*不可用\***。例如，如果你希望 `ComponentA` 在 `ComponentB` 中可用，则你需要这样写：
+注意：**局部注册的组件在其子组件中不可用**。例如，如果你希望 `ComponentA` 在 `ComponentB` 中可用，则你需要这样写：
 
 ```js
 var ComponentA = { /* ... */ }
@@ -2506,7 +2510,7 @@ export default {
 
 > 基础组件的自动化全局注册
 
-可能你的许多组件只是包裹了一个输入框或按钮之类的元素，是相对通用的。我们有时候会把它们称为[基础组件](https://cn.vuejs.org/v2/style-guide/#基础组件名-强烈推荐)，它们会在各个组件中被频繁的用到。
+可能你的许多组件只是包裹了一个输入框或按钮之类的元素，是相对通用的。我们有时候会把它们称为**基础组件**，它们会在各个组件中被频繁的用到。
 
 所以会导致很多组件里都会有一个包含基础组件的长列表：
 
@@ -2536,7 +2540,7 @@ export default {
 </BaseButton>
 ```
 
-如果你恰好使用了 webpack (或在内部使用了 webpack 的 [Vue CLI 3+](https://github.com/vuejs/vue-cli))，那么就可以使用 `require.context` 只全局注册这些非常通用的基础组件。这里有一份可以让你在应用入口文件 (比如 `src/main.js`) 中全局导入基础组件的示例代码：
+如果你恰好使用了 webpack，那么就可以使用 `require.context` 只全局注册这些非常通用的基础组件。这里有一份可以让你在应用入口文件 (比如 `src/main.js`) 中全局导入基础组件的示例代码：
 
 ```js
 import Vue from 'vue'
@@ -2599,11 +2603,11 @@ Vue.component('blog-post', {
 <blog-post post-title="hello!"></blog-post>
 ```
 
-重申一次，如果你使用字符串模板，那么这个限制就不存在了。
+重申一次，如果你使用==字符串模板==，那么这个限制就不存在了。
 
 #### 12.2.2Prop类型
 
-到这里，我们只看到了以字符串数组形式列出的 prop：
+到这里，我们只看到了以==字符串数组==形式列出的 prop：
 
 ```js
 props: ['title', 'likes', 'isPublished', 'commentIds', 'author']
@@ -2619,7 +2623,7 @@ props: {
   commentIds: Array,
   author: Object,
   callback: Function,
-  contactsPromise: Promise // or any other constructor
+  contactsPromise: Promise 
 }
 ```
 
@@ -2643,7 +2647,7 @@ props: {
 ></blog-post>
 ```
 
-在上述两个示例中，我们传入的值都是字符串类型的，但实际上*任何*类型的值都可以传给一个 prop。
+在上述两个示例中，我们传入的值都是字符串类型的，但实际上任何类型的值都可以传给一个 prop。
 
 **1.传入一个数字**
 
@@ -2699,7 +2703,7 @@ props: {
 
 **5.传入一个对象的所有 property**
 
-如果你想要将一个对象的所有 property 都作为 prop 传入，你可以使用不带参数的 `v-bind` (取代 `v-bind:prop-name`)。例如，对于一个给定的对象 `post`：
+**如果你想要将一个对象的所有 property 都作为 prop 传入，你可以使用不带参数的 `v-bind` (取代 `v-bind:prop-name`)**。例如，对于一个给定的对象 `post`：
 
 ```js
 post: {
@@ -2727,22 +2731,23 @@ post: {
 
 所有的 prop 都使得其父子 prop 之间形成了一个**单向下行绑定**：父级 prop 的更新会向下流动到子组件中，但是反过来则不行。这样会防止从子组件意外变更父级组件的状态，从而导致你的应用的数据流向难以理解。
 
-额外的，每次父级组件发生变更时，子组件中所有的 prop 都将会刷新为最新的值。这意味着你**不**应该在一个子组件内部改变 prop。如果你这样做了，Vue 会在浏览器的控制台中发出警告。
+额外的，每次父级组件发生变更时，子组件中所有的 prop 都将会刷新为最新的值。**这意味着你不应该在一个子组件内部改变 prop**。如果你这样做了，Vue 会在浏览器的控制台中发出警告。
 
 这里有两种常见的试图变更一个 prop 的情形：
 
-1. **这个 prop 用来传递一个初始值；这个子组件接下来希望将其作为一个本地的 prop 数据来使用。**在这种情况下，最好定义一个本地的 data property 并将这个 prop 用作其初始值：
+**1.这个 prop 用来传递一个初始值；这个子组件接下来希望将其作为一个本地的 prop 数据来使用。**在这种情况下，最好定义一个本地的 data property 并将这个 prop 用作其初始值：
 
 ```js
 props: ['initialCounter'],
 data: function () {
   return {
+    //使用prop指定初始值
     counter: this.initialCounter
   }
 }
 ```
 
-1. **这个 prop 以一种原始的值传入且需要进行转换。**在这种情况下，最好使用这个 prop 的值来定义一个计算属性：
+**2.这个 prop 以一种原始的值传入且需要进行转换。**在这种情况下，最好使用这个 prop 的值来定义一个计算属性：
 
 ```js
 props: ['size'],
@@ -2837,7 +2842,7 @@ Vue.component('blog-post', {
 
 一个非 prop 的 attribute 是指传向一个组件，但是该组件并没有相应 prop 定义的 attribute。
 
-因为显式定义的 prop 适用于向一个子组件传入信息，然而组件库的作者并不总能预见组件会被用于怎样的场景。这也是为什么组件可以接受任意的 attribute，而这些 attribute 会被添加到这个组件的根元素上。
+因为显式定义的 prop 适用于向一个子组件传入信息，然而组件库的作者并不总能预见组件会被用于怎样的场景。**这也是为什么组件可以接受任意的 attribute，而这些 attribute 会被添加到这个组件的根元素上**。
 
 例如，想象一下你通过一个 Bootstrap 插件使用了一个第三方的 `<bootstrap-date-input>` 组件，这个插件需要在其 `<input>` 上用到一个 `data-date-picker` attribute。我们可以将这个 attribute 添加到你的组件实例上：
 
@@ -2945,7 +2950,7 @@ this.$emit('myEvent')
 
 #### 12.3.2自定义组件的v-mode1
 
-一个组件上的 `v-model` 默认会利用名为 `value` 的 prop 和名为 `input` 的事件，但是像单选框、复选框等类型的输入控件可能会将 `value` attribute 用于[不同的目的](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/checkbox#Value)。`model` 选项可以用来避免这样的冲突：
+一个组件上的 `v-model` 默认会利用名为 `value` 的 prop 和名为 `input` 的事件，但是像单选框、复选框等类型的输入控件可能会将 `value` attribute 用于不同的目的。`model` 选项可以用来避免这样的冲突：
 
 ```
 Vue.component('base-checkbox', {
@@ -2974,7 +2979,7 @@ Vue.component('base-checkbox', {
 
 这里的 `lovingVue` 的值将会传入这个名为 `checked` 的 prop。同时当 `<base-checkbox>` 触发一个 `change` 事件并附带一个新的值的时候，这个 `lovingVue` 的 property 将会被更新。
 
->  注意你仍然需要在组件的 `props` 选项里声明 `checked` 这个 prop。
+>  注意：你仍然需要在组件的 `props` 选项里声明 `checked` 这个 prop。
 
 #### 12.3.3将原生事件绑定到组件
 
@@ -3076,7 +3081,7 @@ this.$emit('update:title', newTitle)
 
 当我们用一个对象同时设置多个 prop 的时候，也可以将这个 `.sync` 修饰符和 `v-bind` 配合使用：
 
-```
+```html
 <text-document v-bind.sync="doc"></text-document>
 ```
 
@@ -3088,7 +3093,7 @@ this.$emit('update:title', newTitle)
 
 #### 12.4.1插槽内容
 
-Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 [Web Components 规范草案](https://github.com/w3c/webcomponents/blob/gh-pages/proposals/Slots-Proposal.md)，将 `<slot>` 元素作为承载分发内容的出口。
+Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 Web Components 规范草案，将 `<slot>` 元素作为承载分发内容的出口。
 
 它允许你像这样合成组件：
 
@@ -3240,7 +3245,7 @@ Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 [Web C
 </div>
 ```
 
-一个不带 `name` 的 `<slot>` 出口会带有隐含的名字“default”。
+一个不带 `name` 的 `<slot>` 出口会带有隐含的名字`default`。
 
 在向具名插槽提供内容的时候，我们可以在一个 `<template>` 元素上使用 `v-slot` 指令，并以 `v-slot` 的参数的形式提供其名称：
 
@@ -3359,7 +3364,7 @@ Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 [Web C
 </current-user>
 ```
 
-注意默认插槽的缩写语法**不能**和具名插槽混用，因为它会导致作用域不明确：
+> 注意：默认插槽的缩写语法**不能**和具名插槽混用，因为它会导致作用域不明确：
 
 ```html
 <!-- 无效，会导致警告 -->
@@ -3395,7 +3400,7 @@ function (slotProps) {
 }
 ```
 
-这意味着 `v-slot` 的值实际上可以是任何能够作为函数定义中的参数的 JavaScript 表达式。所以在支持的环境下 ([单文件组件](https://cn.vuejs.org/v2/guide/single-file-components.html)或[现代浏览器](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#浏览器兼容))，你也可以使用 [ES2015 解构](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#解构对象)来传入具体的插槽 prop，如下：
+这意味着 `v-slot` 的值实际上可以是任何能够作为函数定义中的参数的 JavaScript 表达式。所以在支持的环境下 (单文件组件或现代浏览器)，你也可以使用 ES2015 解构来传入具体的插槽 prop，如下：
 
 ```html
 <current-user v-slot="{ user }">
@@ -3421,7 +3426,7 @@ function (slotProps) {
 
 #### 12.4.6动态插槽名
 
-[动态指令参数](https://cn.vuejs.org/v2/guide/syntax.html#动态参数)也可以用在 `v-slot` 上，来定义动态的插槽名：
+动态指令参数也可以用在 `v-slot` 上，来定义动态的插槽名：
 
 ```html
 <base-layout>
@@ -3450,7 +3455,7 @@ function (slotProps) {
 </base-layout>
 ```
 
-然而，和其它指令一样，该缩写只在其有参数的时候才可用。这意味着以下语法是无效的：
+**然而，和其它指令一样，该缩写只在其有参数的时候才可用**。这意味着以下语法是无效的：
 
 ```html
 <!-- 这样会触发一个警告 -->
@@ -3515,7 +3520,7 @@ function (slotProps) {
 </todo-list>
 ```
 
-这只是作用域插槽用武之地的冰山一角。想了解更多现实生活中的作用域插槽的用法，我们推荐浏览诸如 [Vue Virtual Scroller](https://github.com/Akryum/vue-virtual-scroller)、[Vue Promised](https://github.com/posva/vue-promised) 和 [Portal Vue](https://github.com/LinusBorg/portal-vue) 等库。
+这只是作用域插槽用武之地的冰山一角。想了解更多现实生活中的作用域插槽的用法。
 
 ### 12.5动态组件 & 异步组件
 
@@ -3544,9 +3549,9 @@ function (slotProps) {
 
 #### 12.5.2异步组件
 
-在大型应用中，我们可能需要将应用分割成小一些的代码块，并且只在需要的时候才从服务器加载一个模块。为了简化，Vue 允许你以一个工厂函数的方式定义你的组件，这个工厂函数会异步解析你的组件定义。Vue 只有在这个组件需要被渲染的时候才会触发该工厂函数，且会把结果缓存起来供未来重渲染。例如：
+在大型应用中，我们可能需要将应用分割成小一些的代码块，并且只在需要的时候才从服务器加载一个模块。为了简化，**Vue 允许你以一个工厂函数的方式定义你的组件**，这个工厂函数会异步解析你的组件定义。Vue 只有在这个组件需要被渲染的时候才会触发该工厂函数，且会把结果缓存起来供未来重渲染。例如：
 
-```html
+```js
 Vue.component('async-example', function (resolve, reject) {
   setTimeout(function () {
     // 向 `resolve` 回调传递组件定义
@@ -3557,9 +3562,9 @@ Vue.component('async-example', function (resolve, reject) {
 })
 ```
 
-如你所见，这个工厂函数会收到一个 `resolve` 回调，这个回调函数会在你从服务器得到组件定义的时候被调用。你也可以调用 `reject(reason)` 来表示加载失败。这里的 `setTimeout` 是为了演示用的，如何获取组件取决于你自己。一个推荐的做法是将异步组件和 [webpack 的 code-splitting 功能](https://webpack.js.org/guides/code-splitting/)一起配合使用：
+如你所见，这个工厂函数会收到一个 `resolve` 回调，这个回调函数会在你从服务器得到组件定义的时候被调用。你也可以调用 `reject(reason)` 来表示加载失败。这里的 `setTimeout` 是为了演示用的，如何获取组件取决于你自己。一个推荐的做法是将异步组件和 **webpack 的 code-splitting **功能一起配合使用：
 
-```html
+```js
 Vue.component('async-webpack-example', function (resolve) {
   // 这个特殊的 `require` 语法将会告诉 webpack
   // 自动将你的构建代码切割成多个包，这些包
@@ -3570,7 +3575,7 @@ Vue.component('async-webpack-example', function (resolve) {
 
 你也可以在工厂函数中返回一个 `Promise`，所以把 webpack 2 和 ES2015 语法加在一起，我们可以这样使用动态导入：
 
-```html
+```js
 Vue.component(
   'async-webpack-example',
   // 这个动态导入会返回一个 `Promise` 对象。
@@ -3578,9 +3583,9 @@ Vue.component(
 )
 ```
 
-当使用[局部注册](https://cn.vuejs.org/v2/guide/components-registration.html#局部注册)的时候，你也可以直接提供一个返回 `Promise` 的函数：
+当使用==局部注册==的时候，你也可以直接提供一个返回 `Promise` 的函数：
 
-```html
+```js
 new Vue({
   // ...
   components: {
@@ -3648,11 +3653,11 @@ this.$root.bar
 this.$root.baz()
 ```
 
-对于 demo 或非常小型的有少量组件的应用来说这是很方便的。不过这个模式扩展到中大型应用来说就不然了。因此在绝大多数情况下，我们强烈推荐使用 [Vuex](https://github.com/vuejs/vuex) 来管理应用的状态。
+对于 demo 或非常小型的有少量组件的应用来说这是很方便的。不过这个模式扩展到中大型应用来说就不然了。因此在绝大多数情况下，我们强烈推荐使用 `Vuex`来管理应用的状态。
 
 **2.访问父级组件实例**
 
-和 `$root` 类似，`$parent` property 可以用来从一个子组件访问父组件的实例。它提供了一种机会，可以在后期随时触达父级组件，以替代将数据以 prop 的方式传入子组件的方式。
+和 `$root` 类似，`$parent` property 可以用来**从一个子组件访问父组件的实例**。它提供了一种机会，可以在后期随时触达父级组件，以替代将数据以 prop 的方式传入子组件的方式。
 
 在绝大多数情况下，触达父级组件会使得你的应用更难调试和理解，尤其是当你变更了父级组件的数据的时候。当我们稍后回看那个组件的时候，很难找出那个变更是从哪里发起的。
 
@@ -3664,7 +3669,7 @@ this.$root.baz()
 </google-map>
 ```
 
-这个 `<google-map>` 组件可以定义一个 `map` property，所有的子组件都需要访问它。在这种情况下 `<google-map-markers>` 可能想要通过类似 `this.$parent.getMap` 的方式访问那个地图，以便为其添加一组标记。你可以在[这里](https://codesandbox.io/s/github/vuejs/vuejs.org/tree/master/src/v2/examples/vue-20-accessing-parent-component-instance)查阅这种模式。
+这个 `<google-map>` 组件可以定义一个 `map` property，所有的子组件都需要访问它。在这种情况下 `<google-map-markers>` 可能想要通过类似 `this.$parent.getMap` 的方式访问那个地图，以便为其添加一组标记。
 
 请留意，尽管如此，通过这种模式构建出来的那个组件的内部仍然是容易出现问题的。比如，设想一下我们添加一个新的 `<google-map-region>` 组件，当 `<google-map-markers>` 在其内部出现的时候，只会渲染那个区域内的标记：
 
@@ -3678,11 +3683,11 @@ this.$root.baz()
 
 那么在 `<google-map-markers>` 内部你可能发现自己需要一些类似这样的 hack：
 
-```html
+```js
 var map = this.$parent.map || this.$parent.$parent.map
 ```
 
-很快它就会失控。这也是我们针对需要向任意更深层级的组件提供上下文信息时推荐[依赖注入](https://cn.vuejs.org/v2/guide/components-edge-cases.html#依赖注入)的原因。
+很快它就会失控。这也是我们针对需要向任意更深层级的组件提供上下文信息时推荐**依赖注入**的原因。
 
 **3.访问子组件实例或子元素**
 
@@ -3721,13 +3726,13 @@ methods: {
 this.$refs.usernameInput.focus()
 ```
 
-当 `ref` 和 `v-for` 一起使用的时候，你得到的 ref 将会是一个包含了对应数据源的这些子组件的数组。
+当 `ref` 和 `v-for` 一起使用的时候，你得到的 `ref `将会是一个包含了对应数据源的这些子组件的数组。
 
 `$refs` 只会在组件渲染完成之后生效，并且它们不是响应式的。这仅作为一个用于直接操作子组件的“逃生舱”——你应该避免在模板或计算属性中访问 `$refs`。
 
 **4.依赖注入**
 
-在此之前，在我们描述[访问父级组件实例](https://cn.vuejs.org/v2/guide/components-edge-cases.html#访问父级组件实例)的时候，展示过一个类似这样的例子：
+在此之前，在我们描述**访问父级组件实例**的时候，展示过一个类似这样的例子：
 
 ```html
 <google-map>
@@ -3741,7 +3746,7 @@ this.$refs.usernameInput.focus()
 
 `provide` 选项允许我们指定我们想要**提供**给后代组件的数据/方法。在这个例子中，就是 `<google-map>` 内部的 `getMap` 方法：
 
-```html
+```js
 provide: function () {
   return {
     getMap: this.getMap
@@ -3751,20 +3756,18 @@ provide: function () {
 
 然后在任何后代组件里，我们都可以使用 `inject` 选项来接收指定的我们想要添加在这个实例上的 property：
 
-```html
+```js
 inject: ['getMap']
 ```
 
-你可以在[这里](https://codesandbox.io/s/github/vuejs/vuejs.org/tree/master/src/v2/examples/vue-20-dependency-injection)看到完整的示例。相比 `$parent` 来说，这个用法可以让我们在*任意*后代组件中访问 `getMap`，而不需要暴露整个 `<google-map>` 实例。这允许我们更好的持续研发该组件，而不需要担心我们可能会改变/移除一些子组件依赖的东西。同时这些组件之间的接口是始终明确定义的，就和 `props` 一样。
+相比 `$parent` 来说，这个用法可以让我们在*任意*后代组件中访问 `getMap`，而不需要暴露整个 `<google-map>` 实例。这允许我们更好的持续研发该组件，而不需要担心我们可能会改变/移除一些子组件依赖的东西。同时这些组件之间的接口是始终明确定义的，就和 `props` 一样。
 
 实际上，你可以把依赖注入看作一部分“大范围有效的 prop”，除了：
 
 - 祖先组件不需要知道哪些后代组件使用它提供的 property
 - 后代组件不需要知道被注入的 property 来自哪里
 
-然而，依赖注入还是有负面影响的。它将你应用程序中的组件与它们当前的组织方式耦合起来，使重构变得更加困难。同时所提供的 property 是非响应式的。这是出于设计的考虑，因为使用它们来创建一个中心化规模化的数据跟[使用 `$root`](https://cn.vuejs.org/v2/guide/components-edge-cases.html#访问根实例)做这件事都是不够好的。如果你想要共享的这个 property 是你的应用特有的，而不是通用化的，或者如果你想在祖先组件中更新所提供的数据，那么这意味着你可能需要换用一个像 [Vuex](https://github.com/vuejs/vuex) 这样真正的状态管理方案了。
-
-
+然而，依赖注入还是有负面影响的。它将你应用程序中的组件与它们当前的组织方式耦合起来，使重构变得更加困难。同时所提供的 property 是非响应式的。这是出于设计的考虑，因为使用它们来创建一个中心化规模化的数据跟使用 `$root`做这件事都是不够好的。如果你想要共享的这个 property 是你的应用特有的，而不是通用化的，或者如果你想在祖先组件中更新所提供的数据，那么这意味着你可能需要换用一个像 `Vuex`这样真正的状态管理方案了。
 
 ## 13.过渡动画
 
@@ -4116,7 +4119,7 @@ inject: ['getMap']
 
 ### 14.1基础
 
-混入 (mixin) 提供了一种非常灵活的方式，来分发 Vue 组件中的可复用功能。一个混入对象可以包含任意组件选项。当组件使用混入对象时，所有混入对象的选项将被“混合”进入该组件本身的选项。
+混入 (`mixin`) 提供了一种非常灵活的方式，来分发 Vue 组件中的可复用功能。**一个混入对象可以包含任意组件选项。当组件使用混入对象时，所有混入对象的选项将被“混合”进入该组件本身的选项**。
 
 例子：
 
@@ -4145,7 +4148,7 @@ var component = new Component() // => "hello from mixin!"
 
 当组件和混入对象含有同名选项时，这些选项将以恰当的方式进行“合并”。
 
-比如，数据对象在内部会进行递归合并，并在发生冲突时以组件数据优先。
+比如，**数据对象在内部会进行递归合并，并在发生冲突时以组件数据优先**。
 
 ```js
 var mixin = {
@@ -4172,7 +4175,7 @@ new Vue({
 })
 ```
 
-同名钩子函数将合并为一个数组，因此都将被调用。另外，混入对象的钩子将在组件自身钩子**之前**调用。
+同名钩子函数将合并为一个数组，因此都将被调用。另外，==混入对象的钩子将在组件自身钩子**之前**调用==。
 
 ```js
 var mixin = {
@@ -4246,7 +4249,7 @@ new Vue({
 // => "hello!"
 ```
 
-请谨慎使用全局混入，因为它会影响每个单独创建的 Vue 实例 (包括第三方组件)。大多数情况下，只应当应用于自定义选项，就像上面示例一样。推荐将其作为[插件](https://cn.vuejs.org/v2/guide/plugins.html)发布，以避免重复应用混入。
+请谨慎使用全局混入，因为它会影响每个单独创建的 Vue 实例 (包括第三方组件)。大多数情况下，只应当应用于自定义选项，就像上面示例一样。推荐将其作为插件发布，以避免重复应用混入。
 
 ### 14.4自定义选项合并策略
 
@@ -4279,8 +4282,6 @@ Vue.config.optionMergeStrategies.vuex = function (toVal, fromVal) {
   }
 }
 ```
-
-
 
 ## 15.渲染函数
 
