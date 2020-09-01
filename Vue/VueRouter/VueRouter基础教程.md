@@ -1,6 +1,6 @@
 ## 介绍
 
-Vue Router 是 [Vue.js](http://cn.vuejs.org/) 官方的路由管理器。它和 Vue.js 的核心深度集成，让构建单页面应用变得易如反掌。包含的功能有：
+`Vue Router` 是 Vue.js 官方的路由管理器。它和 Vue.js 的核心深度集成，让构建单页面应用变得易如反掌。包含的功能有：
 
 - 嵌套的路由/视图表
 - 模块化的、基于组件的路由配置
@@ -13,7 +13,7 @@ Vue Router 是 [Vue.js](http://cn.vuejs.org/) 官方的路由管理器。它和 
 
 ## 1.基本使用
 
-使用 `Vue.js `，我们已经可以通过组合组件来组成应用程序，当你要把 `Vue Router` 添加进来，我们需要做的是，将==组件==(components) `映射`到==路由== (routes)，然后告诉 `Vue Router` 在哪里渲染它们.
+使用 `Vue.js `，我们已经可以通过组合组件来组成应用程序，当你要把 `Vue Router` 添加进来，我们需要做的是，将组件(components) `映射`到路由 (routes)，然后告诉 `Vue Router` 在哪里渲染它们。
 
 html:
 
@@ -136,7 +136,7 @@ const User = {
 
 提醒一下，当使用路由参数时，例如从 `/user/foo` 导航到 `/user/bar`，**原来的组件实例会被复用**。因为两个路由都渲染同个组件，比起销毁再创建，复用则显得更加高效。**不过，这也意味着组件的生命周期钩子不会再被调用**。
 
-复用组件时，==想对路由参数的变化作出响应的话==，你可以简单地 `watch` (监测变化) `$route` 对象：
+复用组件时，想对路由参数的变化作出响应的话，你可以简单地 `watch` (监测变化) `$route` 对象：
 
 ```js
 const User = {
@@ -149,14 +149,13 @@ const User = {
 }
 ```
 
-或者使用 2.2 中引入的 `beforeRouteUpdate` [导航守卫](https://router.vuejs.org/zh/guide/advanced/navigation-guards.html)：
+或者使用 2.2 中引入的 `beforeRouteUpdate` 导航守卫：
 
 ```js
 const User = {
   template: '...',
   beforeRouteUpdate (to, from, next) {
-    // react to route changes...
-    // don't forget to call next()
+    
   }
 }
 ```
@@ -176,9 +175,9 @@ const User = {
 }
 ```
 
-当使用**通配符**路由时，请确保路由的顺序是正确的，也就是说==含有*通配符*的路由应该放在最后==。路由 `{ path: '*' }` 通常用于客户端 404 错误。如果你使用了*History 模式*，请确保[正确配置你的服务器](https://router.vuejs.org/zh/guide/essentials/history-mode.html)。
+当使用**通配符**路由时，请确保路由的顺序是正确的，也就是说**含有通配符的路由应该放在最后**。路由 `{ path: '*' }` 通常用于客户端 404 错误。如果你使用了`History `模式，请确保正确配置你的服务器。
 
-当使用一个*通配符*时，`$route.params` 内会自动添加一个名为 `pathMatch` 参数。它包含了 URL 通过*通配符*被匹配的部分：
+当使用一个通配符时，`$route.params` 内会自动添加一个名为 `pathMatch` 参数。它包含了 URL 通过通配符被匹配的部分：
 
 ```js
 // 给出一个路由 { path: '/user-*' }
@@ -191,11 +190,11 @@ this.$route.params.pathMatch // '/non-existing'
 
 ### 2.3高级匹配模式
 
-`vue-router` 使用 [path-to-regexp](https://github.com/pillarjs/path-to-regexp/tree/v1.7.0) 作为路径匹配引擎，所以支持很多高级的匹配模式，例如：可选的动态路径参数、匹配零个或多个、一个或多个，甚至是自定义正则匹配。查看它的 [文档](https://github.com/pillarjs/path-to-regexp/tree/v1.7.0#parameters) 学习高阶的路径匹配，还有 [这个例子 ](https://github.com/vuejs/vue-router/blob/dev/examples/route-matching/app.js) 展示 `vue-router` 怎么使用这类匹配
+`vue-router` 使用 [path-to-regexp](https://github.com/pillarjs/path-to-regexp/tree/v1.7.0) 作为路径匹配引擎，所以支持很多高级的匹配模式，例如：可选的动态路径参数、匹配零个或多个、一个或多个，甚至是自定义正则匹配。
 
 ### 2.4匹配优先级
 
-有时候，同一个路径可以匹配多个路由，此时，匹配的优先级就按照路由的定义顺序：==谁先定义的，谁的优先级就最高==。
+有时候，同一个路径可以匹配多个路由，此时，匹配的优先级就按照路由的定义顺序：**谁先定义的，谁的优先级就最高**。
 
 ## 3.嵌套路由
 
@@ -272,7 +271,7 @@ const router = new VueRouter({
 })
 ```
 
-- **要注意，以 `/` 开头的嵌套路径会被当作根路径。 这让你充分的使用嵌套组件而无须设置嵌套的路径。**
+> **要注意，以 `/` 开头的嵌套路径会被当作根路径。 这让你充分的使用嵌套组件而无须设置嵌套的路径。**
 
 你会发现，`children` 配置就是像 `routes` 配置一样的路由配置数组，所以呢，你可以嵌套多层路由。
 
@@ -296,13 +295,13 @@ const router = new VueRouter({
 
 ## 4.编程式的导航
 
-除了使用 `<router-link>` 创建 a 标签来定义导航链接，我们还可以借助 `router` 的==实例方法==，通过编写代码来实现。
+除了使用 `<router-link>` 创建 a 标签来定义导航链接，我们还可以借助 `router` 的实例方法，通过编写代码来实现。
 
 ### 4.1`router.push(location, onComplete?, onAbort?)`
 
 **注意：在 Vue 实例内部，你可以通过 `$router` 访问路由实例。因此你可以调用 `this.$router.push`。**
 
-想要导航到不同的 URL，则使用 `router.push` 方法。这个方法会==向 history 栈添加一个新的记录==，所以，当用户点击浏览器后退按钮时，则回到之前的 URL。
+想要导航到不同的 URL，则使用 `router.push` 方法。**这个方法会向 history 栈添加一个新的记录**，所以，当用户点击浏览器后退按钮时，则回到之前的 URL。
 
 当你点击`<router-link>`  时，这个方法会在内部调用，所以说，点击 `<router-link :to="...">` 等同于调用 `router.push(...)`。
 
@@ -344,7 +343,7 @@ router.push({ path: '/user', params: { userId }}) // -> /user
 
 ### 4.2`router.replace(location, onComplete?, onAbort?)`
 
-跟 `router.push` 很像，唯一的不同就是，它不会向 history 添加新记录，而是跟它的方法名一样 —— ==替换掉当前的 history 记录==。
+跟 `router.push` 很像，唯一的不同就是，它不会向 history 添加新记录，而是跟它的方法名一样 —— **替换掉当前的 history 记录**。
 
 | 声明式                            | 编程式                |
 | --------------------------------- | --------------------- |
@@ -401,7 +400,7 @@ router.push({ name: 'user', params: { userId: 123 }})
 
 ## 6.命名视图
 
-有时候想==同时 (同级) 展示多个视图==，而不是嵌套展示。例如创建一个布局，有 `sidebar` (侧导航) 和 `main` (主内容) 两个视图，这个时候命名视图就派上用场了。你可以在界面中拥有多个单独命名的视图，而不是只有一个单独的出口。如果 `router-view` 没有设置名字，那么默认为 `default`。
+有时候想同时 (同级) 展示多个视图，而不是嵌套展示。例如创建一个布局，有 `sidebar` (侧导航) 和 `main` (主内容) 两个视图，这个时候命名视图就派上用场了。你可以在界面中拥有多个单独命名的视图，而不是只有一个单独的出口。如果 `router-view` 没有设置名字，那么默认为 `default`。
 
 ```html
 <router-view class="view one"></router-view>
@@ -448,7 +447,7 @@ const router = new VueRouter({
 
 **注意**：*我们先忘记 HTML/CSS 具体的布局的样子，只专注在用到的组件上。*
 
-`UserSettings` 组件的 ` 部分应该是类似下面的这段代码：
+`UserSettings` 组件的部分应该是类似下面的这段代码：
 
 ```html
 <!-- UserSettings.vue -->
@@ -517,7 +516,7 @@ const router = new VueRouter({
 })
 ```
 
-注意[导航守卫](https://router.vuejs.org/zh/guide/advanced/navigation-guards.html)并没有应用在跳转路由上，而仅仅应用在其目标上。在下面这个例子中，为 `/a` 路由添加一个 `beforeEach` 或 `beforeLeave` 守卫并不会有任何效果。
+注意导航守卫并没有应用在跳转路由上，而仅仅应用在其目标上。在下面这个例子中，为 `/a` 路由添加一个 `beforeEach` 或 `beforeLeave` 守卫并不会有任何效果。
 
 ### 7.2别名
 
@@ -617,7 +616,7 @@ URL `/search?q=vue` 会将 `{query: 'vue'}` 作为属性传递给 `SearchUser` �
 
 正如其名，`vue-router` 提供的导航守卫主要用来通过跳转或取消的方式守卫导航。有多种机会植入路由导航过程中：全局的, 单个路由独享的, 或者组件级的。
 
-记住**参数或查询的改变并不会触发进入/离开的导航守卫**。你可以通过[观察 `$route` 对象](https://router.vuejs.org/zh/guide/essentials/dynamic-matching.html#响应路由参数的变化)来应对这些变化，或使用 `beforeRouteUpdate` 的组件内守卫。
+记住**参数或查询的改变并不会触发进入/离开的导航守卫**。你可以通过观察 `$route` 对象来应对这些变化，或使用 `beforeRouteUpdate` 的组件内守卫。
 
 ### 9.1全局前置守卫
 
@@ -631,16 +630,16 @@ router.beforeEach((to, from, next) => {
 })
 ```
 
-当一个导航触发时，==全局前置守卫按照创建顺序调用==。守卫是异步解析执行，此时导航在所有守卫 resolve 完之前一直处于 **等待中**。
+当一个导航触发时，全局前置守卫按照创建顺序调用。守卫是异步解析执行，此时导航在所有守卫 resolve 完之前一直处于 **等待中**。
 
 每个守卫方法接收三个参数：
 
-* **`to: Route`**: 即将要进入的目标 [路由对象](https://router.vuejs.org/zh/api/#路由对象)
+* **`to: Route`**: 即将要进入的目标 路由对象
 * **`from: Route`**: 当前导航正要离开的路由
 * **`next: Function`**: 一定要调用该方法来 **resolve** 这个钩子。执行效果依赖 `next` 方法的调用参数。
 	* **`next()`**: 进行管道中的下一个钩子。如果全部钩子执行完了，则导航的状态就是 **confirmed** (确认的)。
 	* **`next(false)`**: 中断当前的导航。如果浏览器的 URL 改变了 (可能是用户手动或者浏览器后退按钮)，那么 URL 地址会重置到 `from` 路由对应的地址。
-	* **`next('/')` 或者 `next({ path: '/' })`**: 跳转到一个不同的地址。当前的导航被中断，然后进行一个新的导航。你可以向 `next` 传递任意位置对象，且允许设置诸如 `replace: true`、`name: 'home'` 之类的选项以及任何用在 [`router-link` 的 `to` prop](https://router.vuejs.org/zh/api/#to) 或 [`router.push`](https://router.vuejs.org/zh/api/#router-push) 中的选项。
+	* **`next('/')` 或者 `next({ path: '/' })`**: 跳转到一个不同的地址。当前的导航被中断，然后进行一个新的导航。你可以向 `next` 传递任意位置对象，且允许设置诸如 `replace: true`、`name: 'home'` 之类的选项以及任何用在 `router-link` 的 `to` prop或 [`router.push`](https://router.vuejs.org/zh/api/#router-push) 中的选项。
 	* **`next(error)`**: (2.4.0+) 如果传入 `next` 的参数是一个 `Error` 实例，则导航会被终止且该错误会被传递给 [`router.onError()`](https://router.vuejs.org/zh/api/#router-onerror) 注册过的回调。
 
 **确保要调用 `next` 方法，否则钩子就不会被 resolved。**

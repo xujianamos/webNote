@@ -641,6 +641,7 @@ import { mapMutations } from 'vuex'
 export default {
   // ...
   methods: {
+    //1.先映射
     ...mapMutations([
       'increment', // 将 `this.increment()` 映射为 `this.$store.commit('increment')`
 
@@ -649,7 +650,12 @@ export default {
     ]),
     ...mapMutations({
       add: 'increment' // 将 `this.add()` 映射为 `this.$store.commit('increment')`
-    })
+    }),
+    btnHandler1() {
+	//2.再直接调用，也可以再页面上直接调用
+  //<button @click="addN(3)">-N</button>
+      this.add(),this.incrementBy()
+    }
   }
 }
 ```

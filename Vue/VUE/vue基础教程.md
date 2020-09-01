@@ -2,7 +2,7 @@
 
 ### 1.1创建一个Vue实例
 
-每个 Vue 应用都是通过用 `Vue` 函数创建一个新的 **Vue 实例**开始的：
+每个 Vue 应用都是通过用**`Vue` 函数**创建一个新的 **Vue 实例**开始的：
 
 ```js
 var vm = new Vue({
@@ -534,7 +534,7 @@ const app = new Vue({
 
 - 对动态参数的值的约束
 
-动态参数预期会求出一个字符串，异常情况下值为 `null`。这个特殊的 `null` 值可以被显性地用于移除绑定。任何其它非字符串类型的值都将会触发一个警告。
+**动态参数预期会求出一个字符串**，异常情况下值为 `null`。这个特殊的 `null` 值可以被显性地用于移除绑定。任何其它非字符串类型的值都将会触发一个警告。
 
 - 对动态参数表达式的约束
 
@@ -545,7 +545,7 @@ const app = new Vue({
 <a v-bind:['foo' + bar]="value"> ... </a>
 ```
 
-变通的办法是使用没有空格或引号的表达式，或用计算属性替代这种复杂表达式。
+**变通的办法是使用没有空格或引号的表达式，或用计算属性替代这种复杂表达式**。
 
 在 DOM 中使用模板时 (直接在一个 HTML 文件里撰写模板)，还需要避免使用大写字符来命名键名，因为浏览器会把 attribute 名全部强制转为小写：
 
@@ -1662,11 +1662,11 @@ methods: {
 <a v-on:click.once="doThis"></a>
 ```
 
-不像其它只能对原生的 DOM 事件起作用的修饰符，`.once` 修饰符还能被用到自定义的[组件事件](https://cn.vuejs.org/v2/guide/components-custom-events.html)上。
+不像其它只能对原生的 DOM 事件起作用的修饰符，`.once` 修饰符还能被用到自定义的组件事件上。
 
 #### 7.4.2`.passive`
 
-ue 还对应 [`addEventListener` 中的 `passive` 选项](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Parameters)提供了 `.passive` 修饰符。
+vue 还对应 [`addEventListener` 中的 `passive` 选项提供了 `.passive` 修饰符。
 
 ```html
 <!-- 滚动事件的默认行为 (即滚动行为) 将会立即触发 -->
@@ -2878,7 +2878,7 @@ Vue.component('blog-post', {
 
 > 禁用Attribute 继承
 
-如果你**不**希望组件的根元素继承 attribute，你可以在组件的选项中设置 `inheritAttrs: false`。例如：
+如果你**不**希望组件的根元素继承 `attribute`，你可以在组件的选项中设置 `inheritAttrs: false`。例如：
 
 ```js
 Vue.component('my-component', {
@@ -2952,7 +2952,7 @@ this.$emit('myEvent')
 
 一个组件上的 `v-model` 默认会利用名为 `value` 的 prop 和名为 `input` 的事件，但是像单选框、复选框等类型的输入控件可能会将 `value` attribute 用于不同的目的。`model` 选项可以用来避免这样的冲突：
 
-```
+```vue
 Vue.component('base-checkbox', {
   model: {
     prop: 'checked',
@@ -2973,7 +2973,7 @@ Vue.component('base-checkbox', {
 
 现在在这个组件上使用 `v-model` 的时候：
 
-```
+```html
 <base-checkbox v-model="lovingVue"></base-checkbox>
 ```
 
@@ -3004,7 +3004,7 @@ Vue.component('base-checkbox', {
 
 这时，父级的 `.native` 监听器将静默失败。它不会产生任何报错，但是 `onFocus` 处理函数不会如你预期地被调用。
 
-为了解决这个问题，Vue 提供了一个 `$listeners` property，它是一个对象，里面包含了作用在这个组件上的所有监听器。例如：
+为了解决这个问题，Vue 提供了一个 `$listeners` property，**它是一个对象**，里面包含了作用在这个组件上的所有监听器。例如：
 
 ```js
 {
@@ -3173,7 +3173,7 @@ Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 Web Co
 </button>
 ```
 
-我们可能希望这个 `<button>` 内绝大多数情况下都渲染文本“Submit”。为了将“Submit”作为后备内容，我们可以将它放在 `<slot>` 标签内：
+我们可能希望这个 `<button>` 内绝大多数情况下都渲染文本`Submit`。为了将`Submit`作为后备内容，我们可以将它放在 `<slot>` 标签内：
 
 ```html
 <button type="submit">
@@ -3187,7 +3187,7 @@ Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 Web Co
 <submit-button></submit-button>
 ```
 
-后备内容“Submit”将会被渲染：
+后备内容`Submit`将会被渲染：
 
 ```html
 <button type="submit">
@@ -3302,7 +3302,7 @@ Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 Web Co
 </div>
 ```
 
-注意 **`v-slot` 只能添加在 `<template>` 上**
+> 注意 **`v-slot` 只能添加在 `<template>` 上**
 
 #### 12.4.5作用域插槽
 
