@@ -111,6 +111,189 @@ Webkit 内核的浏览器，必须加上`-webkit`前缀。
 
 ```css
 .box {
-  justify-content: flex-start | flex-end | center | space-between | space-around;
+  justify-content: flex-start | flex-end | center | space-between | space-around | space-evenly;
+}
+```
+
+> 注意：它可能取6个值，具体对齐方式与轴的方向有关。下面假设主轴为从左到右。
+
+（1）`flex-start`（默认值）：项目对齐主轴起点，项目间不留空隙。
+
+![image-20200904155828701](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904155828701.png)
+
+(2)`center`：项目在主轴上居中排列，项目间不留空隙。主轴上第一个项目离主轴起点距离等于最后一个项目离主轴终点距离。
+
+![image-20200904161241170](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904161241170.png)
+
+(3)`flex-end`：项目对齐主轴终点，项目间不留空隙。
+
+![image-20200904162631345](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904162631345.png)
+
+(4)`space-between`：项目间间距相等，第一个项目离主轴起点和最后一个项目离主轴终点距离为0。
+
+![image-20200904162655360](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904162655360.png)
+
+(5)`space-around`：与space-between相似。不同点为，第一个项目离主轴起点和最后一个项目离主轴终点距离为中间项目间间距的一半。
+
+![image-20200904162708408](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904162708408.png)
+
+(6)`space-evenly`：项目间间距、第一个项目离主轴起点和最后一个项目离主轴终点距离等于项目间间距。
+
+![image-20200904162720304](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904162720304.png)
+
+### 3.5 align-items属性
+
+设置项目在行中的对齐方式。
+
+```css
+.container{
+  align-items:stretch（默认值） | flex-start | center | flex-end | baseline
+
+}
+```
+
+> 注意：它可能取5个值。具体的对齐方式与交叉轴的方向有关，下面假设交叉轴从上到下。
+
+- stretch（默认值）：如果项目未设置高度或设为auto，项目拉伸至填满行高。
+- flex-start：项目顶部与行起点对齐。
+- center：项目在行中居中对齐。
+- flex-end：项目底部与行终点对齐。
+- baseline：项目的第一行文字的基线对齐。
+
+![image-20200904163510649](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904163510649.png)
+
+![image-20200904163539914](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904163539914.png)
+
+### 3.6 align-content属性
+
+`align-content`属性定义了多行排列时，设置行在交叉轴方向上的对齐方式，以及分配行之间及其周围多余的空间。
+
+如果项目只有一根轴线，该属性不起作用。
+
+```css
+.container{
+  align-content: stretch（默认值） | flex-start | center | flex-end | space-between |space-around | space-evenly
+
+}
+```
+
+- `stretch`（默认值）：当未设置项目尺寸，将各行中的项目拉伸至填满交叉轴。当设置了项目尺寸，项目尺寸不变，项目行拉伸至填满交叉轴。
+
+- `flex-start`：首行在交叉轴起点开始排列，行间不留间距。
+
+- `center`：行在交叉轴中点排列，行间不留间距，首行离交叉轴起点和尾行离交叉轴终点距离相等。
+
+- `flex-end`：尾行在交叉轴终点开始排列，行间不留间距。
+- `space-between`：行与行间距相等，首行离交叉轴起点和尾行离交叉轴终点距离为0。
+- `space-around`：行与行间距相等，首行离交叉轴起点和尾行离交叉轴终点距离为行与行间间距的一半。
+
+- `space-evenly`：行间间距、以及首行离交叉轴起点和尾行离交叉轴终点距离相等。
+
+![image-20200904164125335](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904164125335.png)
+
+![image-20200904164140314](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904164140314.png)
+
+![image-20200904164200819](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904164200819.png)
+
+## 4.项目的属性
+
+设置项目，用于设置项目的尺寸、位置，以及对项目的对齐方式做特殊设置。
+
+以下6个属性设置在项目上。
+
+- `order`
+- `flex-grow`
+- `flex-shrink`
+- `flex-basis`
+- `flex`
+- `align-self`
+
+### 4.1 order属性
+
+设置项目沿主轴方向上的排列顺序，数值越小，排列越靠前。属性值为整数。默认为0。
+
+```css
+.item{
+  order: 0（默认值） | <integer>
+}
+```
+
+![image-20200904165250122](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904165250122.png)
+
+### 4.2 flex-grow属性
+
+当项目在主轴方向上还有剩余空间时，通过设置项目扩张因子进行剩余空间的分配。属性值为项目的扩张因子，属性值取非负数。
+
+```css
+.item{
+  flex-grow: 0（默认值） | <number>
+}
+```
+
+示例：
+
+一个宽度为400px的容器，里面的三个项目width分别为80px，120px，140px。分别对这项目1和项目2设置flex-grow值为3和1。
+
+```css
+.container{
+  display: flex;
+  width: 400px; // 容器宽度为400px
+}
+.item1{
+  width: 80px;
+  flex-grow: 3;
+}
+.item2{
+  width: 120px;
+  flex-grow: 1;
+}
+.item3{
+  /* 项目3未设置flex-grow，默认flex-grow值为0*/
+  width: 140px;
+}
+```
+
+在这个例子中，容器的剩余空间为 400 - (80 + 120 + 140) = 60px。剩余空间按 60 / (3 + 1 + 0) = 15px进行分配：
+
+item1的最终宽度为：80+ (15 * 3) = 125px
+
+item2的最终宽度为：120 + (15 * 1) = 135px
+
+item3的最终宽度为：140 + (15 * 0) =140px
+
+![image-20200904165905416](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200904165905416.png)
+
+需要注意一点，当项目的扩张因子相加小于1时，剩余空间按除以1进行分配。在上面例子的基础上，我们改变各个项目的flex-grow。
+
+```css
+.container{
+
+  display: flex;
+
+  width: 400px; // 容器宽度为400px
+
+}
+
+.item1{
+
+  width: 50px;
+
+  flex-grow: 0.1;
+
+}
+
+.item2{
+
+  width: 80px;
+
+  flex-grow: 0.3;
+
+}
+
+.item3{
+
+  width: 110px;
+
+  flex-grow: 0.2;
 }
 ```
