@@ -643,11 +643,11 @@ module.exports = config;
 
 - test值类型
 
-
+正则表达式，不能写成字符串。
 
 - use值类型
 
-
+字符串类型，数组类型，对象类型。
 
 -  loader执行顺序
 
@@ -692,7 +692,7 @@ npm install --save-dev file-loader
  module:{
     rules:[
       {
-       test:/\(.jpg|png|gif)$/,
+       test:/\.(jpg|png|gif)$/,
        use:{
          loader:'file-loader',
          //配置项
@@ -950,7 +950,7 @@ npm install sass-loader node-sass  --save-dev
       use: [{
           loader: "style-loader" // 将 JS 字符串生成为 style 节点
       }, {
-          loader: "css-loader", // 将 CSS 转化成 CommonJS 模块
+          loader: "css-loader", // 将 CSS 转化成 CommonJS 模块
         	options:{
             //在scss文件中使用@import语法引入其他scss文件时，也要走下面两个loader。如果不配置，将不会走sass-loader，postcss-loader
             importLoaders:2
@@ -986,38 +986,6 @@ body{
 ```
 
 此时进行打包，如果没有在`css-loader`中配置`importLoaders`项，则打包`main.scss`时，其中引入的`index.scss`就不会走`sass-loader`和`postcss-loader`。
-
-抽离成单独的文件
-
-```js
-const ExtractTextPlugin = require("extract-text-webpack-plugin");
-
-const extractSass = new ExtractTextPlugin({
-    filename: "[name].[contenthash].css",
-    disable: process.env.NODE_ENV === "development"
-});
-
-module.exports = {
-    ...
-    module: {
-        rules: [{
-            test: /\.scss$/,
-            use: extractSass.extract({
-                use: [{
-                    loader: "css-loader"
-                }, {
-                    loader: "sass-loader"
-                }],
-                // 在开发环境使用 style-loader
-                fallback: "style-loader"
-            })
-        }]
-    },
-    plugins: [
-        extractSass
-    ]
-};
-```
 
 ## 4.plugins
 
@@ -1295,7 +1263,7 @@ const htmlWebpackPlugin = new HtmlWebpackPlugin({
 
 此时只在body中引入了chunks为index的js文件。
 
-- 配置多页面打包
+#### 4.1.6配置多页面打包
 
 `html-webpack-plugin`的一个实例生成一个html文件，如果单页应用中需要多个页面入口（多个template值），或者多页应用时配置多个html时，那么就需要实例化该插件多次；
 
@@ -1374,11 +1342,11 @@ module.exports = {
 </html>
 ```
 
-#### 4.1.5其他配置项
+#### 4.1.7其他配置项
 
 - `inject`
 
-向`template`或者`templateContent`中注入所有静态资源，不同的配置值注入的位置不经相同。
+向`template`或者`templateContent`中注入所有静态资源，不同的配置值注入的位置不相同。
 
 1、**true或者body**：所有**JavaScript**资源插入到body元素的底部
 2、**head**: 所有**JavaScript**资源插入到head元素中
@@ -1429,9 +1397,9 @@ const loginhtmlWebpackPlugin = new HtmlWebpackPlugin({
 });
 ```
 
-- chunksSortMode
+- `chunksSortMode`
 
-none | auto| function，默认auto； 允许指定的thunk在插入到html文档前进行排序。
+none | auto| function，默认auto； 允许指定的chunk在插入到html文档前进行排序。
 **function**值可以指定具体排序规则；**auto**基于chunk的id进行排序； **none**就是不排序
 
 - **`showErrors`**
@@ -1488,6 +1456,66 @@ module.exports =webpackConfig
 ```
 
 > 注意：默认要删除的是output.path
+
+### 4.3extract-text-webpack-plugin
+
+它会将所有的入口 `chunk`(entry chunks)中引用的 `*.css`，移动到独立分离的 CSS 文件。因此，你的样式将不再内嵌到 JS bundle 中，而是会放到一个单独的 CSS 文件（即 `styles.css`）当中。 如果你的样式文件大小较大，这会做更快提前加载，因为 CSS bundle 会跟 JS bundle 并行加载。
+
+- 安装
+
+```bash
+npm install extract-text-webpack-plugin --save-dev
+```
+
+注意：extract-text-webpack-plugin默认安装的版本是3.0.2，还不支持webpack的4.x版本。需要安装最新的4.0版本。
+
+```bash
+npm install --save-dev extract-text-webpack-plugin@next
+```
+
+
+
+```js
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+
+const extractSass = new ExtractTextPlugin({
+    filename: "[name].[contenthash].css",
+    disable: process.env.NODE_ENV === "development"
+});
+
+module.exports = {
+    ...
+    module: {
+        rules: [{
+            test: /\.scss$/,
+            use: extractSass.extract({
+                use: [{
+                    loader: "css-loader"
+                }, {
+                    loader: "sass-loader"
+                }],
+                // 在开发环境使用 style-loader
+                fallback: "style-loader"
+            })
+        }]
+    },
+    plugins: [
+        extractSass
+    ]
+};
+```
+
+优缺点：
+
+| 优点                                                         | 缺点                              |
+| ------------------------------------------------------------ | --------------------------------- |
+| 更少 style 标签 (旧版本的 IE 浏览器有限制)                   | 额外的 HTTP 请求                  |
+| CSS SourceMap (使用 `devtool: "source-map"` 和 `extract-text-webpack-plugin?sourceMap` 配置) | 更长的编译时间                    |
+| CSS 请求并行                                                 | 没有运行时(runtime)的公共路径修改 |
+| CSS 单独缓存                                                 | 没有热替换                        |
+| 更快的浏览器运行时(runtime) (更少代码和 DOM 操作)            |                                   |
+
+
 
 ## 5.sourceMap
 
@@ -1548,7 +1576,7 @@ module.exports={
 
 我们代码出错了，我们只希望sourcemap告诉我们第几行出错了就可以了。
 
-添加cheap意思就是只需告诉我们行，不需要告诉我们第几列。
+**添加cheap意思就是只需告诉我们行，不需要告诉我们第几列。**
 
 ```js
 module.exports={

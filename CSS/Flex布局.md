@@ -267,33 +267,156 @@ item3的最终宽度为：140 + (15 * 0) =140px
 
 ```css
 .container{
-
   display: flex;
-
   width: 400px; // 容器宽度为400px
-
 }
-
 .item1{
-
   width: 50px;
-
   flex-grow: 0.1;
-
 }
-
 .item2{
-
   width: 80px;
-
   flex-grow: 0.3;
-
 }
-
 .item3{
-
   width: 110px;
-
   flex-grow: 0.2;
 }
 ```
+
+在这个例子中，容器的剩余空间为 400 - (50 + 80 + 110) = 160px。由于项目的flex-grow相加0.1 + 0.3 + 0.2 = 0.6小于1，剩余空间按 160 / 1 = 160px划分。例子中的项目宽度分别为：
+
+item1的最终宽度为：50 + (160 * 0.1) = 66px
+
+item2的最终宽度为：80 + (160 * 0.3) = 128px
+
+item3的最终宽度为：110 + (160 * 0.2) = 142px
+
+> 注：
+
+如果所有项目的`flex-grow`属性都为1，则它们将等分剩余空间（如果有的话）。如果一个项目的`flex-grow`属性为2，其他项目都为1，则前者占据的剩余空间将比其他项多一倍。
+
+![image-20200904190853456](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200904190853456.png)
+
+### 4.3 flex-shrink属性
+
+当项目在主轴方向上溢出时，通过设置项目收缩因子来压缩项目适应容器。属性值为项目的收缩因子，属性值取非负数。
+
+```css
+.item {
+  flex-shrink: <number>; /* 默认值：1 */
+}
+```
+
+示例：
+
+一个宽度为400px的容器，里面的三个项目width分别为120px，150px，180px。分别对这项目1和项目2设置`flex-shrink`值为2和3。
+
+```css
+.container{
+  display: flex;
+  width: 400px; /* 容器宽度为400px*/
+}
+.item1{
+  width: 120px;
+  flex-shrink: 2;
+}
+.item2{
+  width: 150px;
+  flex-shrink: 3;
+}
+.item3{/* 项目3未设置flex-shrink，默认flex-shrink值为1*/
+  width: 180px;
+}
+```
+
+在这个例子中，项目溢出 400 - (120 + 150 + 180) = -50px。计算压缩量时总权重为各个项目的宽度乘以`flex-shrink`的总和，这个例子压缩总权重为120 * 2 + 150 * 3+ 180 * 1 = 870。各个项目压缩空间大小为总溢出空间乘以项目宽度乘以`flex-shrink`除以总权重：
+
+item1的最终宽度为：120 - 50 * 120 * 2 / 870 ≈ 106px
+
+item2的最终宽度为：150 - 50 * 150 * 3 / 870 ≈ 124px
+
+item3的最终宽度为：180 - 50 * 180 * 1 / 870 ≈ 169px
+
+其中计算时候值如果为小数，则向下取整。
+
+![image-20200904191652435](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200904191652435.png)
+
+需要注意一点，当项目的压缩因子相加小于1时，参与计算的溢出空间不等于完整的溢出空间。在上面例子的基础上，我们改变各个项目的`flex-shrink`。
+
+```css
+.container{
+  display: flex;
+  width: 400px; /* 容器宽度为400px*/
+}
+.item1{
+  width: 120px;
+  flex-shrink: 0.1;
+}
+.item2{
+  width: 150px;
+  flex-shrink: 0.2;
+}
+.item3{
+  width: 180px;
+  flex-shrink: 0.3;
+}
+```
+
+总权重为：120 * 0.1 + 150 * 0.2 + 180 * 0.3 = 96。参与计算的溢出空间不再是50px，而是50 * (0.1 + 0.2 + 0.3) / 1 =30：
+
+item1的最终宽度为：120 - 30 * 120 * 0.1 / 96 ≈ 116px
+
+item2的最终宽度为：150 - 30 * 150 * 0.2 / 96 ≈ 140px
+
+item3的最终宽度为：180 - 30 * 180 * 0.3 / 96 ≈ 163px
+
+> 注：如果所有项目的`flex-shrink`属性都为1，当空间不足时，都将等比例缩小。如果一个项目的`flex-shrink`属性为0，其他项目都为1，则空间不足时，前者不缩小。
+
+### 4.4 flex-basis属性
+
+`flex-basis`属性定义了在分配多余空间之前，项目占据的主轴空间（main size）。浏览器根据这个属性，计算主轴是否有多余空间。它的默认值为`auto`，即项目的本来大小。
+
+```css
+.item {
+  flex-basis: <length> | auto; /* default auto */
+}
+```
+
+它可以设为跟`width`或`height`属性一样的值（比如350px），则项目将占据固定空间。
+
+当容器设置flex-direction为row或row-reverse时，flex-basis和width同时存在，flex-basis优先级高于width，也就是此时flex-basis代替项目的width属性。
+
+当容器设置flex-direction为column或column-reverse时，flex-basis和height同时存在，flex-basis优先级高于height，也就是此时flex-basis代替项目的height属性。
+
+需要注意的是，当flex-basis和width（或height），其中一个属性值为auto时，非auto的优先级更高。
+
+![image-20200905000559246](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200905000559246.png)
+
+### 4.5 flex属性
+
+`flex`属性是`flex-grow`, `flex-shrink` 和 `flex-basis`的简写，默认值为`0 1 auto`。后两个属性可选。
+
+```css
+.item {
+  flex: none | [ <'flex-grow'> <'flex-shrink'>? || <'flex-basis'> ]
+}
+```
+
+该属性有两个快捷值：`auto` (`1 1 auto`) 和 none (`0 0 auto`)。
+
+建议优先使用这个属性，而不是单独写三个分离的属性，因为浏览器会推算相关值。
+
+### 4.6 align-self属性
+
+设置项目在行中交叉轴方向上的对齐方式，用于覆盖容器的align-items，这么做可以对项目的对齐方式做特殊处理。默认属性值为auto，继承容器的align-items值，当容器没有设置align-items时，属性值为stretch。
+
+```css
+.item{
+  align-self: auto（默认值） | flex-start | center | flex-end | baseline |stretch
+}
+```
+
+![image-20200905000954542](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200905000954542.png)
+
+> 注：该属性可能取6个值，除了auto，其他都与align-items属性完全一致。
