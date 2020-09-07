@@ -1870,7 +1870,7 @@ app.listen(3000, function () {
 
 > 注：**HMR** *不适用于生产环境，这意味着它应当只在开发环境使用。*
 
-### 7.1启用 HMR
+- 启用 HMR
 
 启用此功能实际上相当简单。而我们要做的，就是更新 `webpack-dev-server` 的配置，和使用 webpack 内置的 HMR 插件。
 
@@ -1905,7 +1905,7 @@ module.exports = {
   };
 ```
 
-注意，我们还添加了 `NamedModulesPlugin`，以便更容易查看要修补(patch)的依赖。
+> 注意，我们还添加了 `NamedModulesPlugin`，以便更容易查看要修补(patch)的依赖。
 
 项目结构：
 
@@ -1985,17 +1985,9 @@ export default function number() {
 
 此时页面显示：
 
+![image-20200907102833005](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200907102833005.png)
 
-
-`login.js`文件代码不做修改
-
-```js
-export default function printMe() {
-    
-  }
-```
-
-
+可以看出，只有变化的文件才重新加载了，而没修改的文件不会重新加载。
 
 ## 8.使用Babel处理ES6语法
 
@@ -2026,7 +2018,7 @@ module.exports={
 
 说明：当我们使用`babel-loader`处理js文件的时候，实际上`babel-loader`只是webpack和Babel做通信的桥梁，使用之后，他们就会做打通。实际上`babel-loader`不会将js文件里的es6语法转换为es5语法。
 
-安装转换es6的模块:
+### 8.2安装转换es6的模块:
 
 ```shell
 npm install @babel/preset-env --save-dev
@@ -2056,13 +2048,15 @@ module.exports={
 
 此时就会将es6的模块转换为es5的语法了。这个插件只是翻译了一部分，很多语法在低版本浏览器还是没法支持的。需要使用`polyfill`做语法或变量的补充。
 
-安装`polyfill`:
+### 8.3使用`polyfill`
+
+- 安装`polyfill`:
 
 ```shell
 npm install --save @babel/polyfill
 ```
 
-使用：
+- 使用：
 
 所有代码前引入这个插件即可。也就是放在入口文件`main.js`中。
 
@@ -2074,9 +2068,9 @@ require("@babel/polyfill");
 //如果配置了useBuiltIns，则不需要引入上面的
 ```
 
-注意：这个插件会将所有语法都打包。但是我们只使用promise，map方法。因此只需要将这两个高级语法实现下就可以了
+> 注意：这个插件会将所有语法都打包。但是我们只使用promise，map方法。因此只需要将这两个高级语法实现下就可以了
 
-配置：
+- 配置：
 
 ```js
 //webpack.config.js
@@ -2100,7 +2094,7 @@ module.exports={
 
 说明：只实现业务代码中使用了的高级语法。其他没使用的高级语法就不会打包进去。
 
-指定浏览器进行语法代码打包：
+### 8.4指定浏览器进行语法代码打包
 
 ```js
 //webpack.config.js
@@ -2130,18 +2124,18 @@ module.exports={
 
 说明：如果`targets`指定的浏览器中已经对es6已经支持的很好了，就没必要再将代码进行翻译转换了。这些都是自动操作。
 
-使用`transform-runtime`:
+### 8.5使用`transform-runtime`
 
 如果写的是业务代码时，只需要`babel/polyfill`的配置就可以了。但是如果写的是库项目代码的时候，需要使用`babel/plugin-transform-runtime`。`polyfill`会污染全局环境。但是`babel/plugin-transform-runtime`会以闭包的形式注入，不存在污染全局环境。
 
-安装:
+- 安装:
 
 ```shell
 npm install --save-dev @babel/plugin-transform-runtime
 npm install --save @babel/runtime
 ```
 
-配置：
+- 配置：
 
 ```js
 //webpack.config.js
@@ -2166,7 +2160,7 @@ module.exports={
 }
 ```
 
-安装包`runtime-corejs2`
+- 安装包`runtime-corejs2`
 
 ```shell
 npm install --save @babel/runtime-corejs2
@@ -2174,7 +2168,7 @@ npm install --save @babel/runtime-corejs2
 
 此时打包就不会出现问题。
 
-抽离配置
+### 8.6抽离配置
 
 新建`.babelrc`文件，将`webpack.config.js`中`babel-loader`的options配置项抽离处理单独配置。写了这个文件就会生效，无需引入。
 
@@ -2205,9 +2199,7 @@ npm install --save @babel/runtime-corejs2
 }
 ```
 
-
-
-注意：`.babelrc`中的配置是从下网上，从左到右的执行顺序。
+注意：`.babelrc`中的配置是从下往上，从左到右的执行顺序。
 
 删除`webpack.config.js`中`babel-loader`下的options配置
 
@@ -2340,8 +2332,6 @@ module.exports = {
   },
 };
 ```
-
-
 
 # 3.webpack高级概念
 
@@ -2506,7 +2496,7 @@ module.exports={
 
 开发环境和生产环境打包的配置是不同的，因此我们将开发环境与生产环境的配置区分开。而不用每次手动去改。
 
-我们还是会遵循不重复原则(Don't repeat yourself - DRY)，保留一个“通用”配置。为了将这些配置合并在一起，我们将使用一个名为 [`webpack-merge`](https://github.com/survivejs/webpack-merge) 的工具。通过“通用”配置，我们不必在环境特定(environment-specific)的配置中重复代码。
+我们还是会遵循不重复原则(Don't repeat yourself - DRY)，保留一个“通用”配置。为了将这些配置合并在一起，我们将使用一个名为 `webpack-merge`的工具。通过“通用”配置，我们不必在环境特定(environment-specific)的配置中重复代码。
 
 安装 `webpack-merge` ：
 
@@ -3065,7 +3055,7 @@ vendors~main_5a5227.js   1.36 MiB  vendors~main  [emitted] [immutable]  vendors~
 Entrypoint main = vendors~main_5a5227.js main_5a5227.js
 ```
 
-一个入口，却输出了两个js文件。其中main.js是打包的我们业务代码，而`vendors.js`则是打包的`lodash`。这两个文件也会被引入到html文件中，并且`vendors.js`会被先引入：
+一个入口，却输出了两个js文件。其中main.js是打包的我们业务代码，而`vendors.js`则是打包的`lodash`。这两个文件也会被引入到html文件中，并且`vendors.js`会被优先引入：
 
 ```html
 <!DOCTYPE html>
@@ -3144,7 +3134,7 @@ module.exports = {
       maxInitialRequests: 30,//表示入口文件最多只能进行代码分割的数量，超过就不会做代码分割。
       automaticNameDelimiter: '~',//做文件名连接的时候要用这个符号，比如vendors~lodash.js 
       enforceSizeThreshold: 50000,
-      cacheGroups: {//叫缓存组。比如引入jquery和lodash，如果没有此项，就会别打包出jquery.js和lodash.js。如果想打包成一个文件，就需要此配置项。遇到jquery先缓存，再此分析遇到lodash又缓存，当所有模块分析完毕后，符合defaultVendors组的打包到一起（vendors.js），符合default的打包到一起（common.js）。
+      cacheGroups: {//叫缓存组。比如引入jquery和lodash，如果没有此项，就会分别打包出jquery.js和lodash.js。如果想打包成一个文件，就需要此配置项。遇到jquery先缓存，再此分析遇到lodash又缓存，当所有模块分析完毕后，符合defaultVendors组的打包到一起（vendors.js），符合default的打包到一起（common.js）。
         
         //代表打包同步代码的时候会执行这个，与chunks配合使用。决定代码分割出来放在哪个文件里面去。
         defaultVendors: {//组名称
@@ -3392,7 +3382,6 @@ const prodConfig = {
 };
 
 module.exports = merge(commonConfig, prodConfig);
-
 ```
 
 配置开发环境：
@@ -3443,7 +3432,6 @@ const devConfig = {
 };
 
 module.exports = merge(commonConfig, devConfig);
-
 ```
 
 > 注意：修改`package.json`文件：如果配置sideEffects排除css，sideEffects就会检测到css未使用，从而不会打包，从而就不会进行代码分割。因为在生产环境下默认开启了`tree shaking`。
@@ -3493,7 +3481,6 @@ Entrypoint main = main.css main_1a7499.js main.css.map main_1a7499.js.map
     <script src="main_1a7499.js"></script>
   </body>
 </html>
-
 ```
 
 ### 3.5.2参数详解
@@ -3571,7 +3558,6 @@ const prodConfig = {
 };
 
 module.exports = merge(commonConfig, prodConfig);
-
 ```
 
 此时打包出的css代码就进过压缩的。
@@ -4155,7 +4141,6 @@ export function multiply(a, b) {
 export function division(a, b) {
   return a / b;
 }
-
 ```
 
 
@@ -4165,7 +4150,6 @@ export function division(a, b) {
 export function join(a, b) {
   return a + "" + b;
 }
-
 ```
 
 
@@ -4175,7 +4159,6 @@ export function join(a, b) {
 import * as math from "./math";
 import * as string from "./string";
 export default { math, string };
-
 ```
 
 
@@ -4287,7 +4270,6 @@ import library from 'library'
     "webpack-cli": "^3.3.12"
   }
 }
-
 ```
 
 
@@ -4527,7 +4509,6 @@ devServer: {
     host: '...',
     contentBase: '...',
     proxy: {
-      
       context: () => true,
       target: 'http://localhost:1234'
     }
