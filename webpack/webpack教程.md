@@ -8,6 +8,7 @@
 #查看node版本
 $ node -v
 # 查看npm版本
+
 $ npm -v
 ```
 
