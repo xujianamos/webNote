@@ -122,7 +122,7 @@ display:inline-block;
 
 `display：block` 除了转换为块级元素之外，同时还有显示元素的意思。
 
-特点： 隐藏之后，不再保留位置。
+**特点： 隐藏之后，不再保留位置。**
 
 #### 2.4.2visibility 可见性
 
@@ -130,7 +130,7 @@ display:inline-block;
 
 `visibility：hidden; `　  隐藏的
 
-特点： 隐藏之后，继续保留原有位置。（停职留薪）
+**特点： 隐藏之后，继续保留原有位置。（停职留薪）**
 
 #### 2.4.3overflow 溢出
 
@@ -405,35 +405,103 @@ a:active{
 
 #### 3.5.4结构性伪类
 
-示例：
+在css3中有两个新的选择器可以选择父元素下对应的子元素，一个是`:nth-child` 另一个是`:nth-of-type`。
+
+可选值：
+
+- 数字：下标从1开始
+- 关键词：Odd 、even
+- 字母`n`：2n（偶数），2n+1（奇数），5n（5的倍数）
+
+ 区别：
+
+对于`p:nth-child`选择器，代表的含义;
+
+1. 这是个段落元素
+2. 这是父标签的第二个孩子元素
+
+对于`p:nth-of-type`选择器，代表的含义：
+
+1. 选择父标签的第二个段落子元素
+
+示例1：
+
+html结构：
+
+```html
+<ul class="demo">
+    <p>zero</p>
+    <li>one</li>
+    <li>two</li>
+</ul>
+```
+
+css:
 
 ```css
-ul li:first-child {
-  background-color: lightseagreen;
+.demo li:nth-child(2) {
+    color: red;
 }
 
-ul li:last-child {
-  background-color: lightcoral;
-}
-/*n是从1开始的*/
-ul li:nth-child(3) {
-  background-color: aqua;
+.demo li:nth-of-type(2) {
+    color: pink;
 }
 ```
 
-> `nth-child(index)`参数详解
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200909152251692.png" alt="image-20200909152251692" style="zoom:100%;" />
 
-注意：本质上就是选中第几个子元素
+上面这个例子，`.demo li:nth-child(2)`选择的是`<li>one</li>`节点，而`.demo li:nth-of-type(2)`则选择的是`<li>two</li>`节点。
 
-- 取值：
-  - index的值从`1`开始计数！！！！
-  - n 可以是数字、关键字、公式
-  - n 如果是数字，就是选中第几个
-  - index可以为变量`n`(只能是字母n，其他字母无效)
-  - index可以为`even odd`
-  - 常见的公式如下(如果 n 是公式，则从 0 开始计算)
+对于`li:nth-child(2)`表示这个元素要是`li`标签，且是第二个子元素，是两个必须满足的条件。于是，就是第一个`li`标签颜色为红色（正好符合：p标签，第二个子元素）。
 
+示例2：
 
+```html
+<ul class="demo">
+  <p>first p</p>
+  <li>first li</li>
+  <li>second li</li>
+  <p>second p</p>
+</ul>
+```
+
+css:
+
+```css
+.demo :nth-child(2) {
+        color: red;
+}
+
+.demo :nth-of-type(2) {
+        color: pink;
+}
+```
+
+![image-20200909152703695](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200909152703695.png)
+
+如上可见，在他们之前不指定标签类型，：nth-child(2) 选中依旧是第二个元素，无论它是什么标签。而 :nth-type-of(2) 选中了两个元素，分别是父级.demo中的第二个p标签和第二个li标签，由此可见，不指定标签类型时，:nth-type-of(2)会选中所有类型标签的第二个。
+
+示例3：
+
+```html
+<section>
+    <div>我是一个普通的div标签</div>
+    <span>我是一个普通的span标签</span>
+    <p>我是第1个p标签</p>
+    <p>我是第2个p标签</p>  <!-- 希望这个变红 -->
+</section>
+```
+
+css
+
+```css
+p:nth-child(2) { color: red; }
+p:nth-of-type(2) { color: red; }
+```
+
+那么`p:nth-child(2)`将不会选择任何元素。
+
+而`p:nth-of-type(2)`表示父标签下的第二个`p`元素，显然，无论在`div`标签后面再插入个`span`标签，还是`h1`标签，都是第二个`p`标签中的文字变红。
 
 `:first-child`
 
@@ -485,7 +553,7 @@ p:only-child{}
     background-color: blueviolet;
   }
 
-  /*n 是公式，从 0 开始计算 */
+  /*n 是公式，从 1 开始计算 */
   ul li:nth-child(n) {
     background-color: lightcoral;
   }
@@ -555,20 +623,6 @@ p:first-of-type{}
 p:only-of-type
 /*选中在所有兄弟元素中，只有一个类型的元素*/				
 :only-of-type			
-```
-
-==**区别**：==
-
-- `nth-child`  选择父元素里面的第几个子元素，不管是第几个类型
-- `nth-of-type`  选择指定类型的元素
-
-```css
-/*表示匹配#wrap中第index的子元素 这个子元素必须是ele*/
-		#wrap ele:nth-child(index)
-/*表示匹配#wrap中第index的ele子元素*/
-		#wrap ele:nth-of-type(index)	
-除此之外:nth-child和:nth-of-type有一个很重要的区别！！
-			nth-of-type以元素为中心！！！
 ```
 
 - :not
