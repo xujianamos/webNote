@@ -2,13 +2,12 @@
 
 在开始使用`webpack`之前，请确保安装了 `Node.js `的最新版本。推荐使用 `Node.js `最新的长期支持版本(LTS - Long Term Support)。
 
-- 查看node和npm版本
+查看`node`和`npm`版本:
 
 ```bash
-#查看node版本
+# 查看node版本
 $ node -v
 # 查看npm版本
-
 $ npm -v
 ```
 
@@ -37,7 +36,7 @@ $ webpack index.js(入口文件)
 
 ### 1.1.2  卸载webpack
 
-卸载全局安装的`webpack`。
+卸载全局安装的`webpack`:
 
 ```bash
 $ npm uninstall webpack webpack-cli -g
@@ -45,7 +44,9 @@ $ npm uninstall webpack webpack-cli -g
 
 ### 1.1.3  本地安装
 
-在指定项目中安装。存在多个项目不同webpack版本时，这样更容易分别升级项目。
+在项目中安装。
+
+优点：存在多个项目不同webpack版本时，这样更容易分别升级项目。
 
 ```bash
 # 进入项目根目录
@@ -67,18 +68,22 @@ $ npx webpack -v
 $ npx webpack index.js(入口文件)
 ```
 
-注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行`webpack`命令时，`nodejs`会尝试去全局环境去找`webpack`，而我们安装`webpack`到项目中的，因此找不到。此时只能使用`npx webpack -v`查看版本号。
+注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行`webpack`命令时，`nodejs`会尝试去**全局环境**查找`webpack`，而我们是在项目中安装的`webpack`，因此会查找失败。此时只能使用`npx webpack -v`查看版本号。
 
 通常，`webpack `通过运行一个或多个 `npm scripts`，会在本地 `node_modules` 目录中查找安装的 webpack：
 
 ```json
 "scripts": {
-  //--config后面是指定的webpack配置文件名字
+  //--config后面是指定的webpack配置文件名字，因此这两个顺序不能变
     "build": "webpack --config webpack.config.js"
 }
 ```
 
-> 在安装一个要打包到**生产环境**的安装包时，你应该使用 `npm install --save`，如果你在安装一个用于**开发环境**的安装包（例如，linter, 测试库等），你应该使用 `npm install --save-dev`
+> 注：
+>
+> 1. 在安装一个要打包到**生产环境**的安装包时，你应该使用 `npm install --save`，
+>
+> 2. 如果你在安装一个用于**开发环境**的安装包（例如，linter, 测试库等），你应该使用 `npm install --save-dev`
 
 ### 1.1.4  修改package.json文件
 
@@ -108,7 +113,7 @@ $ npx webpack index.js(入口文件)
 
 ## 1.2.webpack配置文件
 
-使用 `npx webpack index.js`时将使用**webpack的默认配置**进行打包`index.js`文件。
+使用 `npx webpack index.js`时将使用**webpack的默认配置**进行打包`index.js`文件。而默认配置往往不能满足我们的项目需求，因此需要进行webpack的自定义配置。
 
 ### 1.2.1webpack基本配置
 
@@ -135,7 +140,7 @@ module.exports = {
 
 ==注意==：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。也就是执行`npx webpack`打包命令，则webpack的默认配置文件就必须是`webpack.config.js`。否则就会打包错误。
 
-> 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示`webpack`此时以`webpackconfig.js`为配置文件进行打包。
+> 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：说找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示`webpack`此时以`webpackconfig.js`为配置文件进行打包。
 
 ### 1.2.2配置打包命令
 
@@ -201,10 +206,6 @@ webpack-vue-template
 
 可以通过在 webpack 配置中配置 `entry` 属性，来指定一个入口起点（或多个入口起点）。
 
-默认值为 `./src`。
-
-单页应用(SPA)：一个入口起点。多页应用(MPA)：多个入口起点。
-
 `entry` 配置的最简单例子：
 
 ```js
@@ -214,6 +215,8 @@ module.exports = {
 };
 ```
 
+> 注意：webpack默认会以 `./src/index.js`为打包的入口文件。即如果不指定entry，则webpack打包时默认会在项目的src下查找index.js文件，如果有则打包成功，如果没有此文件，则打包失败。
+
 ### 2.1.1 单个入口(简写)语法
 
 属性值为**字符串**形式。
@@ -221,7 +224,7 @@ module.exports = {
 ```js
 //webpack.config.js
 module.exports={
-   entry: './src/main.js'
+   entry: './src/index.js'
 }
 ```
 
@@ -231,12 +234,12 @@ module.exports={
 //webpack.config.js
 module.exports={
    entry: {
-    main: './src/main.js'
+    main: './src/index.js'
   }
 }
 ```
 
-> 注：如果没配置`output`，此时输出会使用output默认配置。也就是输出到根目录下`dist/`文件下。
+> 注：如果没有配置`output`，此时输出会使用output默认配置。也就是输出到根目录的`dist/`文件下。
 
 打包输出信息：
 
@@ -311,7 +314,7 @@ Entrypoint main = main.js
 //webpack.config.js
 module.exports={
 	entry: {
-    index: './src/index.js',
+    index: './src/index.js',//值类型可以为字符串或者数组
     main: './src/main.js'
   	},
   output:{
@@ -411,7 +414,8 @@ module.exports = config;
 //webpack.config.js
 const path=require('path')
 module.exports={
-  //此配置将一个单独的 bundle.js 文件输出到 当前目录下的dist 目录中。
+  	entry:'./src/index.js',
+  //此配置将一个单独的 bundle.js 文件输出到当前目录下的dist目录中。
    output: {
     filename: 'bundle.js',
     path:path.resolve(__dirname,'dist')
@@ -433,7 +437,7 @@ Entrypoint main = bundle.js
 
 ### 2.2.2多个入口
 
-如果配置创建了多个单独的 `chunk`（例如，使用多个入口起点或使用像 `CommonsChunkPlugin `这样的插件），则应该使用**占位符(substitutions)**来确保每个文件具有唯一的名称。
+如果配置创建了多个单独的 `chunk`（例如，使用多个入口起点或使用像 `CommonsChunkPlugin `这样的插件），则应该使用**占位符**来确保每个文件具有唯一的名称。
 
 ```js
 module.exports={
@@ -441,7 +445,7 @@ module.exports={
    	 index: './src/index.js',
    	 main: './src/main.js'
  	 },
-  output: {
+   output: {
       //使用占位符 [name]来确保每一个输出文件有唯一名称
    		 filename: '[name].js',
      	 path: __dirname + '/dist'
@@ -463,13 +467,13 @@ Conflict: Multiple chunks emit assets to the same filename bundle.js (chunks ind
 
 ### 2.2.3`filename`配置
 
-**（1）使用入口名称作为输出文件名：**
+**（1）使用入口key作为输出文件名：**
 
 ```js
 filename: "[name].bundle.js"
 ```
 
-打包后输出
+打包后输出:
 
 ```bash
 Hash: e8f77d56163515053f38
@@ -477,8 +481,8 @@ Version: webpack 4.44.1
 Time: 375ms
 Built at: 2020-08-13 13:53:48
           Asset      Size  Chunks             Chunk Names
-`index.bundle.js`  3.79 KiB   index  [emitted]  index
- `main.bundle.js`   554 KiB    main  [emitted]  main
+ index.bundle.js  3.79 KiB   index  [emitted]  index
+ main.bundle.js   554 KiB    main  [emitted]  main
 Entrypoint main = main.bundle.js
 Entrypoint index = index.bundle.js
 [./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
@@ -514,8 +518,8 @@ Version: webpack 4.44.1
 Time: 666ms
 Built at: 2020-08-13 13:59:54
                                Asset      Size  Chunks                         Chunk Names
-`index.e8f77d56163515053f38.bundle.js`  3.79 KiB   index  [emitted] [immutable]  index
- `main.e8f77d56163515053f38.bundle.js`   554 KiB    main  [emitted] [immutable]  main
+ index.e8f77d56163515053f38.bundle.js  3.79 KiB   index  [emitted] [immutable]  index
+ main.e8f77d56163515053f38.bundle.js   554 KiB    main  [emitted] [immutable]  main
 Entrypoint main = main.e8f77d56163515053f38.bundle.js
 Entrypoint index = index.e8f77d56163515053f38.bundle.js
 [./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
@@ -541,8 +545,8 @@ Version: webpack 4.44.1
 Time: 382ms
 Built at: 2020-08-13 13:57:05
                          Asset      Size  Chunks                         Chunk Names
-`089a5654d56f6f28f211.bundle.js`  3.79 KiB   index  [emitted] [immutable]  index
-`795b0c772923ff2f92de.bundle.js`   554 KiB    main  [emitted] [immutable]  main
+ 089a5654d56f6f28f211.bundle.js  3.79 KiB   index  [emitted] [immutable]  index
+ 795b0c772923ff2f92de.bundle.js   554 KiB    main  [emitted] [immutable]  main
 Entrypoint main = 795b0c772923ff2f92de.bundle.js
 Entrypoint index = 089a5654d56f6f28f211.bundle.js
 [./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
@@ -570,10 +574,9 @@ const config={
   	//为html文件引入js文件自动添加cdn地址
   	publicPath:'http://cdn.com.cn'
   	filename:'[name].js',
- 	 path:path.resolve(__dirname,'dist')
+ 	  path:path.resolve(__dirname,'dist')
 	}
 }
-
 module.exports = config;
 ```
 
