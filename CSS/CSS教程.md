@@ -149,7 +149,7 @@ display:inline-block;
 
 2. 隐藏超出内容,  不允许内容超过父盒子。
 
-综合案例：鼠标移入出现盒子
+### 2.5综合案例：鼠标移入出现遮罩层
 
 ```html
 <div class="box">
@@ -168,9 +168,9 @@ Css:
 			width: 222px;
 			height: 220px;
 			margin: 100px auto;
-		}
-		/*1. 原来盒子里面装有一个 黑色半透明的盒子 刚开始是看不见的隐藏*/
-		.mask {
+}
+/*1. 原来盒子里面装有一个 黑色半透明的盒子 刚开始是看不见的隐藏*/
+.mask {
 			display: none;
 			position: absolute;
 			top: 0;
@@ -178,11 +178,11 @@ Css:
 			width: 222px;
 			height: 220px;
 			background: rgba(0, 0, 0, .3) url(images/arr.png) no-repeat center center;
-		}
-		/*2. 当我们鼠标经过的时候，a里面的这个黑色半透明的盒子就显示出来了*/
-		.box a:hover .mask {
+}
+/*2. 当我们鼠标经过的时候，a里面的这个黑色半透明的盒子就显示出来了*/
+.box a:hover .mask {
 			display: block;
-		}
+}
 ```
 
 <img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200909191142658.png" alt="image-20200909191142658" style="zoom:50%;" />
