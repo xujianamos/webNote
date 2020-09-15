@@ -618,7 +618,7 @@ webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，cs
 
 `loader`让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解 JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack 的打包能力，对它们进行处理。
 
-注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
+> 注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
 
 ### 2.3.1loader基本配置
 
@@ -629,7 +629,6 @@ webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，cs
 
 ```js
 //webpack.config.js
-
 const config = {
   module: {
     rules: [
@@ -740,13 +739,17 @@ npm install --save-dev file-loader
 
 ![image-20200813144427221](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813144427221.png)
 
-- 使用`file-loader`打包字体文件。
+- 使用`file-loader`打包字体文件:
 
 ```js
 {
        test:/\.(eot|ttf|svg)$/,
        use:{
-         loader:'file-loader'
+         loader:'file-loader',
+         options:{
+           name:'[name].[ext]',
+           outputPath:'fonts/'
+         }
        }
 }
 ```
@@ -780,7 +783,7 @@ npm install --save-dev url-loader
 
 优点：打包到js文件中，减少了http请求。但是图片过大会导致js文件很大，加载js文件很耗时。
 
-推荐：如果图片过大，建议使用file-loader,加载js文件就会很快。如果图片很小，建议使用url-loader,减少http请求。
+推荐：如果图片过大，建议使用`file-loader`,加载js文件就会很快。如果图片很小，建议使用`url-loader`,减少http请求。
 
 ### 2.3.4style-loader
 
@@ -801,19 +804,19 @@ npm install style-loader css-loader -D
       }
 ```
 
-原理：`css-loader`负责将css文件之间的依赖关系合并。`style-loader`将合并后的css文件挂载到html文件的head中(以内部样式表形式)
+原理：`css-loader`负责将css文件之间的依赖关系合并。`style-loader`将合并后的css文件挂载到html文件的head中(以内部样式表形式)。
 
 ### 2.3.5postcss-loader
 
 使用`postcss-loader`实现自动给样式添加厂商前缀。
 
-- 安装：
+- 安装
 
 ```bash
 npm i -D postcss-loader
 ```
 
-- 配置：
+- 配置
 
 根目录下新建`postcss.config.js`文件。
 
@@ -830,7 +833,7 @@ module.exports = {
 
 - 使用
 
-同时需要在需要添加前缀的类型文件中使用postcss-loader。打包时遇到`postcss-loader`，就会去找`postcss.config.js`配置文件，并使用配置文件中的插件。
+同时需要在需要添加前缀的类型文件中使用`postcss-loader`。打包时遇到`postcss-loader`，就会去找`postcss.config.js`配置文件，并使用配置文件中的插件。
 
 ```js
 {
@@ -846,13 +849,13 @@ module.exports = {
 
 ### 2.3.6css-loader
 
-js文件中引入scss文件
+js文件中引入scss文件:
 
-当在js文件中使用`import 'index.scss'`引入样式文件时，依次执行postcss-loader，sass-loader，css-loader，style-loader。
+- 当在js文件中使用`import 'index.scss'`引入样式文件时，依次执行postcss-loader，sass-loader，css-loader，style-loader。
 
-在scss文件中引入scss文件
+在scss文件中引入scss文件:
 
-当在scss文件中使用`@import './index.scss'`引入其他scss文件时，打包时有可能就不会使用postcss-loader，sass-loader。如果也让打包时使用这两个loader，则需要在`css-loader`中进行配置。
+- 当在scss文件中使用`@import './index.scss'`引入其他scss文件时，打包时有可能就不会使用postcss-loader，sass-loader。如果也让打包时使用这两个loader，则需要在`css-loader`中进行配置。
 
 ```js
  {
