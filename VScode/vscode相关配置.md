@@ -26,14 +26,20 @@
 自定义模板：
 
 ```json
-{
-   "fileheader.customMade": {//头部注释
+// 头部注释
+  "fileheader.customMade": {
+    "Author": "xujian",
+    "LastEditors": "xujian", // 文件最后编辑者
     "Date": "Do not edit", // 文件创建时间(不变)
-    "LastEditors": "OBKoro1", // 文件最后编辑者
     "LastEditTime": "Do not edit", // 文件最后编辑时间
+    "Description": "file content",
     "FilePath": "Do not edit" // 文件在项目中的相对路径 自动更新
+  },
+//这个配置必须放在后面
+  "fileheader.configObj": {
+    "wideSame": true, // 设置为true开启
+    "wideNum": 13 // 字段长度 默认为13
   }
-}
 ```
 
 - 使用
@@ -76,5 +82,46 @@ resolve: {
     },
     extensions: ['.js', '.vue', '.json', '.css']
   }
+```
+
+## 3.代码片段
+
+### 3.1vue代码片段
+
+```json
+{
+  "print to vue template": {
+    "prefix": "vue template",
+    "body": [
+      "<template>",
+      "  <div class=\"$1\">",
+      "  </div>",
+      "</template>",
+      "",
+      "<script>",
+      "export default {",
+      "  name: '$TM_FILENAME_BASE',",
+      "  components: {},",
+      "  props: {},",
+      "  data() {",
+      "    return {",
+      "",
+      "    }",
+      "  },",
+      "  created() { },",
+      "  mounted() { },",
+      "  methods: { },",
+      "  computed: { },",
+      "  watch: { }",
+      "}",
+      "</script>",
+      "",
+      "<style lang=\"less\" scoped>",
+      "</style>",
+      ""
+    ],
+    "description": "文件.vue 模板指令"
+  }
+}
 ```
 
