@@ -80,10 +80,10 @@ $ npx webpack index.js(入口文件)
 ```
 
 > 注：
->
-> 1. 在安装一个要打包到**生产环境**的安装包时，你应该使用 `npm install --save`，
->
-> 2. 如果你在安装一个用于**开发环境**的安装包（例如，linter, 测试库等），你应该使用 `npm install --save-dev`
+
+- 在安装一个要打包到**生产环境**的安装包时，你应该使用 `npm install --save`，
+
+- 如果你在安装一个用于**开发环境**的安装包（例如，linter, 测试库等），你应该使用 `npm install --save-dev`
 
 ### 1.1.4  修改package.json文件
 
@@ -138,9 +138,11 @@ module.exports = {
 }
 ```
 
-==注意==：有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。也就是执行`npx webpack`打包命令，则webpack的默认配置文件就必须是`webpack.config.js`。否则就会打包错误。
+> 注意：
 
-> 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：说找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示`webpack`此时以`webpackconfig.js`为配置文件进行打包。
+- 有这个配置文件时只需执行`npx webpack`即可进行打包。因为此时会默认去找`webpack.config.js`文件。也就是执行`npx webpack`打包命令，则webpack的默认配置文件就必须是`webpack.config.js`。否则就会打包错误。
+
+- 如果自己编写的webpack配置文件名字不是`webpack.config.js`，此时执行`npx webpack`，控制台就会报错：说找不到默认的配置文件。例如：我们webpack配置文件叫`webpackconfig.js`,此时要打包成功，需要执行`npx webpack --config webpackconfig.js `才能打包成功。表示`webpack`此时以`webpackconfig.js`为配置文件进行打包。
 
 ### 1.2.2配置打包命令
 
@@ -202,7 +204,7 @@ webpack-vue-template
 
 ## 2.1  entry
 
-指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的**开始**。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
+指示 webpack 应该使用哪个模块，来作为构建其内部依赖图的开始。进入入口起点后，webpack 会找出有哪些模块和库是入口起点（直接和间接）依赖的。
 
 可以通过在 webpack 配置中配置 `entry` 属性，来指定一个入口起点（或多个入口起点）。
 
@@ -215,9 +217,11 @@ module.exports = {
 };
 ```
 
-> 注意：webpack默认会以 `./src/index.js`为打包的入口文件。即如果不指定entry，则webpack打包时默认会在项目的src下查找index.js文件，如果有则打包成功，如果没有此文件，则打包失败。
+> 注意：
 
-### 2.1.1 单个入口(简写)语法
+- webpack默认会以 `./src/index.js`为打包的入口文件。即如果不指定entry，则webpack打包时默认会在项目的src下查找`index.js`文件，如果有这个文件则打包成功，如果没有此文件，则报找不到入口错误。
+
+### 2.1.1 字符串语法
 
 属性值为**字符串**形式。
 
@@ -238,8 +242,6 @@ module.exports={
   }
 }
 ```
-
-> 注：如果没有配置`output`，此时输出会使用output默认配置。也就是输出到根目录的`dist/`文件下。
 
 打包输出信息：
 
@@ -281,11 +283,11 @@ module.exports={
 }
 ```
 
-> 向 `entry` 属性传入「**文件路径(file path)数组**」将创建**多个主入口(multi-main entry)**。在你想要多个依赖文件一起注入，并且将它们的依赖导向到一个`chunk`时，传入数组的方式就很有用。
+向 `entry` 属性传入**文件路径数组**将创建**多个主入口**。在你想要多个依赖文件一起注入，并且将它们的依赖输出到一个`chunk`时，传入数组的方式就很有用。
 
 打包输出信息：
 
-```bash
+```js
 Hash: 14ab9c7be43f7b5a467d
 Version: webpack 4.44.1
 Time: 358ms
@@ -300,13 +302,13 @@ Entrypoint main = main.js
 [./src/main.js] 214 bytes {main} [built]
 ```
 
-> 此时输出文件只有一个`main.js`。表示将数组中引入的两个文件一起打包到了`main.js`。
+此时输出文件只有一个`main.js`。表示将数组中引入的两个文件一起打包到了`main.js`。
 
 此时`dist`目录下生成了1个文件：
 
 ![image-20200813113032120](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813113032120.png)
 
-### 2.1.3多个入口（对象语法）
+### 2.1.3对象语法
 
 属性值为**对象**形式。这个是**最完整的entry配置**，其他形式只是它的简化形式而已。
 
@@ -314,8 +316,8 @@ Entrypoint main = main.js
 //webpack.config.js
 module.exports={
 	entry: {
-    index: './src/index.js',//值类型可以为字符串或者数组
-    main: './src/main.js'
+    main: './src/index.js',//值类型可以为字符串或者数组
+    login: './src/login.js'
   	},
   output:{
     //[name]占位符，根据entry的属性名决定
@@ -325,7 +327,9 @@ module.exports={
 }
 ```
 
-> 注意：如果存在多个入口文件的情况下，则必须自定义配置`output`配置项，并且output的`filename`要使用`[name]`占位符，根据入口的`key`作为输出文件的名字动态输出。如果不配置`output`配置项，打包时，控制台会报错，并且只会打包出一个文件。
+> 注意：
+
+- 如果存在多个入口文件的情况下，则必须自定义配置`output`配置项，并且output的`filename`要使用`[name]`占位符，根据入口的`key`作为输出文件的名字动态输出。如果不配置`output`配置项，打包时，控制台会报错，并且只会打包出一个文件。
 
 打包输出信息：
 
@@ -395,15 +399,18 @@ module.exports = config;
 
 ## 2.2  output
 
-**output** 属性告诉 webpack 在哪里输出它所创建的 `bundles`，以及如何命名这些文件，默认值为 `./dist`。
+**output** 属性告诉 webpack 在哪里输出它所创建的 `bundles`，以及如何命名这些文件。
 
-基本上，整个应用程序结构，都会被编译到你指定的输出路径的文件夹中。你可以通过在配置中指定一个 `output` 字段，来配置这些处理过程。
+基本上，整个应用程序结构，都会被编译到你指定的输出路径的文件夹中。
 
-> 注意，即使可以存在多个`入口`起点，但只能指定一个`输出`配置。
+> 注意：
 
-### 2.2.1基本用法
+- 即使可以存在多个`入口`起点，但只能指定一个`输出`配置。
+- 如果没有配置`output`，此时输出会使用output默认配置。也就是输出到`根目录`的`./dist`文件下。
 
-在 webpack 中配置 `output` 属性的最低要求是：将它的值设置为一个对象，包括以下两点：
+### 2.2.1单个入口
+
+在 webpack 中配置 `output` 属性的最低要求是：将它的值设置为一个对象，包括以下两个`必填属性`：
 
 - `filename`： 用于输出文件的文件名。
 - `path`：目标输出目录 `path` 的绝对路径。
@@ -457,7 +464,7 @@ module.exports={
 
 如果此时`filename`为固定名称`bundle.js`，则打包时会报错:
 
-```
+```bash
 ERROR in chunk main [entry]
 bundle.js
 Conflict: Multiple chunks emit assets to the same filename bundle.js (chunks index and main)
@@ -465,7 +472,7 @@ Conflict: Multiple chunks emit assets to the same filename bundle.js (chunks ind
 
 即多个文件资源有相同的文件名称。此时需要使用`占位符` 来确保每一个输出的文件都有唯一的名称。
 
-### 2.2.3`filename`配置
+### 2.2.3`filename`配置项
 
 **（1）使用入口key作为输出文件名：**
 
@@ -485,10 +492,6 @@ Built at: 2020-08-13 13:53:48
  main.bundle.js   554 KiB    main  [emitted]  main
 Entrypoint main = main.bundle.js
 Entrypoint index = index.bundle.js
-[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
-[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
-[./src/index.js] 21 bytes {index} [built]
-[./src/main.js] 214 bytes {main} [built]
 ```
 
 ![image-20200813135532469](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813135532469.png)
@@ -522,10 +525,6 @@ Built at: 2020-08-13 13:59:54
  main.e8f77d56163515053f38.bundle.js   554 KiB    main  [emitted] [immutable]  main
 Entrypoint main = main.e8f77d56163515053f38.bundle.js
 Entrypoint index = index.e8f77d56163515053f38.bundle.js
-[./node_modules/webpack/buildin/global.js] (webpack)/buildin/global.js 472 bytes {main} [built]
-[./node_modules/webpack/buildin/module.js] (webpack)/buildin/module.js 497 bytes {main} [built]
-[./src/index.js] 21 bytes {index} [built]
-[./src/main.js] 214 bytes {main} [built]
 ```
 
 ![image-20200813140036425](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813140036425.png)
@@ -571,7 +570,7 @@ const config={
   	index:'./src/index.js'
 	},
 	output:{
-  	//为html文件引入js文件自动添加cdn地址
+  	//为html文件引入js文件自动添加cdn地址，注意publicPath为驼峰命名
   	publicPath:'http://cdn.com.cn'
   	filename:'[name].js',
  	  path:path.resolve(__dirname,'dist')
@@ -598,7 +597,9 @@ module.exports = config;
 </html>
 ```
 
-在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。
+> 注意：
+
+- 在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。 
 
 ### 2.2.5chunkFilename
 
@@ -618,11 +619,13 @@ webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，cs
 
 `loader`让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解 JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack 的打包能力，对它们进行处理。
 
-> 注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
+> 注意:
+
+- webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
 
 ### 2.3.1loader基本配置
 
-在 webpack 的配置中 **loader** 有两个目标：
+在 webpack 的配置中 **loader** 有两个必填项：
 
 1. `test` 属性：用于标识出应该被对应的 loader 进行转换的某个或某些文件。
 2. `use` 属性：表示进行转换时，应该使用哪个 loader。
@@ -642,7 +645,7 @@ module.exports = config;
 
 以上配置中，对一个单独的 module 对象定义了 `rules` 属性，里面包含两个必须属性：`test` 和 `use`。这告诉 webpack 编译器(compiler) 如下信息：
 
-> “嘿，webpack 编译器，当你碰到「在 `require()`/`import` 语句中被解析为 '.txt' 的路径」时，在你对它打包之前，先**使用** `raw-loader` 转换一下。”
+“嘿，webpack 编译器，当你碰到「在 `require()`/`import` 语句中被解析为 '.txt' 的路径」时，在你对它打包之前，先**使用** `raw-loader` 转换一下。”
 
 - test值类型
 
@@ -662,34 +665,32 @@ module.exports = config;
 
 底层原理：遇到jpg、png、txt等静态文件时，先将此文件移到输出根目录下，再将此文件的地址返回给变量。
 
-- 安装：
+> **1.安装：**
 
 ```bash
 npm install --save-dev file-loader
 ```
 
-- 基础配置
-
-默认情况下，生成的文件的文件名就是文件内容的 MD5 哈希值并会保留所引用资源的原始扩展名。
-
-例如图片名字为：`logo.jpg`,则打包后的图片名字为：`20位hash值.jpg`
+> **2.基础配置：**
 
 ```js
  module:{
     rules:[
       {
        test:/\(.jpg|png|gif)$/,
-       use:{
-         loader:'file-loader'
-       }
+       use:'file-loader'
       }
     ]
-  },
+}
 ```
 
 ![image-20200813143600033](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143600033.png)
 
-- 配置打包后图片文件如何命名：
+> **3.图片重命名：**
+
+默认情况下，生成的文件的文件名就是文件内容的 MD5 哈希值并会保留所引用资源的原始扩展名。
+
+例如图片名字为：`logo.jpg`,则打包后的图片名字为：`20位hash值.jpg`
 
 ```js
  module:{
@@ -721,7 +722,7 @@ npm install --save-dev file-loader
 
 ![image-20200813143947047](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143947047.png)
 
-- 配置打包后文件的存放位置：
+> **4.配置打包后文件的存放位置：**
 
 ```js
 {
@@ -739,7 +740,7 @@ npm install --save-dev file-loader
 
 ![image-20200813144427221](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813144427221.png)
 
-- 使用`file-loader`打包字体文件:
+> **5.使用`file-loader`打包字体文件:**
 
 ```js
 {
