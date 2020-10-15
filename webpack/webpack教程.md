@@ -2500,7 +2500,7 @@ module.exports={
 
 ## 3.2打包模式区分
 
-开发环境(`development`)和生产环境(`production`)的构建目标差异很大。在**开发环境**中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 source map 和 localhost server。而在**生产环境**中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
+开发环境(`development`)和生产环境(`production`)的构建目标差异很大。在**开发环境**中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 `source map` 和 `localhost server`。而在**生产环境**中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
 
 开发环境和生产环境打包的配置是不同的，因此我们将开发环境与生产环境的配置区分开。而不用每次手动去改。
 
@@ -2904,7 +2904,7 @@ output: {
 
 项目结构：
 
-```
+```js
 webpack-vue-template
 ├─ .babelrc
 ├─ build
@@ -3051,7 +3051,7 @@ module.exports = {
 
 对项目进行打包，输出以下信息：
 
-```
+```js
 Hash: 5a522793c6f286ca585f
 Version: webpack 4.44.1
 Time: 609ms
@@ -3063,7 +3063,7 @@ vendors~main_5a5227.js   1.36 MiB  vendors~main  [emitted] [immutable]  vendors~
 Entrypoint main = vendors~main_5a5227.js main_5a5227.js
 ```
 
-一个入口，却输出了两个js文件。其中main.js是打包的我们业务代码，而`vendors.js`则是打包的`lodash`。这两个文件也会被引入到html文件中，并且`vendors.js`会被优先引入：
+一个入口，却输出了两个js文件。其中`main.js`是打包的我们业务代码，而`vendors.js`则是打包的`lodash`。这两个文件也会被引入到html文件中，并且`vendors.js`会被优先引入：
 
 ```html
 <!DOCTYPE html>
@@ -3255,7 +3255,7 @@ body{
 
 项目结构：
 
-```
+```js
 webpack-vue-template
 ├─ .babelrc
 ├─ build
@@ -3496,7 +3496,7 @@ Entrypoint main = main.css main_1a7499.js main.css.map main_1a7499.js.map
 ```js
 plugins: [
     new MiniCssExtractPlugin({
-      filename: '[name].css',//如果直接被页面使用使用这个名称
+      filename: '[name].css',//如果直接被页面使用,使用这个名称
       chunkFilename: '[name].chunk.css',//如果间接被页面使用就走这个名称。比如通过事件调用
     }),
   ],
@@ -3716,7 +3716,7 @@ module.exports = {
 
 项目结构:
 
-```
+```js
 webpack-vue-template
 ├─ .babelrc
 ├─ build
@@ -3900,7 +3900,7 @@ module.exports = {
 
 webpack配置文件结构：
 
-```
+```js
 build
    ├─ webpack.common.js
    ├─ webpack.dev.js
@@ -4198,7 +4198,7 @@ const path = require('path');
 
 我们库打包了lodash的输出信息：
 
-```
+```js
 Hash: 077a2a49f69dca8cc6df
 Version: webpack 4.44.1
 Time: 1467ms
@@ -4232,7 +4232,7 @@ module.exports = {
 
 打包输出信息：
 
-```
+```js
 Hash: 25f9a6ed37eef46ecba8
 Version: webpack 4.44.1
 Time: 208ms
