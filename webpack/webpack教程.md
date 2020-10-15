@@ -48,7 +48,7 @@ $ npm uninstall webpack webpack-cli -g
 
 优点：存在多个项目不同webpack版本时，这样更容易分别升级项目。
 
-```bash
+```shell
 # 进入项目根目录
 $ cd 项目名
 # 初始化项目
@@ -1218,7 +1218,7 @@ const htmlWebpackPlugin = new HtmlWebpackPlugin({
 
 补充：
 
-1、filename配置的html文件目录是相对于webpackConfig.output.path路径而言的，不是相对于当前项目目录结构的。
+1、filename配置的html文件目录是相对于`webpackConfig.output.path`路径而言的，不是相对于当前项目目录结构的。
 2、指定生成的html文件内容中的`link`和`script`路径是相对于生成目录下的，写路径的时候请写生成目录下的相对路径。
 
 #### 4.1.5配置允许插入到模板中的一些chunk
@@ -2361,7 +2361,7 @@ module.exports = {
 
 目录结构：
 
-```
+```js
 webpack-vue-template
 ├─ .babelrc
 ├─ build
