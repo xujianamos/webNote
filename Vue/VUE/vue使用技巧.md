@@ -34,23 +34,9 @@ export default {
   }
 }
 </script>
-复制代码
 ```
 
-功能写完开开心心的提测了，测试没啥问题，产品经理表示做的很棒。然而code review时候，技术大佬说了，这样有问题。
-
-```
- 大佬：这样写不是很好，应该将监听`resize`事件与销毁`resize`事件放到一起，现在两段代码分开而且相隔几百行代码，可读性比较差
-
- 我：那我把两个生命周期钩子函数位置换一下，放到一起?
-
- 大佬： `hook`听过没？
-
- 我：`Vue3.0`才有啊，咋，咱要升级`Vue`?
-复制代码
-```
-
-然后技术大佬就不理我了,并向我扔过来一段代码
+通过`hook`监听组件的生命周期：
 
 ```js
 export default {
@@ -73,7 +59,6 @@ export default {
     }
   }
 }
-复制代码
 ```
 
 看完代码，恍然大悟，大佬不愧是大佬，原来`Vue`还可以这样监听生命周期函数。
@@ -165,30 +150,28 @@ export default {
 
 同学们在使用`element-ui`的`loading`时，在代码中可能会这样写
 
-```
+```js
 // 显示loading
 const loading = this.$loading()
 // 关闭loading
 loading.close()
-复制代码
 ```
 
 这样写可能没什么特别的，但是如果你这样写
 
-```
+```js
 const loading = this.$loading()
 const loading1 = this.$loading()
 setTimeout(() => {
   loading.close()
 }, 1000 * 3)
-复制代码
 ```
 
 这时候你会发现，我调用了两次loading,但是只出现了一个，而且我只关闭了`loading`，但是`loading1`也被关闭了。这是怎么实现的呢？我们现在就是用`Vue.extend` + 单例模式去实现一个`loading`
 
 #### 开发`loading`组件
 
-```
+```js
 <template>
   <transition name="custom-loading-fade">
     <!--loading蒙版-->
@@ -218,12 +201,11 @@ export default {
   }
 }
 </script>
-复制代码
 ```
 
 开发出来`loading`组件之后，如果需要直接使用，就要这样去用
 
-```
+```js
 <template>
   <div class="component-code">
     <!--其他一堆代码-->
@@ -239,7 +221,6 @@ export default {
   }
 }
 </script>
-复制代码
 ```
 
 但这样使用并不能满足我们的需求
@@ -251,7 +232,7 @@ export default {
 
 ##### 1. 改造`loading`组件，将组件的`props`改为`data`
 
-```
+```js
 export default {
   data() {
     return {
@@ -260,12 +241,11 @@ export default {
     }
   }
 }
-复制代码
 ```
 
 ##### 2. 通过`Vue.extend`改造组件
 
-```
+```js
 // loading/index.js
 import Vue from 'vue'
 import LoadingComponent from './loading.vue'
@@ -322,12 +302,11 @@ const Loading = (options = {}) => {
 }
 
 export default Loading
-复制代码
 ```
 
 ##### 3. 在页面使用loading
 
-```
+```js
 import Loading from './loading/index.js'
 export default {
   created() {
@@ -338,14 +317,13 @@ export default {
     }, 3000)
   }
 }
-复制代码
 ```
 
 通过上面的改造，loading已经可以在全局使用了，如果需要像`element-ui`一样挂载到`Vue.prototype`上面，通过`this.$loading`调用，还需要改造一下
 
 #### 将组件挂载到`Vue.prototype`上面
 
-```
+```js
 Vue.prototype.$loading = Loading
 // 在export之前将Loading方法进行绑定
 export default Loading
@@ -367,7 +345,7 @@ this.$loading()
 
 #### 开发`v-loading`指令
 
-```
+```js
 import Vue from 'vue'
 import LoadingComponent from './loading'
 // 使用 Vue.extend构造组件子类
@@ -415,12 +393,11 @@ Vue.directive('loading', {
     el.instance = undefined
   }
 })
-复制代码
 ```
 
 #### 在元素上面使用指令
 
-```
+```js
 <template>
   <div v-loading="visible"></div>
 </template>
@@ -439,8 +416,6 @@ export default {
   }
 }
 </script>
-
-复制代码
 ```
 
 #### 项目中哪些场景可以自定义指令
@@ -459,7 +434,7 @@ export default {
 
 比如一个列表页，我们希望用户在搜索框输入搜索关键字的时候，可以自动触发搜索,此时除了监听搜索框的`change`事件之外，我们也可以通过`watch`监听搜索关键字的变化
 
-```
+```js
 <template>
   <!--此处示例使用了element-ui-->
   <div>
@@ -493,14 +468,13 @@ export default {
   }
 }
 </script>
-复制代码
 ```
 
 #### 立即触发
 
 通过上面的代码，现在已经可以在值发生变化的时候触发加载数据了，但是如果要在页面初始化时候加载数据，我们还需要在`created`或者`mounted`生命周期钩子里面再次调用`$_loadData`方法。不过，现在可以不用这样写了，通过配置`watch`的立即触发属性，就可以满足需求了
 
-```
+```js
 // 改造watch
 export default {
   watch: {
@@ -517,14 +491,13 @@ export default {
     }
   }
 }
-复制代码
 ```
 
 #### 深度监听（我可以看到你内心的一举一动）
 
 一个表单页面，需求希望用户在修改表单的任意一项之后，表单页面就需要变更为被修改状态。如果按照上例中`watch`的写法，那么我们就需要去监听表单每一个属性，太麻烦了，这时候就需要用到`watch`的深度监听`deep`
 
-```
+```js
 export default {
   data() {
     return {
@@ -548,14 +521,13 @@ export default {
     }
   }
 }
-复制代码
 ```
 
 #### 随时监听，随时取消，了解一下`$watch`
 
 有这样一个需求，有一个表单，在编辑的时候需要监听表单的变化，如果发生变化则保存按钮启用，否则保存按钮禁用。这时候对于新增表单来说，可以直接通过`watch`去监听表单数据(假设是`formData`),如上例所述，但对于编辑表单来说，表单需要回填数据，这时候会修改`formData`的值，会触发`watch`,无法准确的判断是否启用保存按钮。现在你就需要了解一下`$watch`
 
-```
+```js
 export default {
   data() {
     return {
@@ -595,7 +567,6 @@ export default {
     }
   }
 }
-复制代码
 ```
 
 根据上例可以看到，我们可以在需要的时候通过`this.$watch`来监听数据变化。那么如何取消监听呢，上例中`this.$watch`返回了一个值`unwatch`,是一个函数，在需要取消的时候，执行 `unwatch()`即可取消
@@ -608,7 +579,7 @@ export default {
 
 #### 先来一个函数式组件的代码
 
-```
+```js
 export default {
   // 通过配置functional属性指定组件为函数式组件
   functional: true,
@@ -631,7 +602,6 @@ export default {
     return <img src="default-avatar.png"></img>
   }
 }
-复制代码
 ```
 
 在上例中，我们定义了一个头像组件，如果外部传入头像，则显示传入的头像，否则显示默认头像。上面的代码中大家看到有一个render函数，这个是`Vue`使用`JSX`的写法，关于`JSX`,小编将在后续文章中会出详细的使用教程。
@@ -654,7 +624,7 @@ export default {
 
 在`Vue2.5`之前，使用函数式组件只能通过`JSX`的方式，在之后，可以通过模板语法来生命函数式组件
 
-```
+```js
 <!--在template 上面添加 functional属性-->
 <template functional>
   <img :src="props.avatar ? props.avatar : 'default-avatar.png'" />

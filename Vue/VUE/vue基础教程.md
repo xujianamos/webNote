@@ -2802,7 +2802,7 @@ Vue.component('my-component', {
 
 当 prop 验证失败的时候，(开发环境构建版本的) Vue 将会产生一个控制台的警告。
 
-> 注意那些 prop 会在一个组件实例创建**之前**进行验证，所以实例的 property (如 `data`、`computed` 等) 在 `default` 或 `validator` 函数中是不可用的。
+> **注意那些 prop 会在一个组件实例创建**之前**进行验证，所以实例的 property (如 `data`、`computed` 等) 在 `default` 或 `validator` 函数中是不可用的。**
 
 `type` 可以是下列原生构造函数中的一个：
 
@@ -2913,7 +2913,7 @@ Vue.component('base-input', {
 })
 ```
 
-注意 `inheritAttrs: false` 选项**不会**影响 `style` 和 `class` 的绑定。
+> 注意 `inheritAttrs: false` 选项**不会**影响 `style` 和 `class` 的绑定。
 
 这个模式允许你在使用基础组件的时候更像是使用原始的 HTML 元素，而不会担心哪个元素是真正的根元素：
 
@@ -2937,7 +2937,7 @@ this.$emit('myEvent')
 
 则监听这个名字的 kebab-case 版本是不会有任何效果的：
 
-```js
+```html
 <!-- 没有效果 -->
 <my-component v-on:my-event="doSomething"></my-component>
 ```
@@ -2950,7 +2950,7 @@ this.$emit('myEvent')
 
 一个组件上的 `v-model` 默认会利用名为 `value` 的 prop 和名为 `input` 的事件，但是像单选框、复选框等类型的输入控件可能会将 `value` attribute 用于不同的目的。`model` 选项可以用来避免这样的冲突：
 
-```vue
+```js
 Vue.component('base-checkbox', {
   model: {
     prop: 'checked',
@@ -2977,7 +2977,7 @@ Vue.component('base-checkbox', {
 
 这里的 `lovingVue` 的值将会传入这个名为 `checked` 的 prop。同时当 `<base-checkbox>` 触发一个 `change` 事件并附带一个新的值的时候，这个 `lovingVue` 的 property 将会被更新。
 
->  注意：你仍然需要在组件的 `props` 选项里声明 `checked` 这个 prop。
+>  **注意：你仍然需要在组件的 `props` 选项里声明 `checked` 这个 prop。**
 
 #### 12.3.3将原生事件绑定到组件
 
@@ -3159,7 +3159,7 @@ Vue 实现了一套内容分发的 API，这套 API 的设计灵感源自 Web Co
 
 作为一条规则，请记住：
 
-> 父级模板里的所有内容都是在父级作用域中编译的；子模板里的所有内容都是在子作用域中编译的。
+> **父级模板里的所有内容都是在父级作用域中编译的；子模板里的所有内容都是在子作用域中编译的**。
 
 #### 12.4.3后备内容
 
@@ -3517,8 +3517,6 @@ function (slotProps) {
   </template>
 </todo-list>
 ```
-
-这只是作用域插槽用武之地的冰山一角。想了解更多现实生活中的作用域插槽的用法。
 
 ### 12.5动态组件 & 异步组件
 
@@ -4173,7 +4171,7 @@ new Vue({
 })
 ```
 
-同名钩子函数将合并为一个数组，因此都将被调用。另外，==混入对象的钩子将在组件自身钩子**之前**调用==。
+> **同名钩子函数将合并为一个数组，因此都将被调用。另外，混入对象的钩子将在组件自身钩子之前调用。**
 
 ```js
 var mixin = {
@@ -4193,7 +4191,7 @@ new Vue({
 // => "组件钩子被调用"
 ```
 
-值为对象的选项，例如 `methods`、`components` 和 `directives`，将被合并为同一个对象。两个对象键名冲突时，取组件对象的键值对。
+> 值为对象的选项，例如 `methods`、`components` 和 `directives`，将被合并为同一个对象。两个对象键名冲突时，取组件对象的键值对。
 
 ```js
 var mixin = {
