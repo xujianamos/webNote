@@ -3765,6 +3765,151 @@ inject: ['getMap']
 
 然而，依赖注入还是有负面影响的。它将你应用程序中的组件与它们当前的组织方式耦合起来，使重构变得更加困难。同时所提供的 property 是非响应式的。这是出于设计的考虑，因为使用它们来创建一个中心化规模化的数据跟使用 `$root`做这件事都是不够好的。如果你想要共享的这个 property 是你的应用特有的，而不是通用化的，或者如果你想在祖先组件中更新所提供的数据，那么这意味着你可能需要换用一个像 `Vuex`这样真正的状态管理方案了。
 
+#### 12.6.2程序化的事件侦听器
+
+现在，你已经知道了 `$emit` 的用法，它可以被 `v-on` 侦听，但是 Vue 实例同时在其事件接口中提供了其它的方法。我们可以：
+
+- 通过 `$on(eventName, eventHandler)` 侦听一个事件
+- 通过 `$once(eventName, eventHandler)` 一次性侦听一个事件
+- 通过 `$off(eventName, eventHandler)` 停止侦听一个事件
+
+你通常不会用到这些，但是当你需要在一个组件实例上手动侦听事件时，它们是派得上用场的。它们也可以用于代码组织工具。例如，你可能经常看到这种集成一个第三方库的模式：
+
+```js
+// 一次性将这个日期选择器附加到一个输入框上
+// 它会被挂载到 DOM 上。
+mounted: function () {
+  // Pikaday 是一个第三方日期选择器的库
+  this.picker = new Pikaday({
+    field: this.$refs.input,
+    format: 'YYYY-MM-DD'
+  })
+},
+// 在组件被销毁之前，
+// 也销毁这个日期选择器。
+beforeDestroy: function () {
+  this.picker.destroy()
+}
+```
+
+这里有两个潜在的问题：
+
+- 它需要在这个组件实例中保存这个 `picker`，如果可以的话最好只有生命周期钩子可以访问到它。这并不算严重的问题，但是它可以被视为杂物。
+- 我们的建立代码独立于我们的清理代码，这使得我们比较难于程序化地清理我们建立的所有东西。
+
+你应该通过一个程序化的侦听器解决这两个问题：
+
+```js
+mounted: function () {
+  var picker = new Pikaday({
+    field: this.$refs.input,
+    format: 'YYYY-MM-DD'
+  })
+
+  this.$once('hook:beforeDestroy', function () {
+    picker.destroy()
+  })
+}
+```
+
+使用了这个策略，我甚至可以让多个输入框元素同时使用不同的 Pikaday，每个新的实例都程序化地在后期清理它自己：
+
+```js
+mounted: function () {
+  this.attachDatepicker('startDateInput')
+  this.attachDatepicker('endDateInput')
+},
+methods: {
+  attachDatepicker: function (refName) {
+    var picker = new Pikaday({
+      field: this.$refs[refName],
+      format: 'YYYY-MM-DD'
+    })
+
+    this.$once('hook:beforeDestroy', function () {
+      picker.destroy()
+    })
+  }
+}
+```
+
+#### 12.6.3循环引用
+
+**1.递归组件**
+
+组件是可以在它们自己的模板中调用自身的。不过它们只能通过 `name` 选项来做这件事：
+
+```js
+name: 'unique-name-of-my-component'
+```
+
+当你使用 `Vue.component` 全局注册一个组件时，这个全局的 ID 会自动设置为该组件的 `name` 选项。
+
+```js
+Vue.component('unique-name-of-my-component', {
+  // ...
+})
+```
+
+稍有不慎，递归组件就可能导致无限循环：
+
+```js
+name: 'stack-overflow',
+template: '<div><stack-overflow></stack-overflow></div>'
+```
+
+类似上述的组件将会导致“max stack size exceeded”错误，所以请确保递归调用是条件性的 (例如使用一个最终会得到 `false` 的 `v-if`)。
+
+**2.组件之间的循环引用**
+
+假设你需要构建一个文件目录树，像访达或资源管理器那样的。你可能有一个 `<tree-folder>` 组件，模板是这样的：
+
+```html
+<p>
+  <span>{{ folder.name }}</span>
+  <tree-folder-contents :children="folder.children"/>
+</p>
+```
+
+还有一个 `<tree-folder-contents>` 组件，模板是这样的：
+
+```html
+<ul>
+  <li v-for="child in children">
+    <tree-folder v-if="child.children" :folder="child"/>
+    <span v-else>{{ child.name }}</span>
+  </li>
+</ul>
+```
+
+当你仔细观察的时候，你会发现这些组件在渲染树中互为对方的后代*和*祖先——一个悖论！当通过 `Vue.component` 全局注册组件的时候，这个悖论会被自动解开。如果你是这样做的，那么你可以跳过这里。
+
+然而，如果你使用一个*模块系统*依赖/导入组件，例如通过 webpack 或 Browserify，你会遇到一个错误：
+
+```bash
+Failed to mount component: template or render function not defined.
+```
+
+为了解释这里发生了什么，我们先把两个组件称为 A 和 B。模块系统发现它需要 A，但是首先 A 依赖 B，但是 B 又依赖 A，但是 A 又依赖 B，如此往复。这变成了一个循环，不知道如何不经过其中一个组件而完全解析出另一个组件。为了解决这个问题，我们需要给模块系统一个点，在那里“A *反正*是需要 B 的，但是我们不需要先解析 B。”
+
+在我们的例子中，把 `<tree-folder>` 组件设为了那个点。我们知道那个产生悖论的子组件是 `<tree-folder-contents>` 组件，所以我们会等到生命周期钩子 `beforeCreate` 时去注册它：
+
+```js
+beforeCreate: function () {
+  this.$options.components.TreeFolderContents = require('./tree-folder-contents.vue').default
+}
+```
+
+或者，在本地注册组件的时候，你可以使用 webpack 的异步 `import`：
+
+```js
+components: {
+  TreeFolderContents: () => import('./tree-folder-contents.vue')
+}
+```
+
+这样问题就解决了！
+
 ## 13.过渡动画
 
 ### 13.1 使用过渡类名实现动画
@@ -4280,6 +4425,12 @@ Vue.config.optionMergeStrategies.vuex = function (toVal, fromVal) {
 ```
 
 ## 15.渲染函数
+
+
+
+
+
+
 
 ## 16.单文件组件
 
