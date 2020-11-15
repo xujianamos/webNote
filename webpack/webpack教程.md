@@ -761,8 +761,10 @@ npm install --save-dev file-loader
 
 - 安装
 
+`url-loader`依赖于`file-loader`，因此需要一起进行安装。
+
 ```bash
-npm install --save-dev url-loader
+npm install --save-dev url-loader file-loader
 ```
 
 - 配置
@@ -776,8 +778,9 @@ npm install --save-dev url-loader
            //配置打包后存放位置
            //表示打包后的文件存放在images/文件夹下
            outputPath:'images/',
-           //当图片大于10kb时就存放在images/文件夹下（相当于file-loader），小于时就存放在打包后的js文件中
-           limit:10240
+           //当图片大于8kb时就存放在images/文件夹下（相当于file-loader），小于时就存放在打包后的js文件中
+           //此时还是需要安装file-loader
+           limit:8*1024
          }
        }
 ```
@@ -785,6 +788,39 @@ npm install --save-dev url-loader
 优点：打包到js文件中，减少了http请求。但是图片过大会导致js文件很大，加载js文件很耗时。
 
 推荐：如果图片过大，建议使用`file-loader`,加载js文件就会很快。如果图片很小，建议使用`url-loader`,减少http请求。
+
+> 注意：url-loader只能处理背景引入的图片，不能处理html标签(img标签)中引入的图片。
+>
+> 处理html中的图片需要使用html-loader
+
+### html-loader
+
+用于处理html中引入的图片
+
+```js
+rules:[
+  {
+    test:/\.(jpg|png|gif)$/,
+    loader:'url-loader',
+    options:{
+      limit:8*1024,
+      //因为url-loader默认使用es6模块化解析，而html-loader引入图片是commonjs
+      //解析时会出现：[object module]
+      //解决办法：关闭url-loader的es6模块化，使用commonjs解析
+      esModule:false,
+      //给图片重命名
+      name:'[hash:10].[ext]'
+    }
+  },
+  {
+    test:/\.html$/,
+    //处理html文件的img图片（负责引入img，从而能被url-loader进行处理）
+    loader:'html-loader'
+  }
+]
+```
+
+
 
 ### 2.3.4style-loader
 
@@ -801,7 +837,12 @@ npm install style-loader css-loader -D
 ```js
  {
         test: /\.css$/,
-        use: [ 'style-loader', 'css-loader' ]
+        use: [ 
+          //创建style标签，将样式放入
+          'style-loader', 
+          //将css文件整合到js文件中
+          'css-loader' 
+        ]
       }
 ```
 
@@ -994,6 +1035,23 @@ body{
 ```
 
 此时进行打包，如果没有在`css-loader`中配置`importLoaders`项，则打包`main.scss`时，其中引入的`index.scss`就不会走`sass-loader`和`postcss-loader`。
+
+### 2.3.9单个loader的写法
+
+```js
+module:{
+  rules:[
+    test:/\.(jpg|png|gif)$/,
+    loader:'url-loader',
+    options:{
+    	limit:8*1024
+    }
+    
+  ]
+}
+```
+
+
 
 ## 4.plugins
 
@@ -1413,6 +1471,25 @@ none | auto| function，默认auto； 允许指定的chunk在插入到html文档
 - **`showErrors`**
 
 true|false，默认true；是否将错误信息输出到html页面中。这个很有用，在生成html文件的过程中有错误信息，输出到页面就能看到错误相关信息便于调试。
+
+#### 4.1.8压缩html配置
+
+```js
+plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+      // 压缩html代码
+      minify: {
+        // 移除空格
+        collapseWhitespace: true,
+        // 移除注释
+        removeComments: true
+      }
+    })
+  ],
+```
+
+
 
 ### 4.2clean-webpack-plugin
 
@@ -1999,6 +2076,8 @@ export default function number() {
 
 ## 8.使用Babel处理ES6语法
 
+用于兼容其他低版本浏览器不支持相关语法与新特性。
+
 ### 8.1webpack中使用babel
 
 - 安装：
@@ -2058,6 +2137,8 @@ module.exports={
 
 ### 8.3使用`polyfill`
 
+全部js兼容性处理。
+
 - 安装`polyfill`:
 
 ```shell
@@ -2076,9 +2157,9 @@ require("@babel/polyfill");
 //如果配置了useBuiltIns，则不需要引入上面的
 ```
 
-> 注意：这个插件会将所有语法都打包。但是我们只使用promise，map方法。因此只需要将这两个高级语法实现下就可以了
+> 注意：这个插件会将所有语法都打包，导致打包后的文件过大。但是我们只使用promise，map方法。因此只需要将这两个高级语法实现下就可以了
 
-- 配置：
+- 配置：实现按需加载
 
 ```js
 //webpack.config.js
@@ -2091,7 +2172,12 @@ module.exports={
          loader: "babel-loader" ,
          options:{
            presets: [["@babel/preset-env",{
-             useBuiltIns:'usage'
+             // 按需加载
+             useBuiltIns:'usage',
+             // 指定core-js版本实现按需加载
+                corejs: {
+                  version: 3
+                },
            }]]
          }
        }
@@ -2102,7 +2188,7 @@ module.exports={
 
 说明：只实现业务代码中使用了的高级语法。其他没使用的高级语法就不会打包进去。
 
-### 8.4指定浏览器进行语法代码打包
+### 8.4指定兼容浏览器版本进行语法代码打包
 
 ```js
 //webpack.config.js
@@ -2121,7 +2207,11 @@ module.exports={
          				 "chrome": "67",
          				 "safari": "11.1",
         			},
-             useBuiltIns:'usage'
+             useBuiltIns:'usage',
+             // 指定core-js版本
+                corejs: {
+                  version: 3
+                },
            }]]
          }
        }
@@ -2260,6 +2350,8 @@ npm install --save-dev @babel/preset-react
 
 ## 10.所有代码配置
 
+配置1:
+
 ```js
 //webpack.config.js
 const path = require("path");
@@ -2341,9 +2433,237 @@ module.exports = {
 };
 ```
 
-# 3.webpack高级概念
+配置2:
 
-## 3.1Tree Shaking
+```js
+const { resolve } = require('path');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCssAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+// 定义nodejs环境变量：决定使用browserslist的哪个环境
+process.env.NODE_ENV = 'production';
+
+// 复用loader
+const commonCssLoader = [
+  MiniCssExtractPlugin.loader,
+  'css-loader',
+  {
+    // 还需要在package.json中定义browserslist
+    loader: 'postcss-loader',
+    options: {
+      ident: 'postcss',
+      plugins: () => [require('postcss-preset-env')()]
+    }
+  }
+];
+
+module.exports = {
+  entry: './src/js/index.js',
+  output: {
+    filename: 'js/built.js',
+    path: resolve(__dirname, 'build')
+  },
+  module: {
+    rules: [
+      {
+        test: /\.css$/,
+        use: [...commonCssLoader]
+      },
+      {
+        test: /\.less$/,
+        use: [...commonCssLoader, 'less-loader']
+      },
+      /*
+        正常来讲，一个文件只能被一个loader处理。
+        当一个文件要被多个loader处理，那么一定要指定loader执行的先后顺序：
+          先执行eslint 在执行babel
+      */
+      {
+        // 在package.json中eslintConfig --> airbnb
+        test: /\.js$/,
+        exclude: /node_modules/,
+        // 优先执行
+        enforce: 'pre',
+        loader: 'eslint-loader',
+        options: {
+          fix: true
+        }
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+        options: {
+          presets: [
+            [
+              '@babel/preset-env',
+              {
+                useBuiltIns: 'usage',
+                corejs: {version: 3},
+                targets: {
+                  chrome: '60',
+                  firefox: '50'
+                }
+              }
+            ]
+          ]
+        }
+      },
+      {
+        test: /\.(jpg|png|gif)/,
+        loader: 'url-loader',
+        options: {
+          limit: 8 * 1024,
+          name: '[hash:10].[ext]',
+          outputPath: 'imgs',
+          esModule: false
+        }
+      },
+      {
+        test: /\.html$/,
+        loader: 'html-loader'
+      },
+      {
+        exclude: /\.(js|css|less|html|jpg|png|gif)/,
+        loader: 'file-loader',
+        options: {
+          outputPath: 'media'
+        }
+      }
+    ]
+  },
+  plugins: [
+    new MiniCssExtractPlugin({
+      filename: 'css/built.css'
+    }),
+    new OptimizeCssAssetsWebpackPlugin(),
+    new HtmlWebpackPlugin({
+      template: './src/index.html',
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true
+      }
+    })
+  ],
+  mode: 'production'
+};
+```
+
+
+
+# 3.webpack优化配置
+
+开发环境性能优化：
+
+- 优化打包速度：HMR
+- 优化代码调试：sourceMap
+
+生产环境性能优化：
+
+- 优化打包速度
+- 优化代码运行的性能
+
+## 3.1HMR
+
+HMR: hot module replacement 热模块替换 / 模块热替换
+
+作用：一个模块发生变化，只会重新打包这一个模块（而不是打包所有模块）。极大提升构建速度。
+
+对于样式文件：在开发环境中需要使用`style-loader`，因为内部实现了HMR功能。
+
+```js
+{
+        // 处理less资源
+        test: /\.less$/,
+        use: ['style-loader', 'css-loader', 'less-loader']
+      },
+      {
+        // 处理css资源
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      },
+```
+
+对于js文件默认不能使用HMR功能 --> 需要修改js代码，添加支持HMR功能的代码
+
+> 注意：HMR功能对js的处理，只能处理非入口js文件的其他文件。因为入口文件变化，又回重新加载其他文件
+
+
+
+
+
+
+
+
+
+html文件: 默认不能使用HMR功能.同时会导致问题：html文件不能热更新了~ （不用做HMR功能）
+
+解决：修改entry入口，将html文件引入
+
+```js
+entry: ['./src/js/index.js', './src/index.html'],
+```
+
+## 3.2sourceMap
+
+
+
+## 3.3oneof
+
+
+
+
+
+## 3.4缓存
+
+babel缓存：cacheDirectory: true
+
+```js
+{
+            test: /\.js$/,
+            exclude: /node_modules/,
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                [
+                  '@babel/preset-env',
+                  {
+                    useBuiltIns: 'usage',
+                    corejs: { version: 3 },
+                    targets: {
+                      chrome: '60',
+                      firefox: '50'
+                    }
+                  }
+                ]
+              ],
+              // 开启babel缓存
+              // 第二次构建时，会读取之前的缓存
+              cacheDirectory: true
+            }
+          }
+```
+
+文件资源缓存:
+
+- `hash`: 每次wepack构建时会生成一个唯一的hash值。
+
+问题: 因为js和css同时使用一个hash值。
+
+如果重新打包，会导致所有缓存失效。（可能我却只改动一个文件）
+
+- `chunkhash`：根据chunk生成的hash值。如果打包来源于同一个chunk，那么hash值就一样
+
+问题: js和css的hash值还是一样的
+
+因为css是在js中被引入的，所以同属于一个chunk
+
+- `contenthash`: 根据文件的内容生成hash值。不同文件hash值一定不一样。
+
+让代码上线运行缓存更好使用
+
+## 3.5Tree Shaking
 
 把一个模块中无用的代码都不打包到最后的文件下。比如`main.js`导出两个方法`add`和`minus`,但是在`index.js`中只引入add方法，此时`minus`方法没使用，但是打包时会默认打包所有。此时就需要借助`tree shaking`来打包。
 
@@ -3037,6 +3357,8 @@ module.exports = {
     main: "./src/main.js",
   },
   //使用SplitChunksPlugin插件
+  //1. 可以将node_modules中代码单独打包一个chunk最终输出
+  //2. 自动分析多入口chunk中，有没有公共的文件。如果有会打包成单独一个chunk
   optimization: {
     splitChunks: {
       chunks: "all",
@@ -3084,6 +3406,8 @@ Entrypoint main = vendors~main_5a5227.js main_5a5227.js
 
 ### 3.3.3动态导入
 
+在入口文件中动态引入其他js文件。
+
 也叫异步加载，无需做任何配置，会自动进行代码分割，单独生成一个文件`0.js`。
 
 > 注：也需要使用`SplitChunksPlugin`配置项。
@@ -3123,6 +3447,19 @@ getComponent().then((component) => {
 ```
 
 此时打包生成的名字为`vendors~lodash.js`
+
+示例：
+
+```js
+import(/* webpackChunkName: 'test' */'./test')
+  .then(({ mul, count }) => {
+    // 文件加载成功~
+    console.log(mul(2, 5));
+  })
+  .catch(() => {
+    console.log('文件加载失败~');
+  });
+```
 
 ### 3.3.4SplitChunksPlugin配置参数详解
 
@@ -3226,7 +3563,26 @@ document.addEventListener("click", () => {
 
 当我们执行某个模块时，才加载某个文件。从而减少了首屏渲染的时间。
 
-## 3.5css代码分割
+示例：
+
+```js
+document.getElementById('btn').onclick = function() {
+  // 懒加载~：当文件需要使用时才加载~,文件大会存在加载时间过长
+  // 预加载 prefetch：会在使用之前，提前加载js文件，兼容性不是很好 
+  // 正常加载可以认为是并行加载（同一时间加载多个文件）  
+  // 预加载 prefetch：等其他资源加载完毕，浏览器空闲了，再偷偷加载资源
+  import(/* webpackChunkName: 'test', webpackPrefetch: true */'./test').then(({ mul }) => {
+    console.log(mul(4, 5));
+  });
+};
+
+```
+
+
+
+## 3.5css处理
+
+### 3.5.1提取css成单独的文件
 
 `mini-css-extract-plugin`插件将CSS提取到单独的文件中。它为每个包含CSS的JS文件创建一个CSS文件。它支持CSS和SourceMap的按需加载。
 
@@ -3238,6 +3594,8 @@ document.addEventListener("click", () => {
 - 特定于CSS
 
 安装：
+
+作用：提取js文件中的css成单独的文件。并通过link标签引入到html页面中。
 
 ```bash
 npm install --save-dev mini-css-extract-plugin
@@ -3491,7 +3849,7 @@ Entrypoint main = main.css main_1a7499.js main.css.map main_1a7499.js.map
 </html>
 ```
 
-### 3.5.2参数详解
+> 参数扩展
 
 ```js
 plugins: [
@@ -3501,6 +3859,73 @@ plugins: [
     }),
   ],
 ```
+
+### 3.5.2css兼容性处理
+
+`postcss-preset-env`插件作用：
+
+帮postcss找到package.json中browserslist里面的配置，通过配置加载指定的css兼容性样式
+
+安装：
+
+```bash
+npm install postcss-loader postcss-preset-env --save-dev
+```
+
+配置：
+
+```js
+//webpack.config.js
+
+// 设置nodejs环境变量,此时才会启用browserslist中的开发环境配置
+process.env.NODE_ENV = 'development';
+module.exports = {
+module:{
+  rules:[
+    {
+      test:/\.css$/,
+      use:[
+        MiniCssExtractPlugin.loader,
+        'css-loader',
+        {
+          loader: 'postcss-loader',
+            options: {
+              ident: 'postcss',
+              plugins: () => [
+                // postcss的插件
+                require('postcss-preset-env')()
+              ]
+            }
+        }
+      ]
+    }
+  ]
+}
+}
+```
+
+`package.json`配置browserslist：
+
+```json
+{
+  "browserslist": {
+    //开发环境配置：需要设置环境变量才能启用开发环境配置
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ],
+    //生产环境配置：默认查看此环境配置，与webpack中mode配置的环境没关系的
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ]
+  },
+}
+```
+
+注意：browserslist的详细配置可以去github查看
 
 ### 3.5.3css代码压缩
 
@@ -4115,6 +4540,167 @@ main_8fa4ef.js.map   3.64 KiB       0  [emitted] [dev]        main
 Entrypoint main = main_8fa4ef.js main_8fa4ef.js.map
 ```
 
+## 3.8js处理
+
+### 3.8.1js语法检查
+
+只检查自己写的源代码，第三方的库是不用检查的
+
+安装相关loader和插件
+
+```bash
+npm install eslint-loader  eslint --save-dev
+npm install eslint-config-airbnb-base  eslint-plugin-import  --save-dev
+```
+
+配置：
+
+```js
+const { resolve } = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: './src/js/index.js',
+  output: {
+    filename: 'js/built.js',
+    path: resolve(__dirname, 'build')
+  },
+  module: {
+    rules: [
+      /*
+        语法检查： eslint-loader  eslint
+          注意：只检查自己写的源代码，第三方的库是不用检查的
+          设置检查规则：
+            package.json中eslintConfig中设置~
+              "eslintConfig": {
+                "extends": "airbnb-base"
+              }
+            airbnb --> eslint-config-airbnb-base  eslint-plugin-import eslint
+      */
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'eslint-loader',
+        options: {
+          // 自动修复eslint的错误
+          fix: true
+        }
+      }
+    ]
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html'
+    })
+  ],
+  mode: 'development'
+};
+
+```
+
+Package.json配置
+
+```json
+{
+   "eslintConfig": {
+    "extends": "airbnb-base",
+    "env": {
+      "browser": true
+    }
+  },
+}
+```
+
+## 多进程打包
+
+
+
+安装loader：
+
+```bash
+npm install thread-loader --save-dev
+```
+
+一般给babel-loader使用
+
+配置：
+
+```js
+/*
+            正常来讲，一个文件只能被一个loader处理。
+            当一个文件要被多个loader处理，那么一定要指定loader执行的先后顺序：
+              先执行eslint 在执行babel
+          */
+          {
+            test: /\.js$/,
+            exclude: /node_modules/,
+            use: [
+              /* 
+                开启多进程打包。 
+                进程启动大概为600ms，进程通信也有开销。
+                只有工作消耗时间比较长，才需要多进程打包
+              */
+              {
+                loader: 'thread-loader',
+                options: {
+                  workers: 2 // 进程2个
+                }
+              },
+              {
+                loader: 'babel-loader',
+                options: {
+                  presets: [
+                    [
+                      '@babel/preset-env',
+                      {
+                        useBuiltIns: 'usage',
+                        corejs: { version: 3 },
+                        targets: {
+                          chrome: '60',
+                          firefox: '50'
+                        }
+                      }
+                    ]
+                  ],
+                  // 开启babel缓存
+                  // 第二次构建时，会读取之前的缓存
+                  cacheDirectory: true
+                }
+              }
+            ]
+          },
+```
+
+## externals
+
+```js
+const { resolve } = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+
+module.exports = {
+  entry: './src/js/index.js',
+  output: {
+    filename: 'js/built.js',
+    path: resolve(__dirname, 'build')
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './src/index.html'
+    })
+  ],
+  mode: 'production',
+  externals: {
+    // 拒绝jQuery被打包进来,此时html文件需要手动引入jQuery的cdn地址
+    jquery: 'jQuery'
+  }
+};
+
+```
+
+
+
+
+
 # 四.实战配置
 
 ## 4.1library的打包
@@ -4324,7 +4910,7 @@ Hit CTRL-C to stop the server
 
 
 
-安装插件:实现pwa
+安装插件:实现pwa技术
 
 ```shell
 npm install workbox-webpack-plugin --save-dev
@@ -4356,6 +4942,12 @@ const prodConfig = {
     //2.实例化
     //配置pwa
     new GenerateSW({
+       /*
+        1. 帮助serviceworker快速启动
+        2. 删除旧的 serviceworker
+
+        生成一个 serviceworker 配置文件~
+      */
       clientsClaim: true,
       skipWaiting: true,
     }),
@@ -4389,7 +4981,7 @@ Entrypoint main = runtime_b15356.js vendors~main_37f034.js main_e0a185.js
 
 图中标注的两个文件就可以使这个项目实现pwa。
 
-在业务代码中应用：
+在业务代码中应用：用于处理兼容性问题
 
 ```js
 //main.js
@@ -4399,10 +4991,10 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker
       .register("/service-worker.js")
       .then((registration) => {
-        console.log("注册");
+        console.log("注册成功");
       })
       .catch((err) => {
-        console.log(err);
+        console.log('注册失败');
       });
   });
 }
