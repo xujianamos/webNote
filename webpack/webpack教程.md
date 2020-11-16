@@ -412,8 +412,8 @@ module.exports = config;
 
 在 webpack 中配置 `output` 属性的最低要求是：将它的值设置为一个对象，包括以下两个`必填属性`：
 
-- `filename`： 用于输出文件的文件名。
-- `path`：目标输出目录 `path` 的绝对路径。
+- `filename`： 用于输出文件的文件名和目录。
+- `path`：输出文件目录（将来所有资源输出的公共目录）。
 
 对于**单个入口**起点，`filename` 会是一个静态名称。
 
@@ -424,7 +424,8 @@ module.exports={
   	entry:'./src/index.js',
   //此配置将一个单独的 bundle.js 文件输出到当前目录下的dist目录中。
    output: {
-    filename: 'bundle.js',
+     //此时输出打包的js文件路径为：dist/js/bundle.js
+    filename: 'js/bundle.js',
     path:path.resolve(__dirname,'dist')
   }
 }
@@ -570,7 +571,7 @@ const config={
   	index:'./src/index.js'
 	},
 	output:{
-  	//为html文件引入js文件自动添加cdn地址，注意publicPath为驼峰命名
+  	//为html文件引入js文件自动添加cdn地址或者公共路径，注意publicPath为驼峰命名
   	publicPath:'http://cdn.com.cn'
   	filename:'[name].js',
  	  path:path.resolve(__dirname,'dist')
