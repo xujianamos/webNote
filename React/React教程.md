@@ -4074,7 +4074,7 @@ React还提供了Fragment的段语法：
 
 - 它看起来像空标签 `<> </>`；
 
-```
+```jsx
 export default class App extends PureComponent {
   render() {
     return (
@@ -4090,7 +4090,7 @@ export default class App extends PureComponent {
 
 但是，如果我们需要在Fragment中添加key，那么就不能使用段语法：
 
-```
+```jsx
 {
   this.state.friends.map((item, index) => {
     return (
@@ -4105,7 +4105,7 @@ export default class App extends PureComponent {
 
 这里是不支持如下写法的：
 
-```
+```jsx
 <key={item.name}>
   <div>{item.name}</div>
   <div>{item.age}</div>
@@ -4125,7 +4125,7 @@ export default class App extends PureComponent {
 - *不*会对 `Header` 和 `Footer` 组件运行严格模式检查；
 - 但是，`ComponentOne` 和 `ComponentTwo` 以及它们的所有后代元素都将进行检查；
 
-```
+```jsx
 import React from 'react';
 
 function ExampleApplication() {
@@ -4148,7 +4148,7 @@ function ExampleApplication() {
 
 1.识别不安全的生命周期：
 
-```
+```jsx
 class Home extends PureComponent {
   UNSAFE_componentWillMount() {
 
@@ -4164,7 +4164,7 @@ class Home extends PureComponent {
 
 2.使用过时的ref API
 
-```
+```jsx
 class Home extends PureComponent {
   UNSAFE_componentWillMount() {
 
@@ -4188,7 +4188,7 @@ class Home extends PureComponent {
 - 这是严格模式下故意进行的操作，让你来查看在这里写的一些逻辑代码被调用多次时，是否会产生一些副作用；
 - 在生产环境中，是不会被调用两次的；
 
-```
+```jsx
 class Home extends PureComponent {
   constructor(props) {
     super(props);
