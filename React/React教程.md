@@ -4396,7 +4396,7 @@ css modules确实解决了局部作用域的问题，也是很多人喜欢在Rea
 
 ### 8.4CSS in JS
 
-> ### 认识CSS in JS
+#### 8.4.1认识CSS in JS
 
 实际上，官方文档也有提到过CSS in JS这种方案：
 
@@ -4431,11 +4431,11 @@ css modules确实解决了局部作用域的问题，也是很多人喜欢在Rea
 
 安装styled-components：
 
-```
+```bash
 yarn add styled-components
 ```
 
-> ### styled-components
+#### 8.4.2styled-components
 
 1. #### 标签模板字符串
 
@@ -4445,7 +4445,7 @@ ES6中增加了`模板字符串`的语法，这个对于很多人来说都会使
 
 我们一起来看一个普通的JavaScript的函数：
 
-```
+```js
 function foo(...args) {
   console.log(args);
 }
@@ -4455,7 +4455,7 @@ foo("Hello World");
 
 正常情况下，我们都是通过 `函数名()` 方式来进行调用的，其实函数还有另外一种调用方式：
 
-```
+```js
 foo`Hello World`; // [["Hello World"]]
 ```
 
@@ -4465,7 +4465,7 @@ foo`Hello World`; // [["Hello World"]]
 - 第一个元素是数组，是被模块字符串拆分的字符串组合；
 - 后面的元素是一个个模块字符串传入的内容；
 
-```
+```js
 foo`Hello ${name}`; // [["Hello ", ""], "kobe"];
 ```
 
@@ -4480,7 +4480,7 @@ styled-components的本质是通过函数的调用，最终创建出一个`组�
 
 比如我们正常开发出来的Home组件是这样的格式：
 
-```
+```html
 <div>
   <h2>我是Home标题</h2>
   <ul>
@@ -4501,7 +4501,7 @@ styled-components的本质是通过函数的调用，最终创建出一个`组�
 - 可以通过&符号获取当前元素；
 - 直接伪类选择器、伪元素等；
 
-```
+```css
 const HomeWrapper = styled.div`
   color: purple;
 
@@ -4533,7 +4533,7 @@ const HomeWrapper = styled.div`
 
 定义一个styled组件：
 
-```
+```css
 const HYInput = styled.input`
   border-color: red;
 
@@ -4545,13 +4545,13 @@ const HYInput = styled.input`
 
 使用styled的组件：
 
-```
+```html
 <HYInput type="password"/>
 ```
 
 **props可以被传递给styled组件**
 
-```
+```html
 <HomeWrapper color="blue">
 </HomeWrapper>
 ```
@@ -4561,7 +4561,7 @@ const HYInput = styled.input`
 - 获取props需要通过${}传入一个插值函数，props会作为该函数的参数；
 - 这种方式可以有效的解决动态样式的问题；
 
-```
+```js
 const HomeWrapper = styled.div`
   color: ${props => props.color};
 }
@@ -4569,7 +4569,7 @@ const HomeWrapper = styled.div`
 
 **添加attrs属性**
 
-```
+```js
 const HYInput = styled.input.attrs({
   placeholder: "请填写密码",
   paddingLeft: props => props.left || "5px"
@@ -4589,7 +4589,7 @@ const HYInput = styled.input.attrs({
 
 编写styled组件
 
-```
+```js
 const HYButton = styled.button`
   padding: 8px 30px;
   border-radius: 5px;
@@ -4608,7 +4608,7 @@ const HYPrimaryButton = styled(HYButton)`
 
 按钮的使用
 
-```
+```js
 <HYButton>我是普通按钮</HYButton>
 <HYWarnButton>我是警告按钮</HYWarnButton>
 <HYPrimaryButton>我是主要按钮</HYPrimaryButton>
@@ -4618,7 +4618,7 @@ const HYPrimaryButton = styled(HYButton)`
 
 在全局定制自己的主题，通过Provider进行共享：
 
-```
+```js
 import { ThemeProvider } from 'styled-components';
 
 <ThemeProvider theme={{color: "red", fontSize: "30px"}}>
@@ -4629,7 +4629,7 @@ import { ThemeProvider } from 'styled-components';
 
 在styled组件中可以获取到主题的内容：
 
-```
+```js
 const ProfileWrapper = styled.div`
   color: ${props => props.theme.color};
   font-size: ${props => props.theme.fontSize};
