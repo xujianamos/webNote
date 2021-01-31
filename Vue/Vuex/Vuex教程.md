@@ -2,7 +2,7 @@
 
 ### 1.1简介
 
-Vuex 是一个专为 Vue.js 应用程序开发的**状态管理模式**。它采用**集中式存储管理**应用的所有组件的状态，并以相应的规则保证状态以一种可预测的方式发生变化。
+Vuex 是一个专为 Vue.js 应用程序开发的状态管理模式。它采用集中式存储管理应用的所有组件的状态，并以相应的规则保证状态以一种可预测的方式发生变化。
 
 使用Vuex管理数据的好处：
 
@@ -10,14 +10,14 @@ Vuex 是一个专为 Vue.js 应用程序开发的**状态管理模式**。它采
 2. 能够高效的实现组件之间的数据共享，提高开发效率
 3. 存储在`vuex`中的数据是响应式的，当数据发生改变时，页面中的数据也会同步更新
 
-==注==：一般情况下，只有组件之间共享的数据，才有必要存储到 vuex 中；对于组件中的私有数据，依旧存储在组件自身的 data 中即可。
+> 注：一般情况下，只有组件之间共享的数据，才有必要存储到 vuex 中；对于组件中的私有数据，依旧存储在组件自身的 data 中即可。
 
 ### 1.2基本使用
 
-每一个 Vuex 应用的核心就是 `store（仓库）`。`store`基本上就是一个容器，它包含着你的应用中大部分的**状态 (state)**。Vuex 和单纯的全局对象有以下两点不同：
+每一个 Vuex 应用的核心就是 `store（仓库）`。`store`基本上就是一个容器，它包含着你的应用中大部分的状态 (state)。Vuex 和单纯的全局对象有以下两点不同：
 
-1. **Vuex 的状态存储是响应式的**。当 Vue 组件从 store 中==读取状态==的时候，若 store 中的状态发生变化，那么相应的组件也会相应地得到高效更新。
-2. **你不能直接改变 store 中的状态**。改变 store 中的状态的唯一途径就是显式地**提交 (commit) mutation**。这样使得我们可以方便地跟踪每一个状态的变化，从而让我们能够实现一些工具帮助我们更好地了解我们的应用。
+1. **Vuex 的状态存储是响应式的**。当 Vue 组件从 store 中读取状态的时候，若 store 中的状态发生变化，那么相应的组件也会相应地得到高效更新。
+2. **你不能直接改变 store 中的状态**。改变 store 中的状态的唯一途径就是显式地`提交 (commit) mutation`。这样使得我们可以方便地跟踪每一个状态的变化，从而让我们能够实现一些工具帮助我们更好地了解我们的应用。
 
 #### 1.2.1安装
 
@@ -81,7 +81,7 @@ new Vue({
   router,
   //将store.js中暴露的对象挂载到vue实例上
 	//将创建的共享数据对象，挂载到 Vue 实例中
-	// 所有的组件，就可以直接从 store 中获取全局的数据了
+	//所有的组件，就可以直接从 store 中获取全局的数据了
 	//把 store 对象提供给 “store” 选项，这可以把 store 的实例注入所有的子组件
   //通过在根实例中注册 store 选项，该 store 实例会注入到根组件下的所有子组件中，且子组件能通过 this.$store 访问到。
   store,
@@ -99,19 +99,19 @@ console.log(store.state.count) // -> 1
 
 再次强调，我们通过提交 mutation 的方式，而非直接改变 `store.state.count`，是因为我们想要更明确地追踪到状态的变化。这个简单的约定能够让你的意图更加明显，这样你在阅读代码的时候能更容易地解读应用内部的状态改变。此外，这样也让我们有机会去实现一些能记录每次状态改变，保存状态快照的调试工具。有了它，我们甚至可以实现如时间穿梭般的调试体验。
 
-> 由于 store 中的状态是响应式的，在组件中`调用 store中的状态` 简单到仅需要在==计算属性中返回==即可。`触发变化`也仅仅是`在组件的 methods 中提交 mutation`。
+> 由于 store 中的状态是响应式的，在组件中`调用 store中的状态` 简单到仅需要在计算属性中返回即可。`触发变化`也仅仅是`在组件的 methods 中提交 mutation`。
 
 ## 2.核心概念
 
 ### 2.1State
 
-Vuex 使用**单一状态树**——是的，用一个==对象==就包含了全部的应用层级状态。至此它便作为一个==唯一数据源而存在==。这也意味着，==每个应用将仅仅包含一个 store 实例==。单一状态树让我们能够直接地定位任一特定的状态片段，在调试的过程中也能轻易地取得整个当前应用状态的快照。
+Vuex 使用**单一状态树**——是的，用一个对象就包含了全部的应用层级状态。至此它便作为一个唯一数据源而存在。这也意味着，每个应用将仅仅包含一个 store 实例。单一状态树让我们能够直接地定位任一特定的状态片段，在调试的过程中也能轻易地取得整个当前应用状态的快照。
 
 > 存储在 Vuex 中的数据和 Vue 实例中的 `data` 遵循相同的规则
 
 #### 2.1.1在 Vue 组件中获得 Vuex 状态
 
-由于 Vuex 的状态存储是响应式的，从 store 实例中读取状态最简单的方法就是在==计算属性==中返回某个状态：
+由于 Vuex 的状态存储是响应式的，从 store 实例中读取状态最简单的方法就是在**计算属性**中返回某个状态：
 
 ```js
 // Home.vue组件
@@ -141,14 +141,14 @@ export default {
 
 #### 2.1.2`mapState` 辅助函数
 
-==当一个组件需要获取多个状态时候==，将这些状态都声明为计算属性会有些重复和冗余。为了解决这个问题，我们可以使用 `mapState` 辅助函数==帮助我们生成计算属性==，让你少按几次键：
+当一个组件需要获取多个状态时候，将这些状态都声明为计算属性会有些重复和冗余。为了解决这个问题，我们可以使用 `mapState` 辅助函数帮助我们生成计算属性，让你少按几次键：
 
 ```js
 // 在单独构建的版本中辅助函数为 Vuex.mapState
 import { mapState } from 'vuex'
 
 export default {
-  // mapState是一个函数
+  // mapState是一个函数,返回一个对象。
   computed: mapState({
     // 箭头函数可使代码更简练
     count: state => state.count,
@@ -167,9 +167,9 @@ export default {
 当映射的计算属性的名称与 state 的子节点名称相同时，我们也可以给 `mapState` 传一个字符串数组。
 
 ```js
-   //将全局数据，映射为当前组件的计算属性
-	//count为store中定义的数据属性名
-	//mapState函数接收一个数组，数组属性名为store中state数据的属性名
+//将全局数据，映射为当前组件的计算属性
+//count为store中定义的数据属性名
+//mapState函数接收一个数组，数组属性名为store中state数据的属性名
 computed: {
 	...mapState(['count'])
 }
@@ -198,9 +198,11 @@ export default {
 </script>
 ```
 
+> 注意：尽量使用getter读取state中的数据。
+
 #### 2.1.3对象展开运算符
 
-`mapState` 函数==返回的是一个对象==。我们如何将它与局部计算属性混合使用呢？通常，我们需要使用一个工具函数将多个对象合并为一个，以使我们可以将最终对象传给 `computed` 属性。但是自从有了**对象展开运算符**，我们可以极大地简化写法：
+`mapState` 函数**返回的是一个对象**。我们如何将它与局部计算属性混合使用呢？通常，我们需要使用一个工具函数将多个对象合并为一个，以使我们可以将最终对象传给 `computed` 属性。但是自从有了**对象展开运算符**，我们可以极大地简化写法：
 
 ```js
 computed: {
@@ -224,9 +226,9 @@ computed: {
 }
 ```
 
-==如果有多个组件需要用到此属性==，我们要么复制这个函数，或者抽取到一个共享函数然后在多处导入它——无论哪种方式都不是很理想。
+如果有多个组件需要用到此属性，我们要么复制这个函数，或者抽取到一个共享函数然后在多处导入它——无论哪种方式都不是很理想。
 
-Vuex 允许我们在 store 中定义`getter`（可以认为是 store 的计算属性）。==就像计算属性一样，getter 的返回值会根据它的依赖被缓存起来，且只有当它的依赖值发生了改变才会被重新计算==。
+Vuex 允许我们在 store 中定义`getter`（可以认为是 store 的计算属性）。就像计算属性一样，getter 的返回值会根据它的依赖被缓存起来，且只有当它的依赖值发生了改变才会被重新计算。
 
 Getter 接受 `state` 作为其第一个参数：
 
@@ -239,7 +241,7 @@ const store = new Vuex.Store({
     ]
   },
   getters: {
-    // //state作为第一个参数
+    //state作为第一个参数
     doneTodos: state => {
       return state.todos.filter(todo => todo.done)
     }
@@ -251,7 +253,7 @@ Getter 接受 `getters`作为其第二个参数：
 
 ```js
 const store = new Vuex.Store({
-state: {
+	state: {
     name: 'zhangsan'
   },
   mutations: {
@@ -267,10 +269,6 @@ state: {
     //getters作为第二个参数
     fullname2(state, getters) {
       return getters.fullname + '2222'
-    },
-    //rootState为
-    fullname3(state, getters, rootState) {
-      return getters.fullname2 + rootState.counter
     }
   },
 })
@@ -305,11 +303,9 @@ state: {
 })
 ```
 
-
-
 #### 2.2.1通过属性访问
 
-Getter 会暴露为 `store.getters` 对象，你可以==以属性的形式访问这些值==：
+Getter 会暴露为 `store.getters` 对象，你可以以属性的形式访问这些值：
 
 ```js
 store.getters.doneTodos // -> [{ id: 1, text: '...', done: true }]
@@ -344,7 +340,7 @@ computed: {
 
 #### 2.2.2通过方法访问
 
-你也可以通过让 getter 返回一个函数，来实现给 getter 传参。==在你对 store 里的数组进行查询时非常有用==。
+你也可以通过让 getter 返回一个函数，来实现给 getter 传参。**在你对 store 里的数组进行查询时非常有用**。
 
 ```js
 getters: {
@@ -431,7 +427,7 @@ mapGetters({
 
 ### 2.3Mutation
 
-==更改 Vuex 的 store 中的状态的唯一方法是提交 mutation==。Vuex 中的 mutation 非常类似于事件：每个 mutation 都有一个字符串的 **事件类型 (type)** 和 一个 **回调函数 (handler)**。这个回调函数就是我们实际进行状态更改的地方，并且它会接受 state 作为第一个参数：
+更改 Vuex 的 store 中的状态的唯一方法是提交 mutation。Vuex 中的 mutation 非常类似于事件：每个 mutation 都有一个字符串的 **事件类型 (type)** 和 一个 **回调函数 (handler)**。这个回调函数就是我们实际进行状态更改的地方，并且它会接受 state 作为第一个参数：
 
 ```js
 const store = new Vuex.Store({
@@ -476,7 +472,7 @@ mutations: {
 }
 ```
 
-使用：==普通方式提交==
+使用：普通方式提交
 
 ```js
 this.$store.commit('increment', 10)//此时n就是单个值：10
@@ -485,7 +481,7 @@ this.$store.commit('increment', 10)//此时n就是单个值：10
 *
 ```
 
-在大多数情况下，载荷应该是一个==对象==，这样可以包含多个字段并且记录的 mutation 会更易读：
+在大多数情况下，载荷应该是一个对象，这样可以包含多个字段并且记录的 mutation 会更易读：
 
 ```js
 // ...
@@ -497,7 +493,7 @@ mutations: {
 }
 ```
 
-使用：==特殊方式提交==
+使用：特殊方式提交
 
 ```js
 this.$store.commit('increment', {
@@ -547,7 +543,7 @@ mutations: {
 2. 当需要在对象上添加新属性时，你应该
 
 - 使用 `Vue.set(obj, 'newProp', 123)`, 或者
-- 以新对象替换老对象。例如，利用==对象展开运算符==我们可以这样写：
+- 以新对象替换老对象。例如，利用对象展开运算符我们可以这样写：
 
 ```js
 state.obj = { ...state.obj, newProp: 123 }
@@ -641,13 +637,14 @@ import { mapMutations } from 'vuex'
 export default {
   // ...
   methods: {
-    //1.先映射
+    //1.先映射：数组方式
     ...mapMutations([
       'increment', // 将 `this.increment()` 映射为 `this.$store.commit('increment')`
 
       // `mapMutations` 也支持载荷：
       'incrementBy' // 将 `this.incrementBy(amount)` 映射为 `this.$store.commit('incrementBy', amount)`
     ]),
+    //对象方式：可以进行重命名
     ...mapMutations({
       add: 'increment' // 将 `this.add()` 映射为 `this.$store.commit('increment')`
     }),
@@ -689,7 +686,7 @@ const store = new Vuex.Store({
 })
 ```
 
-==Action 函数接受一个与 store 实例具有相同方法和属性的 context 对象==，因此你可以调用 `context.commit` 提交一个 mutation，或者通过 `context.state` 和 `context.getters` 来获取 state 和 getters。当我们在之后介绍到 [Modules](https://vuex.vuejs.org/zh/guide/modules.html) 时，你就知道 context 对象为什么不是 store 实例本身了。
+**Action 函数接受一个与 store 实例具有相同方法和属性的 context 对象**，因此你可以调用 `context.commit` 提交一个 mutation，或者通过 `context.state` 和 `context.getters` 来获取 state 和 getters。当我们在之后介绍到 [Modules](https://vuex.vuejs.org/zh/guide/modules.html) 时，你就知道 context 对象为什么不是 store 实例本身了。
 
 实践中，我们会经常用到 ES2015 的 [参数解构](https://github.com/lukehoban/es6features#destructuring) 来简化代码（特别是我们需要调用 `commit` 很多次的时候）：
 
@@ -769,12 +766,14 @@ import { mapActions } from 'vuex'
 export default {
   // ...
   methods: {
+    //数组方式
     ...mapActions([
       'increment', // 将 `this.increment()` 映射为 `this.$store.dispatch('increment')`
 
       // `mapActions` 也支持载荷：
       'incrementBy' // 将 `this.incrementBy(amount)` 映射为 `this.$store.dispatch('incrementBy', amount)`
     ]),
+    //对象方式
     ...mapActions({
       add: 'increment' // 将 `this.add()` 映射为 `this.$store.dispatch('increment')`
     })
