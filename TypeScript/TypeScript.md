@@ -9,7 +9,7 @@
 - 它没有类型约束，一个变量可能初始化时是字符串，过一会儿又被赋值为数字。
 - 由于隐式类型转换的存在，有的变量的类型很难在运行前就确定。
 - 基于原型的面向对象编程，使得原型上的属性或方法可以在运行时被修改。
-- 函数是 JavaScript 中的一等公民[[2\]](https://ts.xcatliu.com/introduction/what-is-typescript.html#link-2)，可以赋值给变量，也可以当作参数或返回值。
+- 函数是 JavaScript 中的一等公民，可以赋值给变量，也可以当作参数或返回值。
 
 而 TypeScript 的类型系统，在很大程度上弥补了 JavaScript 的缺点。
 
@@ -17,7 +17,7 @@
 
 类型系统按照「类型检查的时机」来分类，可以分为动态类型和静态类型。
 
-动态类型是指在运行时才会进行类型检查，这种语言的类型错误往往会导致运行时错误。JavaScript 是一门解释型语言[[4\]](https://ts.xcatliu.com/introduction/what-is-typescript.html#link-4)，没有编译阶段，所以它是动态类型，以下这段代码在运行时才会报错：
+动态类型是指在运行时才会进行类型检查，这种语言的类型错误往往会导致运行时错误。JavaScript 是一门解释型语言，没有编译阶段，所以它是动态类型，以下这段代码在运行时才会报错：
 
 ```js
 let foo = 1;
@@ -37,7 +37,7 @@ foo.split(' ');
 
 你可能会奇怪，这段 TypeScript 代码看上去和 JavaScript 没有什么区别呀。
 
-没错！大部分 JavaScript 代码都只需要经过少量的修改（或者完全不用修改）就变成 TypeScript 代码，这得益于 TypeScript 强大的[类型推论][]，即使不去手动声明变量 `foo` 的类型，也能在变量初始化时自动推论出它是一个 `number` 类型。
+没错！大部分 JavaScript 代码都只需要经过少量的修改（或者完全不用修改）就变成 TypeScript 代码，这得益于 TypeScript 强大的类型推论，即使不去手动声明变量 `foo` 的类型，也能在变量初始化时自动推论出它是一个 `number` 类型。
 
 完整的 TypeScript 代码是这样的：
 
@@ -61,7 +61,7 @@ console.log(1 + '1');
 
 TypeScript 是完全兼容 JavaScript 的，它不会修改 JavaScript 运行时的特性，所以**它们都是弱类型**。
 
-这样的类型系统体现了 TypeScript 的核心设计理念[[6\]](https://ts.xcatliu.com/introduction/what-is-typescript.html#link-6)：在完整保留 JavaScript 运行时行为的基础上，通过引入静态类型系统来提高代码的可维护性，减少可能出现的 bug。
+这样的类型系统体现了 TypeScript 的核心设计理念：在完整保留 JavaScript 运行时行为的基础上，通过引入静态类型系统来提高代码的可维护性，减少可能出现的 bug。
 
 ## 2.安装
 
@@ -71,6 +71,7 @@ TypeScript 是完全兼容 JavaScript 的，它不会修改 JavaScript 运行时
 
 ```shell
 npm install -g typescript
+yarn global add typescript
 ```
 
 以上命令会在全局环境下安装 `tsc` 命令，安装完成之后，我们就可以在任何地方执行 `tsc` 命令了。
@@ -187,26 +188,19 @@ console.log(sayHello(user));
 
 如果要在报错的时候终止 js 文件的生成，可以在 `tsconfig.json` 中配置 `noEmitOnError` 即可。
 
-## 4.基础
+## 4.TypeScript 基础类型
 
-### 4.1原始数据类型
-
-JavaScript 的类型分为两种：原始数据类型（[Primitive data types](https://developer.mozilla.org/en-US/docs/Glossary/Primitive)）和对象类型（Object types）。
-
-原始数据类型包括：布尔值、数值、字符串、`null`、`undefined` 以及 ES6 中的新类型 [`Symbol`](http://es6.ruanyifeng.com/#docs/symbol) 和 [`BigInt`](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/BigInt)。
-
-#### 4.1.1布尔值
+### 4.1布尔值
 
 布尔值是最基础的数据类型，在 TypeScript 中，使用 `boolean` 定义布尔值类型：
 
 ```ts
 let isDone: boolean = false;
-
 // 编译通过
 // 后面约定，未强调编译错误的代码片段，默认为编译通过
 ```
 
-注意，使用构造函数 `Boolean` 创造的对象**不是**布尔值：
+注意：使用构造函数 `Boolean` 创造的对象**不是**布尔值：
 
 ```ts
 let createdByNewBoolean: boolean = new Boolean(1);
@@ -229,7 +223,7 @@ let createdByBoolean: boolean = Boolean(1);
 
 在 TypeScript 中，`boolean` 是 JavaScript 中的基本类型，而 `Boolean` 是 JavaScript 中的构造函数。其他基本类型（除了 `null` 和 `undefined`）一样，不再赘述。
 
-#### 4.1.2数值
+### 4.2数值
 
 使用 `number` 定义数值类型：
 
@@ -257,9 +251,9 @@ var notANumber = NaN;
 var infinityNumber = Infinity;
 ```
 
-其中 `0b1010` 和 `0o744` 是 [ES6 中的二进制和八进制表示法](http://es6.ruanyifeng.com/#docs/number#二进制和八进制表示法)，它们会被编译为十进制数字。
+其中 `0b1010` 和 `0o744` 是 ES6 中的二进制和八进制表示法，它们会被编译为十进制数字。
 
-#### 4.1.3字符串
+### 4.3字符串
 
 使用 `string` 定义字符串类型：
 
@@ -282,7 +276,168 @@ var sentence = "Hello, my name is " + myName + ".
 I'll be " + (myAge + 1) + " years old next month.";
 ```
 
-#### 4.1.4空值
+### 4.4Symbol 类型
+
+```ts
+const sym = Symbol();
+let obj = {
+  [sym]: "semlinker",
+};
+
+console.log(obj[sym]); // semlinker 
+```
+
+### 4.5Array 类型
+
+```ts
+let list: number[] = [1, 2, 3];
+// ES5：var list = [1,2,3];
+
+let list: Array<number> = [1, 2, 3]; // Array<number>泛型语法
+// ES5：var list = [1,2,3];
+```
+
+### 4.6Enum 类型
+
+使用枚举我们可以定义一些带名字的常量。 使用枚举可以清晰地表达意图或创建一组有区别的用例。 TypeScript 支持数字的和基于字符串的枚举。
+
+#### 4.6.1数字枚举
+
+```ts
+enum Direction {
+  NORTH,
+  SOUTH,
+  EAST,
+  WEST,
+}
+
+let dir: Direction = Direction.NORTH;
+```
+
+默认情况下，NORTH 的初始值为 0，其余的成员会从 1 开始自动增长。换句话说，Direction.SOUTH 的值为 1，Direction.EAST 的值为 2，Direction.WEST 的值为 3。
+
+以上的枚举示例经编译后，对应的 ES5 代码如下：
+
+````js
+"use strict";
+var Direction;
+(function (Direction) {
+  Direction[(Direction["NORTH"] = 0)] = "NORTH";
+  Direction[(Direction["SOUTH"] = 1)] = "SOUTH";
+  Direction[(Direction["EAST"] = 2)] = "EAST";
+  Direction[(Direction["WEST"] = 3)] = "WEST";
+})(Direction || (Direction = {}));
+var dir = Direction.NORTH;
+````
+
+#### 4.6.2字符串枚举
+
+在 TypeScript 2.4 版本，允许我们使用字符串枚举。在一个字符串枚举里，每个成员都必须用字符串字面量，或另外一个字符串枚举成员进行初始化。
+
+```typescript
+enum Direction {
+  NORTH = "NORTH",
+  SOUTH = "SOUTH",
+  EAST = "EAST",
+  WEST = "WEST",
+}
+复制代码
+```
+
+以上代码对应的 ES5 代码如下：
+
+```typescript
+"use strict";
+var Direction;
+(function (Direction) {
+    Direction["NORTH"] = "NORTH";
+    Direction["SOUTH"] = "SOUTH";
+    Direction["EAST"] = "EAST";
+    Direction["WEST"] = "WEST";
+})(Direction || (Direction = {}));
+复制代码
+```
+
+通过观察数字枚举和字符串枚举的编译结果，我们可以知道数字枚举除了支持 **从成员名称到成员值** 的普通映射之外，它还支持 **从成员值到成员名称** 的反向映射：
+
+```typescript
+enum Direction {
+  NORTH,
+  SOUTH,
+  EAST,
+  WEST,
+}
+
+let dirName = Direction[0]; // NORTH
+let dirVal = Direction["NORTH"]; // 0
+复制代码
+```
+
+另外，对于纯字符串枚举，我们不能省略任何初始化程序。而数字枚举如果没有显式设置值时，则会使用默认规则进行初始化。
+
+#### 4.6.3常量枚举
+
+除了数字枚举和字符串枚举之外，还有一种特殊的枚举 —— 常量枚举。它是使用 `const` 关键字修饰的枚举，常量枚举会使用内联语法，不会为枚举类型编译生成任何 JavaScript。为了更好地理解这句话，我们来看一个具体的例子：
+
+```typescript
+const enum Direction {
+  NORTH,
+  SOUTH,
+  EAST,
+  WEST,
+}
+
+let dir: Direction = Direction.NORTH;
+复制代码
+```
+
+以上代码对应的 ES5 代码如下：
+
+```javascript
+"use strict";
+var dir = 0 /* NORTH */;
+```
+
+#### 4.6.4异构枚举
+
+异构枚举的成员值是数字和字符串的混合：
+
+```typescript
+enum Enum {
+  A,
+  B,
+  C = "C",
+  D = "D",
+  E = 8,
+  F,
+}
+复制代码
+```
+
+以上代码对于的 ES5 代码如下：
+
+```typescript
+"use strict";
+var Enum;
+(function (Enum) {
+    Enum[Enum["A"] = 0] = "A";
+    Enum[Enum["B"] = 1] = "B";
+    Enum["C"] = "C";
+    Enum["D"] = "D";
+    Enum[Enum["E"] = 8] = "E";
+    Enum[Enum["F"] = 9] = "F";
+})(Enum || (Enum = {}));
+复制代码
+```
+
+通过观察上述生成的 ES5 代码，我们可以发现数字枚举相对字符串枚举多了 “反向映射”：
+
+```javascript
+console.log(Enum.A) //输出：0
+console.log(Enum[0]) // 输出：A
+```
+
+### 4.7空值void
 
 JavaScript 没有空值（Void）的概念，在 TypeScript 中，可以用 `void` 表示没有任何返回值的函数：
 
@@ -298,7 +453,7 @@ function alertName(): void {
 let unusable: void = undefined;
 ```
 
-#### 4.1.5Null 和 Undefined
+### 4.8Null 和 Undefined
 
 在 TypeScript 中，可以使用 `null` 和 `undefined` 来定义这两个原始数据类型：
 
@@ -326,11 +481,11 @@ let num: number = u;
 // Type 'void' is not assignable to type 'number'.
 ```
 
-### 4.2任意值
+### 4.9任意值any
 
 任意值（Any）用来表示允许赋值为任意类型。
 
-#### 4.2.1什么是任意值类型
+#### 4.9.1什么是任意值类型
 
 如果是一个普通类型，在赋值过程中改变类型是不被允许的：
 
@@ -348,7 +503,7 @@ let myFavoriteNumber: any = 'seven';
 myFavoriteNumber = 7;
 ```
 
-#### 4.2.2任意值的属性和方法
+#### 4.9.2任意值的属性和方法
 
 在任意值上访问任何属性都是允许的：
 
@@ -369,7 +524,7 @@ anyThing.myName.setFirstName('Cat');
 
 可以认为，**声明一个变量为任意值之后，对它的任何操作，返回的内容的类型都是任意值**。
 
-#### 4.2.3未声明类型的变量
+#### 4.9.3未声明类型的变量
 
 **变量如果在声明的时候，未指定其类型，那么它会被识别为任意值类型**：
 
@@ -390,6 +545,239 @@ something = 7;
 
 something.setName('Tom');
 ```
+
+### 4.10Unknown 类型
+
+就像所有类型都可以赋值给 `any`，所有类型也都可以赋值给 `unknown`。这使得 `unknown` 成为 TypeScript 类型系统的另一种顶级类型（另一种是 `any`）。
+
+```ts
+let value: unknown;
+
+value = true; // OK
+value = 42; // OK
+value = "Hello World"; // OK
+value = []; // OK
+value = {}; // OK
+value = Math.random; // OK
+value = null; // OK
+value = undefined; // OK
+value = new TypeError(); // OK
+value = Symbol("type"); // OK
+```
+
+对 `value` 变量的所有赋值都被认为是类型正确的。但是，当我们尝试将类型为 `unknown` 的值赋值给其他类型的变量时会发生什么？
+
+```ts
+let value: unknown;
+
+let value1: unknown = value; // OK
+let value2: any = value; // OK
+let value3: boolean = value; // Error
+let value4: number = value; // Error
+let value5: string = value; // Error
+let value6: object = value; // Error
+let value7: any[] = value; // Error
+let value8: Function = value; // Error
+```
+
+`unknown` 类型只能被赋值给 `any` 类型和 `unknown` 类型本身。直观地说，这是有道理的：只有能够保存任意类型值的容器才能保存 `unknown` 类型的值。毕竟我们不知道变量 `value` 中存储了什么类型的值。
+
+现在让我们看看当我们尝试对类型为 `unknown` 的值执行操作时会发生什么。以下是我们在之前 `any` 章节看过的相同操作：
+
+```typescript
+let value: unknown;
+
+value.foo.bar; // Error
+value.trim(); // Error
+value(); // Error
+new value(); // Error
+value[0][1]; // Error
+复制代码
+```
+
+将 `value` 变量类型设置为 `unknown` 后，这些操作都不再被认为是类型正确的。通过将 `any` 类型改变为 `unknown` 类型，我们已将允许所有更改的默认设置，更改为禁止任何更改。
+
+### 4.11元祖
+
+**众所周知，数组一般由同种类型的值组成，但有时我们需要在单个变量中存储不同类型的值，这时候我们就可以使用元组**。在 JavaScript 中是没有元组的，元组是 TypeScript 中特有的类型，其工作方式类似于数组。
+
+元组可用于定义具有有限数量的未命名属性的类型。每个属性都有一个关联的类型。使用元组时，必须提供每个属性的值。
+
+```ts
+let tupleType: [string, boolean];
+tupleType = ["semlinker", true];
+```
+
+在上面代码中，我们定义了一个名为 `tupleType` 的变量，它的类型是一个类型数组 `[string, boolean]`，然后我们按照正确的类型依次初始化 tupleType 变量。与数组一样，我们可以通过下标来访问元组中的元素：
+
+```ts
+console.log(tupleType[0]); // semlinker
+console.log(tupleType[1]); // true
+```
+
+在元组初始化的时候，如果出现类型不匹配的话，比如：
+
+```typescript
+tupleType = [true, "semlinker"];
+```
+
+此时，TypeScript 编译器会提示以下错误信息：
+
+```bash
+[0]: Type 'true' is not assignable to type 'string'.
+[1]: Type 'string' is not assignable to type 'boolean'.
+```
+
+很明显是因为类型不匹配导致的。在元组初始化的时候，我们还必须提供每个属性的值，不然也会出现错误，比如：
+
+```typescript
+tupleType = ["semlinker"];
+```
+
+此时，TypeScript 编译器会提示以下错误信息：
+
+```typescript
+Property '1' is missing in type '[string]' but required in type '[string, boolean]'.
+```
+
+当数组长度固定，数组里面的每一项也是固定的时候。就可以使用元祖类型。
+
+```js
+const techerINFO: [string,string,number] = ['x','x',18]
+```
+
+### 4.12object, Object 和 {} 类型
+
+#### 4.12.1object 类型
+
+object 类型是：TypeScript 2.2 引入的新类型，它用于表示非原始类型。
+
+```typescript
+// node_modules/typescript/lib/lib.es5.d.ts
+interface ObjectConstructor {
+  create(o: object | null): any;
+  // ...
+}
+
+const proto = {};
+
+Object.create(proto);     // OK
+Object.create(null);      // OK
+Object.create(undefined); // Error
+Object.create(1337);      // Error
+Object.create(true);      // Error
+Object.create("oops");    // Error
+```
+
+#### 4.12.2Object 类型
+
+Object 类型：它是所有 Object 类的实例的类型，它由以下两个接口来定义：
+
+- Object 接口定义了 Object.prototype 原型对象上的属性；
+
+```typescript
+// node_modules/typescript/lib/lib.es5.d.ts
+interface Object {
+  constructor: Function;
+  toString(): string;
+  toLocaleString(): string;
+  valueOf(): Object;
+  hasOwnProperty(v: PropertyKey): boolean;
+  isPrototypeOf(v: Object): boolean;
+  propertyIsEnumerable(v: PropertyKey): boolean;
+}
+复制代码
+```
+
+- ObjectConstructor 接口定义了 Object 类的属性。
+
+```typescript
+// node_modules/typescript/lib/lib.es5.d.ts
+interface ObjectConstructor {
+  /** Invocation via `new` */
+  new(value?: any): Object;
+  /** Invocation via function calls */
+  (value?: any): any;
+  readonly prototype: Object;
+  getPrototypeOf(o: any): any;
+  // ···
+}
+
+declare var Object: ObjectConstructor;
+复制代码
+```
+
+Object 类的所有实例都继承了 Object 接口中的所有属性。
+
+#### 4.12.3{} 类型
+
+{} 类型描述了一个没有成员的对象。当你试图访问这样一个对象的任意属性时，TypeScript 会产生一个编译时错误。
+
+```typescript
+// Type {}
+const obj = {};
+
+// Error: Property 'prop' does not exist on type '{}'.
+obj.prop = "semlinker";
+复制代码
+```
+
+但是，你仍然可以使用在 Object 类型上定义的所有属性和方法，这些属性和方法可通过 JavaScript 的原型链隐式地使用：
+
+```typescript
+// Type {}
+const obj = {};
+
+// "[object Object]"
+obj.toString();
+```
+
+### 4.13Never 类型
+
+`never` 类型表示的是那些永不存在的值的类型。 例如，`never` 类型是那些总是会抛出异常或根本就不会有返回值的函数表达式或箭头函数表达式的返回值类型。
+
+```typescript
+// 返回never的函数必须存在无法达到的终点
+function error(message: string): never {
+  throw new Error(message);
+}
+
+function infiniteLoop(): never {
+  while (true) {}
+}
+复制代码
+```
+
+在 TypeScript 中，可以利用 never 类型的特性来实现全面性检查，具体示例如下：
+
+```typescript
+type Foo = string | number;
+
+function controlFlowAnalysisWithNever(foo: Foo) {
+  if (typeof foo === "string") {
+    // 这里 foo 被收窄为 string 类型
+  } else if (typeof foo === "number") {
+    // 这里 foo 被收窄为 number 类型
+  } else {
+    // foo 在这里是 never
+    const check: never = foo;
+  }
+}
+复制代码
+```
+
+注意在 else 分支里面，我们把收窄为 never 的 foo 赋值给一个显示声明的 never 变量。如果一切逻辑正确，那么这里应该能够编译通过。但是假如后来有一天你的同事修改了 Foo 的类型：
+
+```typescript
+type Foo = string | number | boolean;
+复制代码
+```
+
+然而他忘记同时修改 `controlFlowAnalysisWithNever` 方法中的控制流程，这时候 else 分支的 foo 类型会被收窄为 `boolean` 类型，导致无法赋值给 never 类型，这时就会产生一个编译错误。通过这个方式，我们可以确保
+
+`controlFlowAnalysisWithNever` 方法总是穷尽了 Foo 的所有可能类型。 通过这个示例，我们可以得出一个结论：**使用 never 避免出现新增了联合类型没有对应的实现，目的就是写出类型绝对安全的代码。**
+
+
 
 ### 4.3类型推论
 
@@ -1611,73 +1999,6 @@ tom.run();
 
 通过给 `getCacheData` 函数添加了一个泛型 `<T>`，我们可以更加规范的实现对 `getCacheData` 返回值的约束，这也同时去除掉了代码中的 `any`，是最优的一个解决方案。
 
-
-
-
-
-
-
-
-
-
-
-
-
-### 2.1静态类型
-
-```js
-const count: number = 1;
-```
-
-这就是最简单的定义一个数字类型的`count`的变量，这里的`: number`就是定义了一个静态类型。这样定义后`count`这个变量在程序中就永远都是数字类型了，不可以改变了。比如我们这时候给`count`复制一个字符串，它就报错了。
-
-你会发现这时候的`count`变量,可以使用`number`类型上所有的属性和方法。
-
-#### 2.1.1自定义静态类型
-
-```js
-interface Point {
-  x: number;
-  y: number;
-}
-
-const point: Point = {
-  x: 3,
-  y: 18,
-};
-```
-
-## 2.2基础类型
-
-## 2.3类型注解和类型推断
-
-类型注解：我们来告诉TS变量是什么类型
-
-类型推断：TS会自动的去尝试分析变量的类型
-
-如果TS能够自动分析变量类型，我们就什么也不需要做，
-
-如果TS无法分析变量类型的话，我们就需要使用类型注解
-
-```ts
-//类型注解
-let count: number;
-count = 123
-
-//类型推断:此时ts能推断出类型
-let countInference = 123;
-const firstNumber = 1;
-const lastNUmber = 2;
-
-//函数的类型注解：因为传递的参数ts不能推断，所以需要使用类型注解
-function getTotal(firstNumber: number,secondNumber: number){
-  return firstNumber+secondNumber
-  
-}
-```
-
-
-
 ## 函数类型
 
 ### 为函数定义类型
@@ -1720,8 +2041,6 @@ function add( {x,y}: {x:number,y:number}): number {
 }
 ```
 
-
-
 ## 数组
 
 ```js
@@ -1750,13 +2069,7 @@ const objectArr: User[] = [{
 type
 ```
 
-## 元祖
-
-当数组长度固定，数组里面的每一项也是固定的时候。就可以使用元祖类型。
-
-```js
-const techerINFO: [string,string,number] = ['x','x',18]
-```
+## 
 
 ## interface接口
 
@@ -1911,8 +2224,6 @@ const say: SayHi  = (word: string) =>{
   return word
 }
 ```
-
-
 
 ## 类
 
@@ -2195,6 +2506,68 @@ class Circle extends Geom {
   getArea() {
     return 123
   }
+}
+```
+
+## typescript配置文件
+
+在根目录新建`tsconfig.json`
+
+- Include:用来指定哪些ts文件需要被编译
+
+**：表示任意目录
+
+*：表示任意文件
+
+- exclude：不需要被编译的目录
+
+```json
+{
+  //编译器的选项
+  "compilerOptions": {
+    "allowUnreachableCode": true, // 不报告执行不到的代码错误。
+    "allowUnusedLabels": false,	// 不报告未使用的标签错误
+    "alwaysStrict": false, // 以严格模式解析并为每个源文件生成 "use strict"语句
+    "baseUrl": ".", // 工作根目录
+    "experimentalDecorators": true, // 启用实验性的ES装饰器
+    "jsx": "react", // 在 .tsx文件里支持JSX
+    "sourceMap": true, // 是否生成map文件
+    "module": "commonjs", // 指定生成哪个模块系统代码
+    "noImplicitAny": false, // 是否默认禁用 any
+    "removeComments": true, // 是否移除注释
+    "types": [ //指定引入的类型声明文件，默认是自动引入所有声明文件，一旦指定该选项，则会禁用自动引入，改为只引入指定的类型声明文件，如果指定空数组[]则不引用任何文件
+      "node", // 引入 node 的类型声明
+    ],
+    "paths": { // 指定模块的路径，和baseUrl有关联，和webpack中resolve.alias配置一样
+      "src": [ //指定后可以在文件之直接 import * from 'src';
+        "./src"
+      ],
+    },
+    "target": "ESNext", // 编译的目标是什么版本的
+    "outDir": "./dist", // 输出目录
+    "declaration": true, // 是否自动创建类型声明文件
+    "declarationDir": "./lib", // 类型声明文件的输出目录
+    "allowJs": true, // 允许编译javascript文件。
+    "lib": [ // 编译过程中需要引入的库文件的列表
+      "es5",
+      "es2015",
+      "es2016",
+      "es2017",
+      "es2018",
+      "dom"
+    ]
+  },
+    "include": [
+        "src/**/*"// 表示src文件夹下任意的文件夹下的任意文件需要被编译
+    ],
+    "exclude": [
+        "node_modules",
+        "**/*.spec.ts"
+    ],
+  // 指定哪些文件使用该配置（属于手动一个个指定文件）
+  "files": [
+    "demo.ts"
+  ]
 }
 ```
 
