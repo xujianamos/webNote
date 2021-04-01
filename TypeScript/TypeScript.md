@@ -341,7 +341,6 @@ enum Direction {
   EAST = "EAST",
   WEST = "WEST",
 }
-复制代码
 ```
 
 以上代码对应的 ES5 代码如下：
@@ -355,7 +354,6 @@ var Direction;
     Direction["EAST"] = "EAST";
     Direction["WEST"] = "WEST";
 })(Direction || (Direction = {}));
-复制代码
 ```
 
 通过观察数字枚举和字符串枚举的编译结果，我们可以知道数字枚举除了支持 **从成员名称到成员值** 的普通映射之外，它还支持 **从成员值到成员名称** 的反向映射：
@@ -370,7 +368,6 @@ enum Direction {
 
 let dirName = Direction[0]; // NORTH
 let dirVal = Direction["NORTH"]; // 0
-复制代码
 ```
 
 另外，对于纯字符串枚举，我们不能省略任何初始化程序。而数字枚举如果没有显式设置值时，则会使用默认规则进行初始化。
@@ -388,7 +385,6 @@ const enum Direction {
 }
 
 let dir: Direction = Direction.NORTH;
-复制代码
 ```
 
 以上代码对应的 ES5 代码如下：
@@ -411,7 +407,6 @@ enum Enum {
   E = 8,
   F,
 }
-复制代码
 ```
 
 以上代码对于的 ES5 代码如下：
@@ -427,7 +422,6 @@ var Enum;
     Enum[Enum["E"] = 8] = "E";
     Enum[Enum["F"] = 9] = "F";
 })(Enum || (Enum = {}));
-复制代码
 ```
 
 通过观察上述生成的 ES5 代码，我们可以发现数字枚举相对字符串枚举多了 “反向映射”：
@@ -592,7 +586,6 @@ value.trim(); // Error
 value(); // Error
 new value(); // Error
 value[0][1]; // Error
-复制代码
 ```
 
 将 `value` 变量类型设置为 `unknown` 后，这些操作都不再被认为是类型正确的。通过将 `any` 类型改变为 `unknown` 类型，我们已将允许所有更改的默认设置，更改为禁止任何更改。
@@ -686,7 +679,6 @@ interface Object {
   isPrototypeOf(v: Object): boolean;
   propertyIsEnumerable(v: PropertyKey): boolean;
 }
-复制代码
 ```
 
 - ObjectConstructor 接口定义了 Object 类的属性。
@@ -704,7 +696,6 @@ interface ObjectConstructor {
 }
 
 declare var Object: ObjectConstructor;
-复制代码
 ```
 
 Object 类的所有实例都继承了 Object 接口中的所有属性。
@@ -719,7 +710,6 @@ const obj = {};
 
 // Error: Property 'prop' does not exist on type '{}'.
 obj.prop = "semlinker";
-复制代码
 ```
 
 但是，你仍然可以使用在 Object 类型上定义的所有属性和方法，这些属性和方法可通过 JavaScript 的原型链隐式地使用：
@@ -745,7 +735,6 @@ function error(message: string): never {
 function infiniteLoop(): never {
   while (true) {}
 }
-复制代码
 ```
 
 在 TypeScript 中，可以利用 never 类型的特性来实现全面性检查，具体示例如下：
@@ -763,19 +752,559 @@ function controlFlowAnalysisWithNever(foo: Foo) {
     const check: never = foo;
   }
 }
-复制代码
 ```
 
 注意在 else 分支里面，我们把收窄为 never 的 foo 赋值给一个显示声明的 never 变量。如果一切逻辑正确，那么这里应该能够编译通过。但是假如后来有一天你的同事修改了 Foo 的类型：
 
 ```typescript
 type Foo = string | number | boolean;
-复制代码
 ```
 
 然而他忘记同时修改 `controlFlowAnalysisWithNever` 方法中的控制流程，这时候 else 分支的 foo 类型会被收窄为 `boolean` 类型，导致无法赋值给 never 类型，这时就会产生一个编译错误。通过这个方式，我们可以确保
 
 `controlFlowAnalysisWithNever` 方法总是穷尽了 Foo 的所有可能类型。 通过这个示例，我们可以得出一个结论：**使用 never 避免出现新增了联合类型没有对应的实现，目的就是写出类型绝对安全的代码。**
+
+## 5.TypeScript 断言
+
+### 5.1类型断言
+
+类型断言好比其他语言里的类型转换，但是不进行特殊的数据检查和解构。它没有运行时的影响，只是在编译阶段起作用。
+
+类型断言有两种形式：
+
+#### 5.1.1“尖括号” 语法
+
+```ts
+let someValue: any = "this is a string";
+let strLength: number = (<string>someValue).length;
+```
+
+#### 5.1.2as 语法
+
+```ts
+let someValue: any = "this is a string";
+let strLength: number = (someValue as string).length;
+```
+
+### 5.2非空断言
+
+在上下文中当类型检查器无法断定类型时，一个新的后缀表达式操作符 `!` 可以用于断言操作对象是非 null 和非 undefined 类型。**具体而言，x! 将从 x 值域中排除 null 和 undefined 。**
+
+#### 5.2.1忽略 undefined 和 null 类型
+
+```ts
+function myFunc(maybeString: string | undefined | null) {
+  // Type 'string | null | undefined' is not assignable to type 'string'.
+  // Type 'undefined' is not assignable to type 'string'. 
+  const onlyString: string = maybeString; // Error
+  const ignoreUndefinedAndNull: string = maybeString!; // Ok
+}
+```
+
+#### 5.2.2调用函数时忽略 undefined 类型
+
+```ts
+type NumGenerator = () => number;
+
+function myFunc(numGenerator: NumGenerator | undefined) {
+  // Object is possibly 'undefined'.(2532)
+  // Cannot invoke an object which is possibly 'undefined'.(2722)
+  const num1 = numGenerator(); // Error
+  const num2 = numGenerator!(); //OK
+}
+```
+
+因为 `!` 非空断言操作符会从编译生成的 JavaScript 代码中移除，所以在实际使用的过程中，要特别注意。比如下面这个例子：
+
+```ts
+const a: number | undefined = undefined;
+const b: number = a!;
+console.log(b); 
+```
+
+以上 TS 代码会编译生成以下 ES5 代码：
+
+```ts
+"use strict";
+const a = undefined;
+const b = a;
+console.log(b);
+```
+
+虽然在 TS 代码中，我们使用了非空断言，使得 `const b: number = a!;` 语句可以通过 TypeScript 类型检查器的检查。但在生成的 ES5 代码中，`!` 非空断言操作符被移除了，所以在浏览器中执行以上代码，在控制台会输出 `undefined`。
+
+### 5.3确定赋值断言
+
+在 TypeScript 2.7 版本中引入了确定赋值断言，即允许在实例属性和变量声明后面放置一个 `!` 号，从而告诉 TypeScript 该属性会被明确地赋值。为了更好地理解它的作用，我们来看个具体的例子：
+
+```ts
+let x: number;
+initialize();
+// Variable 'x' is used before being assigned.(2454)
+console.log(2 * x); // Error
+
+function initialize() {
+  x = 10;
+}
+```
+
+很明显该异常信息是说变量 x 在赋值前被使用了，要解决该问题，我们可以使用确定赋值断言：
+
+```ts
+let x!: number;
+initialize();
+console.log(2 * x); // Ok
+
+function initialize() {
+  x = 10;
+}
+```
+
+通过 `let x!: number;` 确定赋值断言，TypeScript 编译器就会知道该属性会被明确地赋值。
+
+## 6.类型守卫
+
+**类型保护是可执行运行时检查的一种表达式，用于确保该类型在一定的范围内。** 换句话说，类型保护可以保证一个字符串是一个字符串，尽管它的值也可以是一个数值。类型保护与特性检测并不是完全不同，其主要思想是尝试检测属性、方法或原型，以确定如何处理值。目前主要有四种的方式来实现类型保护：
+
+### 6.1in 关键字
+
+```ts
+interface Admin {
+  name: string;
+  privileges: string[];
+}
+
+interface Employee {
+  name: string;
+  startDate: Date;
+}
+
+type UnknownEmployee = Employee | Admin;
+
+function printEmployeeInformation(emp: UnknownEmployee) {
+  console.log("Name: " + emp.name);
+  if ("privileges" in emp) {
+    console.log("Privileges: " + emp.privileges);
+  }
+  if ("startDate" in emp) {
+    console.log("Start Date: " + emp.startDate);
+  }
+}
+```
+
+### 6.2typeof 关键字
+
+```ts
+function padLeft(value: string, padding: string | number) {
+  if (typeof padding === "number") {
+      return Array(padding + 1).join(" ") + value;
+  }
+  if (typeof padding === "string") {
+      return padding + value;
+  }
+  throw new Error(`Expected string or number, got '${padding}'.`);
+}
+```
+
+`typeof` 类型保护只支持两种形式：`typeof v === "typename"` 和 `typeof v !== typename`，`"typename"` 必须是 `"number"`， `"string"`， `"boolean"` 或 `"symbol"`。 但是 TypeScript 并不会阻止你与其它字符串比较，语言不会把那些表达式识别为类型保护。
+
+### 6.3instanceof 关键字
+
+```ts
+interface Padder {
+  getPaddingString(): string;
+}
+
+class SpaceRepeatingPadder implements Padder {
+  constructor(private numSpaces: number) {}
+  getPaddingString() {
+    return Array(this.numSpaces + 1).join(" ");
+  }
+}
+
+class StringPadder implements Padder {
+  constructor(private value: string) {}
+  getPaddingString() {
+    return this.value;
+  }
+}
+
+let padder: Padder = new SpaceRepeatingPadder(6);
+
+if (padder instanceof SpaceRepeatingPadder) {
+  // padder的类型收窄为 'SpaceRepeatingPadder'
+}
+```
+
+### 6.4自定义类型保护的类型谓词
+
+```ts
+function isNumber(x: any): x is number {
+  return typeof x === "number";
+}
+
+function isString(x: any): x is string {
+  return typeof x === "string";
+}
+```
+
+## 7.联合类型和类型别名
+
+### 7.1联合类型
+
+联合类型通常与 `null` 或 `undefined` 一起使用：
+
+```typescript
+const sayHello = (name: string | undefined) => {
+  /* ... */
+};
+```
+
+例如，这里 `name` 的类型是 `string | undefined` 意味着可以将 `string` 或 `undefined` 的值传递给`sayHello` 函数。
+
+```typescript
+sayHello("semlinker");
+sayHello(undefined);
+```
+
+通过这个示例，你可以凭直觉知道类型 A 和类型 B 联合后的类型是同时接受 A 和 B 值的类型。此外，对于联合类型来说，你可能会遇到以下的用法：
+
+```typescript
+let num: 1 | 2 = 1;
+type EventNames = 'click' | 'scroll' | 'mousemove';
+```
+
+以上示例中的 `1`、`2` 或 `'click'` 被称为字面量类型，用来约束取值只能是某几个值中的一个。
+
+### 7.2可辨识联合
+
+TypeScript 可辨识联合（Discriminated Unions）类型，也称为代数数据类型或标签联合类型。**它包含 3 个要点：可辨识、联合类型和类型守卫。**
+
+这种类型的本质是结合联合类型和字面量类型的一种类型保护方法。**如果一个类型是多个类型的联合类型，且多个类型含有一个公共属性，那么就可以利用这个公共属性，来创建不同的类型保护区块。**
+
+#### 7.2.1可辨识
+
+可辨识要求联合类型中的每个元素都含有一个单例类型属性，比如：
+
+```ts
+enum CarTransmission {
+  Automatic = 200,
+  Manual = 300
+}
+
+interface Motorcycle {
+  vType: "motorcycle"; // discriminant
+  make: number; // year
+}
+
+interface Car {
+  vType: "car"; // discriminant
+  transmission: CarTransmission
+}
+
+interface Truck {
+  vType: "truck"; // discriminant
+  capacity: number; // in tons
+}
+```
+
+在上述代码中，我们分别定义了 `Motorcycle`、 `Car` 和 `Truck` 三个接口，在这些接口中都包含一个 `vType` 属性，该属性被称为可辨识的属性，而其它的属性只跟特性的接口相关。
+
+#### 7.2.2联合类型
+
+基于前面定义了三个接口，我们可以创建一个 `Vehicle` 联合类型：
+
+```ts
+type Vehicle = Motorcycle | Car | Truck;
+```
+
+现在我们就可以开始使用 `Vehicle` 联合类型，对于 `Vehicle` 类型的变量，它可以表示不同类型的车辆。
+
+#### 7.2.3类型守卫
+
+下面我们来定义一个 `evaluatePrice` 方法，该方法用于根据车辆的类型、容量和评估因子来计算价格，具体实现如下：
+
+```typescript
+const EVALUATION_FACTOR = Math.PI; 
+
+function evaluatePrice(vehicle: Vehicle) {
+  return vehicle.capacity * EVALUATION_FACTOR;
+}
+
+const myTruck: Truck = { vType: "truck", capacity: 9.5 };
+evaluatePrice(myTruck);
+```
+
+对于以上代码，TypeScript 编译器将会提示以下错误信息：
+
+```bash
+Property 'capacity' does not exist on type 'Vehicle'.
+Property 'capacity' does not exist on type 'Motorcycle'.
+```
+
+原因是在 Motorcycle 接口中，并不存在 `capacity` 属性，而对于 Car 接口来说，它也不存在 `capacity` 属性。那么，现在我们应该如何解决以上问题呢？这时，我们可以使用类型守卫。下面我们来重构一下前面定义的 `evaluatePrice` 方法，重构后的代码如下：
+
+```typescript
+function evaluatePrice(vehicle: Vehicle) {
+  switch(vehicle.vType) {
+    case "car":
+      return vehicle.transmission * EVALUATION_FACTOR;
+    case "truck":
+      return vehicle.capacity * EVALUATION_FACTOR;
+    case "motorcycle":
+      return vehicle.make * EVALUATION_FACTOR;
+  }
+}
+```
+
+在以上代码中，我们使用 `switch` 和 `case` 运算符来实现类型守卫，从而确保在 `evaluatePrice` 方法中，我们可以安全地访问 `vehicle` 对象中的所包含的属性，来正确的计算该车辆类型所对应的价格。
+
+### 7.3类型别名
+
+类型别名用来给一个类型起个新名字。
+
+```ts
+type Message = string | string[];
+
+let greet = (message: Message) => {
+  // ...
+};
+```
+
+## 8.交叉类型
+
+在 TypeScript 中交叉类型是将多个类型合并为一个类型。通过 `&` 运算符可以将现有的多种类型叠加到一起成为一种类型，它包含了所需的所有类型的特性。
+
+```ts
+type PartialPointX = { x: number; };
+type Point = PartialPointX & { y: number; };
+
+let point: Point = {
+  x: 1,
+  y: 1
+}
+```
+
+在上面代码中我们先定义了 `PartialPointX` 类型，接着使用 `&` 运算符创建一个新的 `Point` 类型，表示一个含有 x 和 y 坐标的点，然后定义了一个 `Point` 类型的变量并初始化。
+
+### 8.1同名基础类型属性的合并
+
+那么现在问题来了，假设在合并多个类型的过程中，刚好出现某些类型存在相同的成员，但对应的类型又不一致，比如：
+
+```ts
+interface X {
+  c: string;
+  d: string;
+}
+
+interface Y {
+  c: number;
+  e: string
+}
+
+type XY = X & Y;
+type YX = Y & X;
+
+let p: XY;
+let q: YX;
+```
+
+在上面的代码中，接口 X  和接口 Y 都含有一个相同的成员 c，但它们的类型不一致。对于这种情况，此时 XY 类型或 YX 类型中成员 c 的类型是不是可以是 `string` 或 `number` 类型呢？比如下面的例子：
+
+```typescript
+p = { c: 6, d: "d", e: "e" }; 
+```
+
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/1bcfd462827046f1a4a5574de30780b2~tplv-k3u1fbpfcp-zoom-1.image)
+
+```ts
+q = { c: "c", d: "d", e: "e" }; 
+```
+
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/1d4f87c84ea647308cac5393fdfa958a~tplv-k3u1fbpfcp-zoom-1.image)
+
+为什么接口 X 和接口 Y 混入后，成员 c 的类型会变成 `never` 呢？这是因为混入后成员 c 的类型为 `string & number`，即成员 c 的类型既可以是 `string` 类型又可以是 `number` 类型。很明显这种类型是不存在的，所以混入后成员 c 的类型为 `never`。
+
+### 8.2同名非基础类型属性的合并
+
+在上面示例中，刚好接口 X 和接口 Y 中内部成员 c 的类型都是基本数据类型，那么如果是非基本数据类型的话，又会是什么情形。我们来看个具体的例子：
+
+```ts
+interface D { d: boolean; }
+interface E { e: string; }
+interface F { f: number; }
+
+interface A { x: D; }
+interface B { x: E; }
+interface C { x: F; }
+
+type ABC = A & B & C;
+
+let abc: ABC = {
+  x: {
+    d: true,
+    e: 'semlinker',
+    f: 666
+  }
+};
+
+console.log('abc:', abc);
+```
+
+以上代码成功运行后，控制台会输出以下结果：
+
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/9c7f386c9857412e8e464f13492d4068~tplv-k3u1fbpfcp-zoom-1.image)
+
+由上图可知，在混入多个类型时，若存在相同的成员，且成员类型为非基本数据类型，那么是可以成功合并。
+
+## 9.TypeScript 函数
+
+### 9.1参数类型和返回类型
+
+```ts
+function createUserId(name: string, id: number): string {
+  return name + id;
+}
+```
+
+### 9.2函数类型
+
+```ts
+let IdGenerator: (chars: string, nums: number) => string;
+
+function createUserId(name: string, id: number): string {
+  return name + id;
+}
+
+IdGenerator = createUserId;
+```
+
+### 9.3可选参数及默认参数
+
+```ts
+// 可选参数
+function createUserId(name: string, id: number, age?: number): string {
+  return name + id;
+}
+
+// 默认参数
+function createUserId(
+  name: string = "semlinker",
+  id: number,
+  age?: number
+): string {
+  return name + id;
+}
+```
+
+在声明函数时，可以通过 `?` 号来定义可选参数，比如 `age?: number` 这种形式。**在实际使用时，需要注意的是可选参数要放在普通参数的后面，不然会导致编译错误**。
+
+### 9.4函数重载
+
+函数重载或方法重载是使用相同名称和不同参数数量或类型创建多个方法的一种能力。
+
+```ts
+function add(a: number, b: number): number;
+function add(a: string, b: string): string;
+function add(a: string, b: number): string;
+function add(a: number, b: string): string;
+function add(a: Combinable, b: Combinable) {
+  // type Combinable = string | number;
+  if (typeof a === 'string' || typeof b === 'string') {
+    return a.toString() + b.toString();
+  }
+  return a + b;
+}
+```
+
+在以上代码中，我们为 add 函数提供了多个函数类型定义，从而实现函数的重载。在 TypeScript 中除了可以重载普通函数之外，我们还可以重载类中的成员方法。
+
+方法重载是指在同一个类中方法同名，参数不同（参数类型不同、参数个数不同或参数个数相同时参数的先后顺序不同），调用时根据实参的形式，选择与它匹配的方法执行操作的一种技术。所以类中成员方法满足重载的条件是：在同一个类中，方法名相同且参数列表不同。下面我们来举一个成员方法重载的例子：
+
+```typescript
+class Calculator {
+  add(a: number, b: number): number;
+  add(a: string, b: string): string;
+  add(a: string, b: number): string;
+  add(a: number, b: string): string;
+  add(a: Combinable, b: Combinable) {
+  if (typeof a === 'string' || typeof b === 'string') {
+    return a.toString() + b.toString();
+  }
+    return a + b;
+  }
+}
+
+const calculator = new Calculator();
+const result = calculator.add('Semlinker', ' Kakuqo');
+```
+
+这里需要注意的是，当 TypeScript 编译器处理函数重载时，它会查找重载列表，尝试使用第一个重载定义。 如果匹配的话就使用这个。 因此，在定义重载的时候，一定要把最精确的定义放在最前面。另外在 Calculator 类中，`add(a: Combinable, b: Combinable){ }` 并不是重载列表的一部分，因此对于 add 成员方法来说，我们只定义了四个重载方法。
+
+## 10.TypeScript 数组
+
+### 10.1数组解构
+
+```ts
+let x: number; let y: number; let z: number;
+let five_array = [0,1,2,3,4];
+[x,y,z] = five_array;
+```
+
+### 10.2数组展开运算符
+
+```ts
+let two_array = [0, 1];
+let five_array = [...two_array, 2, 3, 4];
+```
+
+### 10.3数组遍历
+
+```ts
+let colors: string[] = ["red", "green", "blue"];
+for (let i of colors) {
+  console.log(i);
+}
+```
+
+## 11.TypeScript 对象
+
+### 11.1对象解构
+
+```ts
+let person = {
+  name: "Semlinker",
+  gender: "Male",
+};
+
+let { name, gender } = person;
+```
+
+### 11.2对象展开运算符
+
+```ts
+let person = {
+  name: "Semlinker",
+  gender: "Male",
+  address: "Xiamen",
+};
+
+// 组装对象
+let personWithAge = { ...person, age: 33 };
+
+// 获取除了某些项外的其它项
+let { name, ...rest } = person;
+```
+
+## 12.TypeScript 接口
+
+
+
+
+
+
+
+
 
 
 
