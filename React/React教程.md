@@ -4644,7 +4644,7 @@ const ProfileWrapper = styled.div`
 
 你可以通过传入一个对象：
 
-```
+```jsx
 <div
   class="static"
   v-bind:class="{ active: isActive, 'text-danger': hasError }"
@@ -4653,13 +4653,13 @@ const ProfileWrapper = styled.div`
 
 你也可以传入一个数组：
 
-```
+```jsx
 <div v-bind:class="[activeClass, errorClass]"></div>
 ```
 
 甚至是对象和数组混合使用：
 
-```
+```jsx
 <div v-bind:class="[{ active: isActive }, errorClass]"></div>
 ```
 
@@ -4667,7 +4667,7 @@ const ProfileWrapper = styled.div`
 
 React在JSX给了我们开发者足够多的灵活性，你可以像编写JavaScript代码一样，通过一些逻辑来决定是否添加某些class：
 
-```
+```jsx
 import React, { PureComponent } from 'react'
 
 export default class App extends PureComponent {
@@ -4698,7 +4698,7 @@ export default class App extends PureComponent {
 
 我们来使用一下最常见的使用案例：
 
-```
+```jsx
 classNames('foo', 'bar'); // => 'foo bar'
 classNames('foo', { bar: true }); // => 'foo bar'
 classNames({ 'foo-bar': true }); // => 'foo-bar'
@@ -4712,3 +4712,152 @@ classNames('foo', { bar: true, duck: false }, 'baz', { quux: true }); // => 'foo
 // other falsy values are just ignored
 classNames(null, false, 'bar', undefined, 0, 1, { baz: null }, ''); // => 'bar 1'
 ```
+
+## 9.AntDesign UI库
+
+### 9.1AntDesign的安装
+
+```bash
+npm install antd --save
+yarn add antd
+```
+
+我们需要在index.js中引入全局的Antd样式：
+
+```jsx
+import "antd/dist/antd.css";
+```
+
+在App.js中就可以使用一些组件了。
+
+`antd` 官网有提到：`antd` 的 JS 代码默认支持基于 ES modules 的 tree shaking，对于 js 部分，直接引入 `import { Button } from 'antd'` 就会有按需加载的效果。
+
+### 9.2高级配置
+
+#### 9.2.1认识craco
+
+上面的使用过程是无法对主题进行配置的，好像对主题等相关的高级特性进行配置，需要修改create-react-app 的默认配置。
+
+如何修改create-react-app 的默认配置呢？
+
+- 前面我们讲过，可以通过`yarn run eject`来暴露出来对应的配置信息进行修改；
+- 但是对于webpack并不熟悉的人来说，直接修改 CRA 的配置是否会给你的项目带来负担，甚至会增加项目的隐患和不稳定性呢？
+- 所以，在项目开发中是不建议大家直接去修改 CRA 的配置信息的；
+
+那么如何来进行修改默认配置呢？社区目前有两个比较常见的方案：
+
+- react-app-rewired + customize-cra；（这个是antd早期推荐的方案）
+- craco；（目前antd推荐的方案）
+
+第一步：安装craco：
+
+```bash
+yarn add @craco/craco
+```
+
+第二步：修改package.json文件
+
+- 原本启动时，我们是通过react-scripts来管理的；
+- 现在启动时，我们通过craco来管理；
+
+```zsh
+"scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+}
+```
+
+第三步：在根目录下创建craco.config.js文件用于修改默认配置
+
+```js
+module.exports = {
+  // 配置文件
+}
+```
+
+#### 9.2.2配置主题
+
+按照 配置主题 的要求，自定义主题需要用到类似 less-loader 提供的 less 变量覆盖功能：
+
+- 我们可以引入 craco-less 来帮助加载 less 样式和修改变量；
+
+安装 `craco-less`：
+
+```bash
+yarn add craco-less
+```
+
+修改craco.config.js中的plugins：
+
+- 使用`modifyVars`可以在运行时修改LESS变量；
+- 
+
+```js
+const CracoLessPlugin = require('craco-less');
+
+module.exports = {
+  plugins: [
+    {
+      plugin: CracoLessPlugin,
+      options: {
+        lessLoaderOptions: {
+          lessOptions: {
+            modifyVars: { '@primary-color': '#1DA57A' },
+            javascriptEnabled: true,
+          },
+        },
+      },
+    },
+  ],
+}
+```
+
+引入antd的样式时，引入antd.less文件：
+
+```js
+// import "antd/dist/antd.css";
+import 'antd/dist/antd.less';
+```
+
+修改后重启 `yarn start`，如果看到一个绿色的按钮就说明配置成功了。
+
+#### 9.2.3配置别名
+
+在项目开发中，某些组件或者文件的层级会较深，
+
+- 如果我们通过上层目录去引入就会出现这样的情况：`../../../../components/button`；
+- 如果我们可以配置别名，就可以直接从根目录下面开始查找文件：`@/components/button`，甚至是：`components/button`；
+
+配置别名也需要修改webpack的配置，当然我们也可以借助于 craco 来完成：
+
+```js
+...
+
+const path = require("path");
+const resolve = dir => path.resolve(__dirname, dir);
+
+module.exports = {
+  ...
+  ,
+  webpack: {
+    alias: {
+      '@': resolve("src"),
+      'components': resolve("src/components"),
+    }
+  }
+}
+```
+
+在导入时就可以按照下面的方式来使用了：
+
+```js
+import HYCommentInput from '@/components/comment-input';
+import HYCommentItem from 'components/comment-item';
+```
+
+
+
