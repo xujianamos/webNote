@@ -4859,5 +4859,27 @@ import HYCommentInput from '@/components/comment-input';
 import HYCommentItem from 'components/comment-item';
 ```
 
+## 10.React过渡动画
+
+在开发中，我们想要给一个组件的显示和消失添加一些过渡动画，可以很好的增加用户体验。
+
+当然，我们可以通过原生的CSS来实现这些过渡动画，但是React社区为我们提供了react-transition-group完成了过渡动画。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
