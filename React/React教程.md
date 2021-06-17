@@ -6866,6 +6866,7 @@ const memoizedValue = useMemo(() => computeExpensiveValue(a, b), [a, b]);
 ```js
 import React, { useState, useMemo } from 'react';
 
+// 计算和的函数
 function calcNum(count) {
   let total = 0;
   for (let i = 0; i < count; i++) {
@@ -6910,6 +6911,7 @@ export default function MemoHookDemo() {
   const [count, setCount] = useState(10);
   const [isLogin, setIsLogin] = useState(true);
 
+  // 点击切换时不会执行，只有count变化时才执行
   const total = useMemo(() => {
     return calcNum(count);
   }, [count]);
@@ -7013,7 +7015,7 @@ export default function RefHookDemo() {
 
 用法二：使用ref保存上一次的某一个值
 
-- useRef可以想象成在ref对象中保存了一个.current的可变盒子；
+- useRef可以想象成在ref对象中保存了一个`.current`的可变盒子；
 - useRef在组件重新渲染时，返回的依然是之前的ref对象，但是current是可以修改的；
 
 ```js
@@ -7041,11 +7043,11 @@ export default function RefHookDemo02() {
 
 ### 13.9useImperativeHandle
 
-useImperativeHandle并不是特别好理解，我们一点点来学习。
+`useImperativeHandle`并不是特别好理解，我们一点点来学习。
 
-我们先来回顾一下ref和forwardRef结合使用：
+我们先来回顾一下`ref`和`forwardRef`结合使用：
 
-- 通过forwardRef可以将ref转发到子组件；
+- 通过`forwardRef`可以将`ref`转发到子组件；
 - 子组件拿到父组件中创建的ref，绑定到自己的某一个元素中；
 
 ```js
@@ -7184,7 +7186,7 @@ export default function EffectHookDemo() {
 - 组件被创建：打印 `组件被创建了`；
 - 组件被销毁：打印 `组件被销毁了`；
 
-```
+```js
 export default function CustomHookDemo() {
   useEffect(() => {
     console.log("组件被创建了");
@@ -7203,7 +7205,7 @@ export default function CustomHookDemo() {
 
 但是这样来做意味着所有的组件都需要有对应的逻辑：
 
-```
+```js
 function Home(props) {
   useEffect(() => {
     console.log("组件被创建了");
@@ -7229,7 +7231,7 @@ function Profile(props) {
 
 - 我们可能希望抽取到一个函数中；
 
-```
+```js
 function loggingLife() {
   useEffect(() => {
     console.log("组件被创建了");
@@ -7250,7 +7252,7 @@ function loggingLife() {
 
 - 非常简单，函数以特殊的方式命名，以 `use` 开头即可；
 
-```
+```js
 function useLoggingLife() {
   useEffect(() => {
     console.log("组件被创建了");
@@ -7263,7 +7265,7 @@ function useLoggingLife() {
 
 当然，自定义Hook可以有参数，也可以有返回值：
 
-```
+```js
 function useLoggingLife(name) {
   useEffect(() => {
     console.log(`${name}组件被创建了`);
@@ -7284,7 +7286,7 @@ function useLoggingLife(name) {
 
 - 这段代码我们在每次使用user和token时都需要导入对应的Context，并且需要使用两次useContext；
 
-```
+```js
 import React, { useContext } from 'react'
 import { UserContext, TokenContext } from '../App'
 
@@ -7304,7 +7306,7 @@ export default function CustomHookContextDemo() {
 
 我们可以抽取到一个自定义Hook中：
 
-```
+```js
 function useUserToken() {
   const user = useContext(UserContext);
   const token = useContext(TokenContext);
@@ -7317,7 +7319,7 @@ function useUserToken() {
 
 在开发中，某些场景我们可能总是希望获取创建滚动的位置：
 
-```
+```js
 import React, { useEffect, useState } from 'react'
 
 export default function CustomScrollPositionHook() {
@@ -7345,7 +7347,7 @@ export default function CustomScrollPositionHook() {
 
 但是如果每一个组件都有对应这样的一个逻辑，那么就会存在很多的冗余代码：
 
-```
+```js
 function useScrollPosition() {
   const [scrollPosition, setScrollPosition] = useState(0);
 
@@ -7368,7 +7370,7 @@ function useScrollPosition() {
 
 在开发中，我们会有一些数据希望通过localStorage进行存储（当然，你可以根据自己的情况选择sessionStorage）
 
-```
+```js
 import React, { useState, useEffect } from 'react'
 
 export default function CustomDataStoreHook() {
@@ -7391,7 +7393,7 @@ export default function CustomDataStoreHook() {
 
 如果每一个里面都有这样的逻辑，那么代码就会变得非常冗余：
 
-```
+```js
 function useLocalStorange(key) {
   const [data, setData] = useState(() => {
     return JSON.parse(window.localStorage.getItem(key))
@@ -7404,3 +7406,4 @@ function useLocalStorange(key) {
   return [data, setData];
 }
 ```
+
