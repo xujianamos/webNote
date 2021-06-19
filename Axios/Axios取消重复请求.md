@@ -150,7 +150,7 @@ axios.interceptors.response.use(
 
 当出现重复请求时，之前已发送且未完成的请求会被取消掉。下面我们用一张流程图来总结一下取消重复请求的处理流程：
 
-![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/74708ddbcba1457ba22c51936c7cacb2~tplv-k3u1fbpfcp-zoom-1.image)
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/74708ddbcba1457ba22c51936c7cacb2~tplv-k3u1fbpfcp-zoom-1.image)
 
 # 四、CancelToken 的工作原理
 
@@ -205,6 +205,7 @@ if (config.cancelToken) {
 
 看完上述的内容，可能有的小伙伴还不是很能理解 `CancelToken` 的工作原理，所以阿宝哥又画了一张图来帮助大家理解 `CancelToken` 的工作原理：
 
-![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/55c3847567ff4dcf974c4e0462220aff~tplv-k3u1fbpfcp-zoom-1.image)
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/55c3847567ff4dcf974c4e0462220aff~tplv-k3u1fbpfcp-zoom-1.image)
 
 > **需要注意的是已取消的请求可能已经达到服务端，针对这种情形，服务端的对应接口需要进行幂等控制**。
+
