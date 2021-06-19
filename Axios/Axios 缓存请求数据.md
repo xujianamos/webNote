@@ -2,7 +2,7 @@ Axios 中如何通过 **增强默认适配器** 来缓存请求数据。那么�
 
 因为本文将使用 [Axios](https://github.com/axios/axios) 提供的默认适配器来实现缓存请求数据的功能，我们先来看一下整体的流程图：
 
-![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/0fa55bc3d4f04ca5b8216aa1b08b8286~tplv-k3u1fbpfcp-zoom-1.image)
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/0fa55bc3d4f04ca5b8216aa1b08b8286~tplv-k3u1fbpfcp-zoom-1.image)
 
 # 一、如何设计缓存
 
@@ -51,7 +51,7 @@ Axios 引入了适配器，使得它可以同时支持浏览器和 Node.js 环�
 
 在介绍如何增强默认适配器之前，我们先来回顾一下 Axios 完整请求的流程：
 
-![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/83387b95f4f24494b65b67458052f520~tplv-k3u1fbpfcp-zoom-1.image)
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/83387b95f4f24494b65b67458052f520~tplv-k3u1fbpfcp-zoom-1.image)
 
 了解完 Axios 完整请求的流程之后，我们再来看一下 Axios 内置的 `xhrAdapter` 适配器，它被定义在 `lib/adapters/xhr.js` 文件中：
 
@@ -157,7 +157,7 @@ function cacheAdapterEnhancer(adapter, options) {
 
 以上的代码并不会复杂，核心的处理逻辑如下图所示：
 
-![img](https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/79a53b4a88d64906ad7726c84c4c701a~tplv-k3u1fbpfcp-zoom-1.image)
+![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/79a53b4a88d64906ad7726c84c4c701a~tplv-k3u1fbpfcp-zoom-1.image)
 
 ## 2.3 使用 cacheAdapterEnhancer 函数
 
