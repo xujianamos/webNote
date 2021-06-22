@@ -17,7 +17,7 @@
 
 类型系统按照「类型检查的时机」来分类，可以分为动态类型和静态类型。
 
-动态类型是指在运行时才会进行类型检查，这种语言的类型错误往往会导致运行时错误。JavaScript 是一门解释型语言，没有编译阶段，所以它是动态类型，以下这段代码在运行时才会报错：
+动态类型是指在运行时才会进行类型检查，这种语言的类型错误往往会导致运行时错误。**JavaScript 是一门解释型语言，没有编译阶段，所以它是动态类型**，以下这段代码在运行时才会报错：
 
 ```js
 let foo = 1;
@@ -26,7 +26,7 @@ foo.split(' ');
 // 运行时会报错（foo.split 不是一个函数），造成线上 bug
 ```
 
-静态类型是指编译阶段就能确定每个变量的类型，这种语言的类型错误往往会导致语法错误。TypeScript 在运行前需要先编译为 JavaScript，而在编译阶段就会进行类型检查，所以 **TypeScript 是静态类型**，这段 TypeScript 代码在编译阶段就会报错了：
+**静态类型是指编译阶段就能确定每个变量的类型**，这种语言的类型错误往往会导致语法错误。TypeScript 在运行前需要先编译为 JavaScript，而在编译阶段就会进行类型检查，所以 **TypeScript 是静态类型**，这段 TypeScript 代码在编译阶段就会报错了：
 
 ```js
 let foo = 1;
@@ -123,7 +123,7 @@ console.log(sayHello(user));
 
 然后执行
 
-```bash
+```js
 tsc hello.ts
 ```
 
@@ -143,7 +143,7 @@ console.log(sayHello(user));
 
 这是因为 **TypeScript 只会在编译时对类型进行静态检查，如果发现有错误，编译的时候就会报错**。而在运行时，与普通的 JavaScript 文件一样，不会对类型进行检查。
 
-如果我们需要保证运行时的参数类型，还是得手动对类型进行判断：
+> 如果我们需要保证运行时的参数类型，还是得手动对类型进行判断：
 
 ```ts
 function sayHello(person: string) {
@@ -200,7 +200,7 @@ let isDone: boolean = false;
 // 后面约定，未强调编译错误的代码片段，默认为编译通过
 ```
 
-注意：使用构造函数 `Boolean` 创造的对象**不是**布尔值：
+> 注意：使用构造函数 `Boolean` 创造的对象**不是**布尔值：
 
 ```ts
 let createdByNewBoolean: boolean = new Boolean(1);
@@ -475,7 +475,7 @@ let num: number = u;
 // Type 'void' is not assignable to type 'number'.
 ```
 
-### 4.9任意值any
+### 4.9任意值Any
 
 任意值（Any）用来表示允许赋值为任意类型。
 
@@ -594,7 +594,7 @@ value[0][1]; // Error
 
 **众所周知，数组一般由同种类型的值组成，但有时我们需要在单个变量中存储不同类型的值，这时候我们就可以使用元组**。在 JavaScript 中是没有元组的，元组是 TypeScript 中特有的类型，其工作方式类似于数组。
 
-元组可用于定义具有有限数量的未命名属性的类型。每个属性都有一个关联的类型。使用元组时，必须提供每个属性的值。
+元组可用于定义具有有限数量的未命名属性的类型。每个属性都有一个关联的类型。**使用元组时，必须提供每个属性的值**。
 
 ```ts
 let tupleType: [string, boolean];
@@ -633,7 +633,7 @@ tupleType = ["semlinker"];
 Property '1' is missing in type '[string]' but required in type '[string, boolean]'.
 ```
 
-当数组长度固定，数组里面的每一项也是固定的时候。就可以使用元祖类型。
+> 当数组长度固定，数组里面的每一项也是固定的时候。就可以使用元祖类型。
 
 ```js
 const techerINFO: [string,string,number] = ['x','x',18]
