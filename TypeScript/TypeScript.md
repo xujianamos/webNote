@@ -103,6 +103,7 @@ npm install -g ts-node
 使用：
 
 ```shell
+//直接运行Demo1.ts文件
 ts-node Demo1.ts
 ```
 
@@ -590,7 +591,7 @@ value[0][1]; // Error
 
 将 `value` 变量类型设置为 `unknown` 后，这些操作都不再被认为是类型正确的。通过将 `any` 类型改变为 `unknown` 类型，我们已将允许所有更改的默认设置，更改为禁止任何更改。
 
-### 4.11元祖
+### 4.11元祖：tuple
 
 **众所周知，数组一般由同种类型的值组成，但有时我们需要在单个变量中存储不同类型的值，这时候我们就可以使用元组**。在 JavaScript 中是没有元组的，元组是 TypeScript 中特有的类型，其工作方式类似于数组。
 
@@ -637,6 +638,7 @@ Property '1' is missing in type '[string]' but required in type '[string, boolea
 
 ```js
 const techerINFO: [string,string,number] = ['x','x',18]
+const teacherList: [string, string, number][] = [['dell', 'male', 19], ['sun', 'female', 26], ['jeny', 'female', 38]];
 ```
 
 ### 4.12object, Object 和 {} 类型
@@ -1257,12 +1259,26 @@ const objectArr: {name:string,age:number}[] = [{
   name:'name',
   age:25
 }]
-//使用类型别名简化
-type User={name: string,age: number}
+//使用 类型别名 简化
+type User={name: string,age: number}//类型别名
+//使用类型别名
 const objectArr: User[] = [{
   name:'name',
   age:25
 }]
+
+class Teacher {
+  name: string;
+  age: number;
+}
+
+const objectArr: Teacher[] = [
+  new Teacher(),
+  {
+    name: 'dell',
+    age: 28
+  }
+];
 ```
 
 ### 10.1数组解构
