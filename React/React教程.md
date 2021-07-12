@@ -64,7 +64,7 @@ JSX是一种JavaScript的语法扩展（eXtension），也在很多地方称之�
 
 如果我们jsx中的内容是动态的，我们可以通过表达式来获取：
 
-- 书写规则：{表达式}
+- 书写规则：`{表达式}`
 - 大括号内可以是变量、字符串、数组、函数调用等任意js表达式；
 
 #### 2.2.1jsx中的注释
@@ -95,8 +95,8 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      name: "why",
-      age: 18,
+      name: "name",
+      number: 0,
       hobbies: ["篮球", "唱跳", "rap"],
       
       test1: null,
@@ -226,12 +226,12 @@ class App extends React.Component {
 - 比如元素可能需要绑定class
 
 - - 注意：绑定class比较特殊，因为class在js中是一个关键字，所以jsx中不允许直接写class
-  - 写法：使用className替代
+  - 写法：使用`className`替代
 
 - 比如原生使用内联样式style
 
 - - style后面跟的是一个对象类型，对象中是样式的属性名和属性值；
-  - 注意：这里会讲属性名转成驼峰标识，而不是连接符-；
+  - 注意：**这里会讲属性名转成驼峰标识**，**而不是连接符**`-`；
 
 我们来演示一下属性的绑定：
 
@@ -267,7 +267,7 @@ class App extends React.Component {
 
 React 事件的命名采用小驼峰式（camelCase），而不是纯小写；
 
-我们需要通过{}传入一个事件处理函数，这个函数会在事件发生时被执行；
+我们需要通过`{}`传入一个事件处理函数，这个函数会在事件发生时被执行；
 
 ```jsx
 class App extends React.Component {
@@ -292,7 +292,7 @@ class App extends React.Component {
 - 比如我们这里打印：`this.state.message`
 
 - - 但是这里会报错：`Cannot read property 'state' of undefined`
-  - 原因是this在这里是undefined
+  - **原因是`this`在这里是`undefined`**
 
 - 如果我们这里直接打印this，也会发现它是一个undefined
 
@@ -328,7 +328,7 @@ class App extends React.Component {
 
 #### 2.3.2解决this的问题
 
-**方案一**:bind给btnClick显示绑定this
+**方案一**:**bind给btnClick显示绑定this**
 
 在传入函数时，我们可以主动绑定this：
 
@@ -451,7 +451,7 @@ class App extends React.Component {
 
 在执行事件函数时，有可能我们需要获取一些参数信息：比如event对象、其他参数
 
-情况一：获取event对象
+**情况一：获取event对象**
 
 - 很多时候我们需要拿到event对象来做一些事情（比如阻止默认行为）
 - 假如我们用不到this，那么直接传入函数就可以获取到event对象；
@@ -475,7 +475,7 @@ class App extends React.Component {
 }
 ```
 
-情况二：获取更多参数
+**情况二：获取更多参数**
 
 - 有更多参数时，我们最好的方式就是传入一个箭头函数，主动执行的事件函数，并且传入相关的其他参数；
 
@@ -701,17 +701,17 @@ ReactDOM.render(<App/>, document.getElementById("app"));
 
 createElement需要传递三个参数：
 
-- 参数一：type
+- 参数一：`type`
 
 - - 当前ReactElement的类型；
   - 如果是标签元素，那么就使用字符串表示 “div”；
   - 如果是组件元素，那么就直接使用组件的名称；
 
-- 参数二：config
+- 参数二：`config`
 
 - - 所有jsx中的属性都在config中以对象的属性和值的形式存储
 
-- 参数三：children
+- 参数三：`children`
 
 - - 存放在标签中的内容，以children数组的方式进行存储；
   - 当然，如果是多个元素呢？React内部有对它们进行处理，处理的源码在下方
@@ -794,9 +794,11 @@ ReactDOM.render(React.createElement(App, null) , document.getElementById("app"))
 
 #### 2.6.2虚拟DOM
 
+
+
 ## 3.React脚手架
 
-React的脚手架：create-react-app
+React的脚手架：`create-react-app`
 
 ### 3.1包管理工具
 
