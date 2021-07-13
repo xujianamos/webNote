@@ -1338,7 +1338,7 @@ let { name, ...rest } = person;
 
 在面向对象语言中，接口是一个很重要的概念，它是对行为的抽象，而具体如何行动需要由类去实现。
 
-### 12.1对象的形状
+### 12.1基本使用
 
 ```ts
 interface Person {
@@ -1352,12 +1352,12 @@ let semlinker: Person = {
 };
 ```
 
-### 12.2可选 | 只读属性
+### 12.2可选或只读属性
 
 ```ts
 interface Person {
-  readonly name: string;
-  age?: number;
+  readonly name: string;//只读属性
+  age?: number;//可选属性
 }
 ```
 
@@ -1372,6 +1372,29 @@ ro.length = 100; // error!
 a = ro; // error!
 ```
 
+示例：校验特性：强校验、弱校验
+
+```js
+interface Person {
+  name: string;
+  age?: number;
+}
+const getPersonName = (person: Person): void => {
+console.log(person.name);
+};
+const person = {
+  name: 'dell',
+  sex: 'male',
+};
+//弱类型校验：校验通过
+getPersonName(person);
+//强类型校验：校验不通过
+getPersonName({
+  name: 'dell',
+  sex: 'male',
+});
+```
+
 ### 12.3任意属性
 
 有时候我们希望一个接口中除了包含必选和可选属性之外，还允许有其他的任意属性，这时我们可以使用 **索引签名** 的形式来满足上述要求。
@@ -1380,7 +1403,7 @@ a = ro; // error!
 interface Person {
   name: string;
   age?: number;
-  [propName: string]: any;
+  [propName: string]: any;//定义任意属性
 }
 
 const p1 = { name: "semlinker" };
@@ -1388,9 +1411,101 @@ const p2 = { name: "lolo", age: 5 };
 const p3 = { name: "kakuqo", sex: 1 }
 ```
 
-### 12.4接口与类型别名的区别
+### 12.4接口中定义方法
 
-#### 12.4.1Objects/Functions
+​	接口中定义方法名以及指定方法的返回值：
+
+```ts
+interface Person {
+  name: string;
+  age?: number;
+  [propName: string]: any;
+  say(): string;//string为该方法的返回值
+}
+const getPersonName = (person: Person): void => {
+  console.log(person.name);
+};
+const person = {
+  name: 'dell',
+  sex: 'male',
+  say() {
+    return 'say hello';
+  },
+  teach() {
+    return 'teach';
+  }
+};
+//弱类型校验，因此teach方法也会校验通过
+getPersonName(person);
+```
+
+### 12.5接口继承
+
+接口之间可以相互继承并扩展自己；
+
+```ts
+interface Person {
+  name: string;
+  age?: number;
+  [propName: string]: any;
+  say(): string;
+}
+//继承接口Person，并扩展了自己方法teach
+interface Teacher extends Person {
+  teach(): string;
+}
+
+const setPersonName = (person: Teacher, name: string): void => {
+  person.name = name;
+};
+const person = {
+  name: 'dell',
+  sex: 'male',
+  say() {
+    return 'say hello';
+  },
+  teach() {
+    return 'teach';
+  }
+};
+setPersonName(person, 'lee');
+```
+
+### 12.6接口自身还可以定义函数
+
+```ts
+//定义函数的类型声明：
+//函数类型叫：SayHi，函数必须接收一个string类型的参数，返回值也必须是一个string类型
+interface SayHi {
+  (word: string): string;
+}
+
+const say: SayHi = (word: string) => {
+  return word;
+};
+```
+
+### 12.7在类中使用接口进行约束
+
+```ts
+interface Person {
+  name: string;
+  age?: number;
+  [propName: string]: any;
+  say(): string;
+}
+//使用implements关键字指定接口进行约束类
+class User implements Person {
+  name = 'dell';
+  say() {
+    return 'hello';
+  }
+}
+```
+
+### 12.8接口与类型别名的区别
+
+#### 12.8.1Objects/Functions
 
 接口和类型别名都可以用来描述对象的形状或函数签名：
 
@@ -1418,7 +1533,7 @@ type Point = {
 type SetPoint = (x: number, y: number) => void;
 ```
 
-#### 12.4.2Other Types
+#### 12.8.2Other Types
 
 与接口类型不一样，类型别名可以用于一些其他类型，比如原始类型、联合类型和元组：
 
@@ -1437,7 +1552,7 @@ type PartialPoint = PartialPointX | PartialPointY;
 type Data = [number, string];
 ```
 
-#### 12.4.3Extend
+#### 12.8.3Extend
 
 接口和类型别名都能够被扩展，但语法有所不同。此外，接口和类型别名不是互斥的。接口可以扩展类型别名，而反过来是不行的。
 
@@ -1471,7 +1586,7 @@ interface PartialPointX { x: number; }
 type Point = PartialPointX & { y: number; };
 ```
 
-#### 12.4.4Implements
+#### 12.8.4Implements
 
 类可以以相同的方式实现接口或类型别名，但类不能实现使用类型别名定义的联合类型：
 
@@ -1506,7 +1621,7 @@ class SomePartialPoint implements PartialPoint { // Error
 }
 ```
 
-#### 12.4.5Declaration merging
+#### 12.8.5Declaration merging
 
 与类型别名不同，接口可以定义多次，会被自动合并为单个接口。
 
@@ -1527,7 +1642,7 @@ const point: Point = { x: 1, y: 2 };
 
 ```ts
 class Greeter {
-  // 静态属性
+  // 静态属性：挂在类本身上，而不是挂在类的实例上
   static cname: string = "Greeter";
   // 成员属性
   greeting: string;
@@ -1607,7 +1722,82 @@ semlinker.#name;
 - 不能在私有字段上使用 TypeScript 可访问性修饰符（如 public 或 private）；
 - 私有字段不能在包含的类之外访问，甚至不能被检测到。
 
-### 13.3访问器
+### 13.3类中的访问类型
+
+在类中有三种访问类型：`private`,`protected`,`public`;
+
+- `public`:允许我在类的内外被调用
+
+```ts
+class Person {
+   name: string;
+  public sayHi() {
+    this.name;
+    console.log('hi');
+  }
+}
+const person = new Person();
+person.name = 'name';//在类中默认定义的就是public类型
+console.log(person.name);//name
+person.sayHi();
+```
+
+- `private`:允许在类内被使用
+
+```ts
+class Person {
+  private name: string;
+  public sayHi() {
+    this.name;//不报错，私有属性只能在内部使用
+    console.log('hi');
+  }
+}
+const person = new Person();
+person.name = 'name';//直接报错，因为私有属性不能在外部使用
+person.sayHi();
+```
+
+- `protected`:允许在类内及继承的子类中使用
+
+```ts
+class Person {
+  protected name: string;
+  public sayHi() {
+    this.name;
+    console.log('hi');
+  }
+}
+
+class Teacher extends Person {
+  public sayBye() {
+    this.name;//不报错，可以在继承的子类中使用
+  }
+}
+```
+
+- 在ts中类中赋值的简化写法
+
+```ts
+ // 传统写法
+class Person {
+  public name: string;
+  //constructor在类实例化的时候执行，其中参数name为实例化时传递进来的参数
+  constructor(name: string) {
+    //this.name为public定义的name
+    //name为constructor的形参name
+    this.name = name;
+  }
+  
+}
+// 简化写法
+class Person {
+  constructor(public name: string) {}
+}
+const person = new Person('dell');
+console.log(person.name);
+```
+
+
 
 在 TypeScript 中，我们可以通过 `getter` 和 `setter` 方法来实现数据的封装和有效性校验，防止出现异常数据。
 
@@ -1615,10 +1805,10 @@ semlinker.#name;
 let passcode = "Hello TypeScript";
 
 class Employee {
-  private _fullName: string;
+  private _fullName: string;//私有属性前面加下划线区分
 
   get fullName(): string {
-    return this._fullName;
+    return this._fullName +'私有值';
   }
 
   set fullName(newName: string) {
@@ -1631,11 +1821,40 @@ class Employee {
 }
 
 let employee = new Employee();
+employee.fullName;//通过属性直接调用
 employee.fullName = "Semlinker";
 if (employee.fullName) {
   console.log(employee.fullName);
 }
 ```
+
+实现单例模式：
+
+```ts
+class Demo {
+  private static instance: Demo;
+  //constructor为private时，外部new Demo时会报错，因此不能通过new的方式创建实例
+  private constructor(public name: string) {}
+	//static前面默认是public，静态属性放在类上
+  //定义一个方法来创建实例
+  static getInstance() {
+    if (!this.instance) {
+      //如果没有创建实例时就创建一个新的实例
+      this.instance = new Demo('dell lee');
+    }
+    //如果之前创建了实例，多次调用时会返回之前已经创建好的实例
+    return this.instance;
+  }
+}
+
+const demo1 = Demo.getInstance();
+const demo2 = Demo.getInstance();
+//此时生成的demo1和demo2是相等的。
+console.log(demo1.name);
+console.log(demo2.name);
+```
+
+
 
 ### 13.4类的继承
 
@@ -1648,32 +1867,52 @@ if (employee.fullName) {
 在 TypeScript 中，我们可以通过 `extends` 关键字来实现继承：
 
 ```ts
-class Animal {
-  name: string;
-  
-  constructor(theName: string) {
-    this.name = theName;
-  }
-  
-  move(distanceInMeters: number = 0) {
-    console.log(`${this.name} moved ${distanceInMeters}m.`);
+class Person {
+  name = 'name';
+  getName() {
+    return this.name;
   }
 }
 
-class Snake extends Animal {
+class Teacher extends Person {
   constructor(name: string) {
     super(name); // 调用父类的构造函数
   }
-  
-  move(distanceInMeters = 5) {
-    console.log("Slithering...");
-    super.move(distanceInMeters);
+  getTeacherName() {
+    return 'Teacher';
+  }
+  //重写父类的方法
+ getName() {
+   //当重写父类的方法后，又想再次调用父类的方法时，需要使用super关键字去调用父类的方法
+    return super.getName() + 'Teacher';
   }
 }
 
-let sam = new Snake("Sammy the Python");
-sam.move();
+const teacher = new Teacher();
+console.log(teacher.getName());
+console.log(teacher.getTeacherName());
 ```
+
+类继承传惨：
+
+```ts
+class Person {
+  constructor(public name: string) {}
+}
+//继承Person类
+class Teacher extends Person {
+  constructor(public age: number) {
+    //子类有构造器constructor时，必须使用super关键字也把父类构造器调用下，有参数就传参，无参数就不传
+    super('name');//必须使用super关键字调用父类
+  }
+}
+
+const teacher = new Teacher(28);
+console.log(teacher.age);//28
+console.log(teacher.name);//name
+```
+
+
 
 ### 13.5抽象类
 
@@ -1686,8 +1925,8 @@ abstract class Person {
   abstract say(words: string) :void;
 }
 
-// Cannot create an instance of an abstract class.(2511)
-const lolo = new Person(); // Error
+// 抽象类只能被继承，不能被实例化
+const lolo = new Person(); // 报错
 ```
 
 抽象类不能被直接实例化，我们只能实例化实现了所有抽象方法的子类。具体如下所示：
@@ -1695,7 +1934,10 @@ const lolo = new Person(); // Error
 ```typescript
 abstract class Person {
   constructor(public name: string){}
-
+  //实际方法
+	getType() {
+    return 'Gemo';
+  }
   // 抽象方法
   abstract say(words: string) :void;
 }
@@ -1704,7 +1946,7 @@ class Developer extends Person {
   constructor(name: string) {
     super(name);
   }
-  
+  //父类如果有抽象方法，则子类必须要实现，不然会报错
   say(words: string): void {
     console.log(`${this.name} says ${words}`);
   }
