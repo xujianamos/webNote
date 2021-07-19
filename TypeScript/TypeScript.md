@@ -978,6 +978,40 @@ type EventNames = 'click' | 'scroll' | 'mousemove';
 
 以上示例中的 `1`、`2` 或 `'click'` 被称为字面量类型，用来约束取值只能是某几个值中的一个。
 
+### 类型保护
+
+```ts
+interface Bird {
+  fly:Boolean;
+  sing:()=>{};
+}
+
+interface Dog {
+  fly:Boolean;
+  bark:()=>{};
+}
+
+function trainAnial(animal:Bird | Dog){
+  //animal.sing()会报错，因为sing方法可能不存在
+  //使用类型断言方式解决
+  if(animal.fly){
+    (animal as Bird).sing()
+  }else{
+    (animal as Dog).bark()
+  }
+}
+//in语法来做类型保护
+function trainAnialSeond(animal:Bird | Dog){
+  if('sing' in animal){
+    animal.sing()
+  }else{
+    animal.bark()
+  }
+}
+```
+
+
+
 ### 7.2可辨识联合
 
 TypeScript 可辨识联合（Discriminated Unions）类型，也称为代数数据类型或标签联合类型。**它包含 3 个要点：可辨识、联合类型和类型守卫。**
@@ -4181,57 +4215,91 @@ class Circle extends Geom {
 
 ## typescript配置文件
 
-在根目录新建`tsconfig.json`
+### 1.1生成配置文件
 
-- Include:用来指定哪些ts文件需要被编译
+执行命令：
 
-**：表示任意目录
+```bash
+tsc --init
+```
 
-*：表示任意文件
+则会在根目录下生成`tsconfig.json`配置文件。
 
-- exclude：不需要被编译的目录
+### 1.2配置文件生效
+
+当在项目下生成了`tsconfig.json`配置文件后，执行命令：
+
+```bash
+tsc demo.ts
+```
+
+此时配置文件并没有生效。需要在控制台执行：
+
+```bash
+tsc
+```
+
+此时配置文件才会生效。此时默认会编译根目录下所有的ts文件。
+
+### 1.3编译指定的文件
+
+在`tsconfig.json`中添加`Include`用来指定哪些ts文件需要被编译。配置`exclude`不需要被编译的目录或文件。
+
+```json
+{
+  //只编译根目录下的demo.ts文件
+  "include":["./demo.ts"],
+  //不编译demo1.ts文件
+  "exclude":["./demo1.ts"],
+  "compilerOptions": {}
+}
+```
+
+### 详细配置说明
 
 ```json
 {
   "compilerOptions": {
+    
 
     /* 基本选项 */
-    "target": "es5",                       // 指定 ECMAScript 目标版本: 'ES3' (default), 'ES5', 'ES6'/'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'
-    "module": "commonjs",                  // 指定使用模块: 'commonjs', 'amd', 'system', 'umd' or 'es2015'
-    "lib": [],                             // 指定要包含在编译中的库文件
-    "allowJs": true,                       // 允许编译 javascript 文件
-    "checkJs": true,                       // 报告 javascript 文件中的错误
-    "jsx": "preserve",                     // 指定 jsx 代码的生成: 'preserve', 'react-native', or 'react'
-    "declaration": true,                   // 生成相应的 '.d.ts' 文件
-    "sourceMap": true,                     // 生成相应的 '.map' 文件
-    "outFile": "./",                       // 将输出文件合并为一个文件
-    "outDir": "./",                        // 指定输出目录
-    "rootDir": "./",                       // 用来控制输出目录结构 --outDir.
-    "removeComments": true,                // 删除编译后的所有的注释
-    "noEmit": true,                        // 不生成输出文件
-    "importHelpers": true,                 // 从 tslib 导入辅助工具函数
-    "isolatedModules": true,               // 将每个文件做为单独的模块 （与 'ts.transpileModule' 类似）.
+    "incremental":true,//增量编译
+    "target": "es5", // 指定 ECMAScript 目标版本: 'ES3' (default), 'ES5', 'ES6'/'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'
+    "module": "commonjs",// 指定使用模块: 'commonjs', 'amd', 'system', 'umd' or 'es2015'
+    "lib": [],// 指定要包含在编译中的库文件
+    "allowJs": true,// 允许编译 javascript 文件
+    "checkJs": true,// 报告 javascript 文件中的错误
+    "jsx": "preserve",// 指定 jsx 代码的生成: 'preserve', 'react-native', or 'react'
+    "declaration": true,// 生成相应的 '.d.ts' 文件
+    "sourceMap": true,// 生成相应的 '.map' 文件
+    "outFile": "./",// 将输出文件合并为一个文件
+    "outDir": "./",// 指定输出目录
+    "rootDir": "./src",// 用来控制输出目录结构 --outDir.
+    "removeComments": true,// 删除编译后的所有的注释
+    "noEmit": true,// 不生成输出文件
+    "importHelpers": true,// 从 tslib 导入辅助工具函数
+    "isolatedModules": true,// 将每个文件做为单独的模块 （与 'ts.transpileModule' 类似）.
 
     /* 严格的类型检查选项 */
-    "strict": true,                        // 启用所有严格类型检查选项
-    "noImplicitAny": true,                 // 在表达式和声明上有隐含的 any类型时报错
-    "strictNullChecks": true,              // 启用严格的 null 检查
-    "noImplicitThis": true,                // 当 this 表达式值为 any 类型的时候，生成一个错误
-    "alwaysStrict": true,                  // 以严格模式检查每个模块，并在每个文件里加入 'use strict'
+    "strict": true,// 启用所有严格类型检查选项
+    "noImplicitAny": true,// 在表达式和声明上有隐含的 any类型时报错
+    "strictNullChecks": true,// 启用严格的 null 检查
+    "noImplicitThis": true,// 当 this 表达式值为 any 类型的时候，生成一个错误
+    "alwaysStrict": true,// 以严格模式检查每个模块，并在每个文件里加入 'use strict'
 
     /* 额外的检查 */
-    "noUnusedLocals": true,                // 有未使用的变量时，抛出错误
-    "noUnusedParameters": true,            // 有未使用的参数时，抛出错误
-    "noImplicitReturns": true,             // 并不是所有函数里的代码都有返回值时，抛出错误
-    "noFallthroughCasesInSwitch": true,    // 报告 switch 语句的 fallthrough 错误。（即，不允许 switch 的 case 语句贯穿）
+    "noUnusedLocals": true,// 有未使用的变量时，抛出错误
+    "noUnusedParameters": true,// 有未使用的参数时，抛出错误
+    "noImplicitReturns": true,// 并不是所有函数里的代码都有返回值时，抛出错误
+    "noFallthroughCasesInSwitch": true,// 报告 switch 语句的 fallthrough 错误。（即，不允许 switch 的 case 语句贯穿）
 
     /* 模块解析选项 */
-    "moduleResolution": "node",            // 选择模块解析策略： 'node' (Node.js) or 'classic' (TypeScript pre-1.6)
-    "baseUrl": "./",                       // 用于解析非相对模块名称的基目录
-    "paths": {},                           // 模块名到基于 baseUrl 的路径映射的列表
-    "rootDirs": [],                        // 根文件夹列表，其组合内容表示项目运行时的结构内容
-    "typeRoots": [],                       // 包含类型声明的文件列表
-    "types": [],                           // 需要包含的类型声明文件名列表
+    "moduleResolution": "node",// 选择模块解析策略： 'node' (Node.js) or 'classic' (TypeScript pre-1.6)
+    "baseUrl": "./",// 用于解析非相对模块名称的基目录
+    "paths": {},// 模块名到基于 baseUrl 的路径映射的列表
+    "rootDirs": [],// 根文件夹列表，其组合内容表示项目运行时的结构内容
+    "typeRoots": [],// 包含类型声明的文件列表
+    "types": [],// 需要包含的类型声明文件名列表
     "allowSyntheticDefaultImports": true,  // 允许从没有设置默认导出的模块中默认导入。
 
     /* Source Map Options */
