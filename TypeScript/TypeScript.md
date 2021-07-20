@@ -298,9 +298,37 @@ let list: Array<number> = [1, 2, 3]; // Array<number>泛型语法
 // ES5：var list = [1,2,3];
 ```
 
-### 4.6Enum 类型
+### 4.6Enum 枚举类型
 
 使用枚举我们可以定义一些带名字的常量。 使用枚举可以清晰地表达意图或创建一组有区别的用例。 TypeScript 支持数字的和基于字符串的枚举。
+
+使用场景：当某一个状态为固定的几种类型时，就可以使用枚举
+
+```ts
+enum Status {
+  OFFLINE,
+  ONLINE,
+  DELETED
+}
+// const Status = {
+//   OFFLINE: 0,
+//   ONLINE: 1,
+//   DELETED: 2
+// }
+//status为固定的三种类型
+function getResult(status) {
+  if (status === Status.OFFLINE) {
+    return 'offline';
+  } else if (status === Status.ONLINE) {
+    return 'online';
+  } else if (status === Status.DELETED) {
+    return 'deleted';
+  }
+  return 'error';
+}
+
+const result = getResult(1);
+```
 
 #### 4.6.1数字枚举
 
@@ -311,7 +339,14 @@ enum Direction {
   EAST,
   WEST,
 }
-
+//等价于
+enum Direction {
+  NORTH: 0,
+  SOUTH: 1,
+  EAST: 2,
+  WEST: 3,
+}
+//使用
 let dir: Direction = Direction.NORTH;
 ```
 
@@ -431,6 +466,52 @@ var Enum;
 console.log(Enum.A) //输出：0
 console.log(Enum[0]) // 输出：A
 ```
+
+#### 4.6.5枚举值设置
+
+默认第一个值是从0开始的，如果需要从指定的值开始，则需要进行设置。
+
+- 从开始位置设置值
+
+```ts
+//此时枚举值就从1开始，依次为1，2，3
+enum Status {
+  OFFLINE = 1,
+  ONLINE,
+  DELETED
+}
+```
+
+- 从任意位置设置值
+
+```ts
+//此时OFFLINE的值仍从0开始，因此OFFLINE的值为0,NORTH的值为1
+//但是将ONLINE的值设置为4时，此时ONLINE的值就为4，后面又从4开始递增，因此DELETED的值为5
+enum Status {
+  OFFLINE,
+  NORTH,
+  ONLINE = 4,
+  DELETED
+}
+```
+
+#### 4.6.6反向读取枚举类型
+
+正向可以读取枚举值，反向也可以读取枚举类型。
+
+```ts
+enum Status {
+  OFFLINE,
+  ONLINE,
+  DELETED
+}
+//正向使用：输出0
+console.log(Status.OFFLINE);
+//反向使用：输出OFFLINE
+console.log(Status[0]);
+```
+
+
 
 ### 4.7空值void
 
@@ -2018,6 +2099,8 @@ productService.getProducts(); // 获取所有的产品信息
 
 泛型（Generics）是允许同一个函数接受不同类型参数的一种模板。相比于使用 any 类型，使用泛型来创建可复用的组件要更好，因为泛型会保留参数类型。
 
+> 泛型的具体类型只有在调用的时候才能确定，一个显示定义，一个是类型推断
+
 ### 14.1泛型语法
 
 对于刚接触 TypeScript 泛型的读者来说，首次看到 `<T>` 语法会感到陌生。其实它没有什么特别，就像传递参数一样，我们传递了我们想要用于特定函数调用的类型。
@@ -2048,6 +2131,7 @@ console.log(identity<Number, string>(68, "Semlinker"));
 除了为类型变量显式设定值之外，一种更常见的做法是使编译器自动选择这些类型，从而使代码更简洁。我们可以完全省略尖括号，比如：
 
 ```ts
+//定义两个类型
 function identity <T, U>(value: T, message: U) : T {
   console.log(message);
   return value;
@@ -2055,6 +2139,28 @@ function identity <T, U>(value: T, message: U) : T {
 
 console.log(identity(68, "Semlinker"));
 ```
+
+示例：
+
+```ts
+function join<S>(first: S, second: S) {
+  return `${first}${second}`;
+}
+//此时S为string类型，first和second都为string类型，因此下面会报错
+join<string>(1, '1')
+//此时S为number类型，first和second都为number类型，下面正确执行
+join<number>(1, 2)
+
+function map<T>(params: Array<T>) {
+  return params;
+}
+//此时map接收一个string类型，params的类型是string类型的数组
+map<string>(['123'])
+//下面就会报错
+map<string>([123])
+```
+
+
 
 ### 14.2泛型接口
 
