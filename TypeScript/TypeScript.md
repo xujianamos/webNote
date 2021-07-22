@@ -2170,7 +2170,77 @@ interface GenericIdentityFn<T> {
 }
 ```
 
-### 14.3泛型类
+### 14.3类中的泛型
+
+在类中使用类型:
+
+```ts
+class DataManager {
+  constructor(private data: string[]) {}
+  getItem(index: number): string {
+    return this.data[index];
+  }
+}
+
+const data = new DataManager(['1']);
+data.getItem(0);
+```
+
+这样基本使用已经够了，但是如果后期需要添加类型时又需要进行改造：
+
+```ts
+class DataManager {
+  constructor(private data: string[] | number[]) {}
+  getItem(index: number): string | number {
+    return this.data[index];
+  }
+}
+
+const data = new DataManager([1]);
+data.getItem(0);
+```
+
+如果后期还需要加类型，就导致后面还会添加更多。此时使用泛型就能很好解决这个问题：
+
+```ts
+interface Item {
+  name: string;
+}
+//类中声明了泛型T，T目前不知道具体是什么类型。但是又继承Item，这个泛型未来会对应一个具体的类型，这个具体的类型一定要有Item中定义的name属性
+class DataManager<T extends Item> {
+  constructor(private data: T[]) { }
+  getItem(index: number): string {
+    return this.data[index].name;
+  }
+}
+//实例化类型
+const data = new DataManager([
+  {
+    name: 'name'
+  }
+]);
+```
+
+指定泛型中的类型：
+
+```ts
+//此时泛型T可以是任意的类型
+class DataManager<T> {
+  constructor(private data: T[]) { }
+  getItem(index: number): T {
+    return this.data[index];
+  }
+}
+//此时泛型T只能是number或string类型。
+class DataManager<T extends number | string> {
+  constructor(private data: T[]) { }
+  getItem(index: number): T {
+    return this.data[index];
+  }
+}
+```
+
+
 
 ```ts
 class GenericNumber<T> {
@@ -4420,6 +4490,51 @@ tsc
   }
 }
 ```
+
+## 命名空间
+
+解决全局变量污染问题
+
+```ts
+namespace Home {
+  class Header {
+    constructor() {
+      const elem = document.createElement('div');
+      elem.innerText = 'This is Header';
+      document.body.appendChild(elem);
+    }
+  }
+
+  class Content {
+    constructor() {
+      const elem = document.createElement('div');
+      elem.innerText = 'This is Content';
+      document.body.appendChild(elem);
+    }
+  }
+
+  class Footer {
+    constructor() {
+      const elem = document.createElement('div');
+      elem.innerText = 'This is Footer';
+      document.body.appendChild(elem);
+    }
+  }
+//使用export关键字暴露Page方法，只能暴露了，才能在外部通过Home调用
+  export class Page {
+    constructor() {
+      new Header();
+      new Content();
+      new Footer();
+    }
+  }
+}
+  
+  //使用
+  new Home.page()
+```
+
+
 
 
 
