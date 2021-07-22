@@ -2310,6 +2310,53 @@ interface StringArray1 {
 
 为了同时支持两种索引类型，就得要求数字索引的返回值必须是字符串索引返回值的子类。**其中的原因就是当使用数值索引时，JavaScript 在执行索引操作时，会先把数值索引先转换为字符串索引**。所以 `keyof { [x: string]: Person }` 的结果会返回 `string | number`。
 
+示例：
+
+```ts
+interface Person {
+  name: string;
+  age: number;
+  gender: string;
+}
+
+// type NAME = 'name';
+// key: 'name';
+// Person['name'];
+
+// type T = 'age'
+// key: 'age'
+// Person['age']
+
+// type T = 'gender'
+// key: 'gender'
+// Person['gender']
+
+class Teacher {
+  constructor(private info: Person) {}
+  getInfo(key: string) {
+    if(key === 'name' || key === 'age' || key === 'gender' ||){
+       return this.info[key];
+       }
+  }
+}
+//使用keyof优化
+class Teacher {
+  constructor(private info: Person) {}
+  getInfo<T extends keyof Person>(key: T): Person[T] {
+    return this.info[key];
+  }
+}
+
+const teacher = new Teacher({
+  name: 'dell',
+  age: 18,
+  gender: 'male'
+});
+
+const test = teacher.getInfo('name');
+console.log(test);
+```
+
 #### 14.4.3in
 
 `in` 用来遍历枚举类型：
@@ -4520,7 +4567,7 @@ namespace Home {
       document.body.appendChild(elem);
     }
   }
-//使用export关键字暴露Page方法，只能暴露了，才能在外部通过Home调用
+//使用export关键字。暴露Page方法，只能暴露了，才能在外部通过Home调用
   export class Page {
     constructor() {
       new Header();
