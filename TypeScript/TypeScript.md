@@ -28,7 +28,7 @@ foo.split(' ');
 
 **静态类型是指编译阶段就能确定每个变量的类型**，这种语言的类型错误往往会导致语法错误。TypeScript 在运行前需要先编译为 JavaScript，而在编译阶段就会进行类型检查，所以 **TypeScript 是静态类型**，这段 TypeScript 代码在编译阶段就会报错了：
 
-```js
+```tsx
 let foo = 1;
 foo.split(' ');
 // Property 'split' does not exist on type 'number'.
@@ -92,7 +92,7 @@ tsc demo1.ts
 
 我们约定使用 TypeScript 编写的文件以 `.ts` 为后缀，用 TypeScript 编写 React 时，以 `.tsx` 为后缀。
 
-### 2.2安装`ts-node`
+### 2.2安装ts-node
 
 直接使用`ts-node`运行ts文件，而无需再转换运行。
 
@@ -102,9 +102,9 @@ npm install -g ts-node
 
 使用：
 
-```shell
-//直接运行Demo1.ts文件
-ts-node Demo1.ts
+```bash
+# 直接运行Demo1.ts文件
+$ ts-node Demo1.ts
 ```
 
 ## 3.快速开始
@@ -124,8 +124,8 @@ console.log(sayHello(user));
 
 然后执行
 
-```js
-tsc hello.ts
+```bash
+$ tsc hello.ts
 ```
 
 这时候会生成一个编译好的文件 `hello.js`：
@@ -138,7 +138,7 @@ var user = 'Tom';
 console.log(sayHello(user));
 ```
 
-在 TypeScript 中，我们使用 `:` 指定变量的类型，`:` 的前后有没有空格都可以。
+> **在 TypeScript 中，我们使用 `:` 指定变量的类型，`:` 的前后有没有空格都可以。**
 
 上述例子中，我们用 `:` 指定 `person` 参数类型为 `string`。但是编译为 js 之后，并没有什么检查的代码被插入进来。
 
@@ -291,37 +291,41 @@ console.log(obj[sym]); // semlinker
 ### 4.5Array 类型
 
 ```ts
+// 第一种定义方法
 let list: number[] = [1, 2, 3];
 // ES5：var list = [1,2,3];
 
+// 第二种定义方法
 let list: Array<number> = [1, 2, 3]; // Array<number>泛型语法
 // ES5：var list = [1,2,3];
 ```
 
 ### 4.6Enum 枚举类型
 
-使用枚举我们可以定义一些带名字的常量。 使用枚举可以清晰地表达意图或创建一组有区别的用例。 TypeScript 支持数字的和基于字符串的枚举。
+**使用枚举我们可以定义一些带名字的常量**。TypeScript 支持数字的和基于字符串的枚举。
 
-使用场景：当某一个状态为固定的几种类型时，就可以使用枚举
+**使用场景：当某一个状态为固定的几种值（类型）时，就可以使用枚举**
 
 ```ts
+// js中使用对象定义值的几种类型
+const Status = {
+   OFFLINE: 0,
+   ONLINE: 1,
+   DELETED: 2
+ }
+// 在ts中使用枚举值定义值的几种类型
 enum Status {
   OFFLINE,
   ONLINE,
   DELETED
 }
-// const Status = {
-//   OFFLINE: 0,
-//   ONLINE: 1,
-//   DELETED: 2
-// }
 //status为固定的三种类型
 function getResult(status) {
-  if (status === Status.OFFLINE) {
+  if (status === Status.OFFLINE) {// status等于0
     return 'offline';
-  } else if (status === Status.ONLINE) {
+  } else if (status === Status.ONLINE) {// status等于1
     return 'online';
-  } else if (status === Status.DELETED) {
+  } else if (status === Status.DELETED) {// status等于2
     return 'deleted';
   }
   return 'error';
@@ -406,7 +410,7 @@ let dirName = Direction[0]; // NORTH
 let dirVal = Direction["NORTH"]; // 0
 ```
 
-另外，对于纯字符串枚举，我们不能省略任何初始化程序。而数字枚举如果没有显式设置值时，则会使用默认规则进行初始化。
+**另外，对于纯字符串枚举，我们不能省略任何初始化程序。而数字枚举如果没有显式设置值时，则会使用默认规则进行初始化。**
 
 #### 4.6.3常量枚举
 
@@ -511,11 +515,9 @@ console.log(Status.OFFLINE);
 console.log(Status[0]);
 ```
 
-
-
 ### 4.7空值void
 
-JavaScript 没有空值（Void）的概念，在 TypeScript 中，可以用 `void` 表示没有任何返回值的函数：
+JavaScript 没有空值（Void）的概念，在 TypeScript 中，**可以用 `void` 表示没有任何返回值的函数**：
 
 ```ts
 function alertName(): void {
@@ -527,6 +529,7 @@ function alertName(): void {
 
 ```ts
 let unusable: void = undefined;
+let unusable: void = null;
 ```
 
 ### 4.8Null 和 Undefined
@@ -538,7 +541,7 @@ let u: undefined = undefined;
 let n: null = null;
 ```
 
-与 `void` 的区别是，`undefined` 和 `null` 是所有类型的子类型。也就是说 `undefined` 类型的变量，可以赋值给 `number` 类型的变量：
+与 `void` 的区别是：`undefined` 和 `null` 是所有类型的子类型。也就是说 `undefined` 类型的变量，可以赋值给 `number` 类型的变量：
 
 ```ts
 // 这样不会报错
@@ -612,7 +615,7 @@ something = 7;
 something.setName('Tom');
 ```
 
-等价于
+等价于：
 
 ```ts
 let something: any;
@@ -648,6 +651,7 @@ let value: unknown;
 
 let value1: unknown = value; // OK
 let value2: any = value; // OK
+
 let value3: boolean = value; // Error
 let value4: number = value; // Error
 let value5: string = value; // Error
@@ -703,7 +707,7 @@ tupleType = [true, "semlinker"];
 [1]: Type 'string' is not assignable to type 'boolean'.
 ```
 
-很明显是因为类型不匹配导致的。在元组初始化的时候，我们还必须提供每个属性的值，不然也会出现错误，比如：
+很明显是因为类型不匹配导致的。**在元组初始化的时候，我们还必须提供每个属性的值**，不然也会出现错误，比如：
 
 ```typescript
 tupleType = ["semlinker"];
@@ -715,10 +719,11 @@ tupleType = ["semlinker"];
 Property '1' is missing in type '[string]' but required in type '[string, boolean]'.
 ```
 
-> 当数组长度固定，数组里面的每一项也是固定的时候。就可以使用元祖类型。
+> **当数组长度固定，数组里面的每一项也是固定的时候。就可以使用元祖类型。**
 
 ```js
 const techerINFO: [string,string,number] = ['x','x',18]
+// 定义二维数组
 const teacherList: [string, string, number][] = [['dell', 'male', 19], ['sun', 'female', 26], ['jeny', 'female', 38]];
 ```
 
