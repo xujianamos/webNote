@@ -885,6 +885,7 @@ function myFunc(maybeString: string | undefined | null) {
   // Type 'string | null | undefined' is not assignable to type 'string'.
   // Type 'undefined' is not assignable to type 'string'. 
   const onlyString: string = maybeString; // Error
+  // 排除了null和undefined类型
   const ignoreUndefinedAndNull: string = maybeString!; // Ok
 }
 ```
@@ -1096,8 +1097,6 @@ function trainAnialSeond(animal:Bird | Dog){
 }
 ```
 
-
-
 ### 7.2可辨识联合
 
 TypeScript 可辨识联合（Discriminated Unions）类型，也称为代数数据类型或标签联合类型。**它包含 3 个要点：可辨识、联合类型和类型守卫。**
@@ -1291,14 +1290,40 @@ function createUserId(name: string, id: number): string {
 
 ### 9.2函数类型
 
-```ts
-let IdGenerator: (chars: string, nums: number) => string;
+`:`后面是类型，`=`后面是函数的具体实现
 
-function createUserId(name: string, id: number): string {
-  return name + id;
+```ts
+function add(x: number, y: number): number {
+    return x + y;
 }
 
-IdGenerator = createUserId;
+const add = (x: number, y: number):number=>{
+  return x + y;
+}
+
+const add: (x: number, y: number)=>number=(x,y) =>{
+    return x + y;
+}
+```
+
+我们可以给每个参数添加类型之后再为函数本身添加返回值类型。 TypeScript能够根据返回语句自动推断出返回值类型，因此我们通常省略它。
+
+> 函数没有返回值类型
+
+```js
+function add(x: number, y: number): void {
+    return x + y;
+}
+```
+
+`void`表示函数不能有返回值。
+
+> 函数参数解构类型
+
+```ts
+function add( {x,y}: {x:number,y:number}): number {
+    return x + y;
+}
 ```
 
 ### 9.3可选参数及默认参数
@@ -1323,7 +1348,7 @@ function createUserId(
 
 ### 9.4函数重载
 
-函数重载或方法重载是使用相同名称和不同参数数量或类型创建多个方法的一种能力。
+**函数重载或方法重载是**：使用相同名称和不同参数数量或类型创建多个方法的一种能力。
 
 ```ts
 function add(a: number, b: number): number;
@@ -1341,7 +1366,7 @@ function add(a: Combinable, b: Combinable) {
 
 在以上代码中，我们为 add 函数提供了多个函数类型定义，从而实现函数的重载。在 TypeScript 中除了可以重载普通函数之外，我们还可以重载类中的成员方法。
 
-方法重载是指在同一个类中方法同名，参数不同（参数类型不同、参数个数不同或参数个数相同时参数的先后顺序不同），调用时根据实参的形式，选择与它匹配的方法执行操作的一种技术。所以类中成员方法满足重载的条件是：在同一个类中，方法名相同且参数列表不同。下面我们来举一个成员方法重载的例子：
+**方法重载**：是指在同一个类中方法同名，参数不同（参数类型不同、参数个数不同或参数个数相同时参数的先后顺序不同），调用时根据实参的形式，选择与它匹配的方法执行操作的一种技术。所以类中成员方法满足重载的条件是：在同一个类中，方法名相同且参数列表不同。下面我们来举一个成员方法重载的例子：
 
 ```typescript
 class Calculator {
@@ -1361,7 +1386,7 @@ const calculator = new Calculator();
 const result = calculator.add('Semlinker', ' Kakuqo');
 ```
 
-这里需要注意的是，当 TypeScript 编译器处理函数重载时，它会查找重载列表，尝试使用第一个重载定义。 如果匹配的话就使用这个。 因此，在定义重载的时候，一定要把最精确的定义放在最前面。另外在 Calculator 类中，`add(a: Combinable, b: Combinable){ }` 并不是重载列表的一部分，因此对于 add 成员方法来说，我们只定义了四个重载方法。
+这里需要注意的是，当 TypeScript 编译器处理函数重载时，它会查找重载列表，尝试使用第一个重载定义。 如果匹配的话就使用这个。 因此，**在定义重载的时候，一定要把最精确的定义放在最前面**。另外在 Calculator 类中，`add(a: Combinable, b: Combinable){ }` 并不是重载列表的一部分，因此对于 add 成员方法来说，我们只定义了四个重载方法。
 
 ## 10.TypeScript 数组
 
@@ -1457,6 +1482,8 @@ let { name, ...rest } = person;
 ## 12.TypeScript 接口
 
 在面向对象语言中，接口是一个很重要的概念，它是对行为的抽象，而具体如何行动需要由类去实现。
+
+接口只能是对象或者函数。
 
 ### 12.1基本使用
 
@@ -1625,6 +1652,8 @@ class User implements Person {
 
 ### 12.8接口与类型别名的区别
 
+接口只能是对象或者函数，但是类型别名可以是基本类型。
+
 #### 12.8.1Objects/Functions
 
 接口和类型别名都可以用来描述对象的形状或函数签名：
@@ -1658,17 +1687,17 @@ type SetPoint = (x: number, y: number) => void;
 与接口类型不一样，类型别名可以用于一些其他类型，比如原始类型、联合类型和元组：
 
 ```ts
-// primitive
+// 原始类型
 type Name = string;
 
-// object
+// 对象
 type PartialPointX = { x: number; };
 type PartialPointY = { y: number; };
 
-// union
+// 联合类型
 type PartialPoint = PartialPointX | PartialPointY;
 
-// tuple
+// 元组
 type Data = [number, string];
 ```
 
@@ -1676,7 +1705,7 @@ type Data = [number, string];
 
 接口和类型别名都能够被扩展，但语法有所不同。此外，接口和类型别名不是互斥的。接口可以扩展类型别名，而反过来是不行的。
 
-`Interface extends interface`:
+`Interface extends interface`:接口扩展接口
 
 ```ts
 interface PartialPointX { x: number; }
@@ -1685,25 +1714,29 @@ interface Point extends PartialPointX {
 }
 ```
 
-`Type alias extends type alias`
+`Type alias extends type alias`：类型别名扩展类型别名
 
 ```ts
 type PartialPointX = { x: number; };
 type Point = PartialPointX & { y: number; };
 ```
 
-`Interface extends type alias`
+`Interface extends type alias`：接口扩展类型别名
 
 ```ts
 type PartialPointX = { x: number; };
-interface Point extends PartialPointX { y: number; }
+interface Point extends PartialPointX { 
+  y: number; 
+}
 ```
 
-`Type alias extends interface`
+`Type alias extends interface`：类型别名扩展接口
 
 ```ts
 interface PartialPointX { x: number; }
-type Point = PartialPointX & { y: number; };
+type Point = PartialPointX & { 
+  y: number; 
+};
 ```
 
 #### 12.8.4Implements
@@ -1731,10 +1764,12 @@ class SomePoint2 implements Point2 {
   y = 2;
 }
 
+// 使用类型别名定义的联合类型
 type PartialPoint = { x: number; } | { y: number; };
 
 // A class can only implement an object type or 
 // intersection of object types with statically known members.
+// 在类中不能使用类型别名定义的联合类型
 class SomePartialPoint implements PartialPoint { // Error
   x = 1;
   y = 2;
@@ -1746,9 +1781,11 @@ class SomePartialPoint implements PartialPoint { // Error
 与类型别名不同，接口可以定义多次，会被自动合并为单个接口。
 
 ```ts
+// 定义两个同名接口
 interface Point { x: number; }
 interface Point { y: number; }
 
+// 两个接口会合并为单个接口
 const point: Point = { x: 1, y: 2 };
 ```
 
@@ -1862,7 +1899,7 @@ console.log(person.name);//name
 person.sayHi();
 ```
 
-- `private`:允许在类内被使用
+- `private`:只允许在类内被使用
 
 ```ts
 class Person {
@@ -1917,15 +1954,13 @@ const person = new Person('dell');
 console.log(person.name);
 ```
 
-
-
 在 TypeScript 中，我们可以通过 `getter` 和 `setter` 方法来实现数据的封装和有效性校验，防止出现异常数据。
 
 ```ts
 let passcode = "Hello TypeScript";
 
 class Employee {
-  private _fullName: string;//私有属性前面加下划线区分
+  private _fullName: string;// 私有属性前面加下划线区分
 
   get fullName(): string {
     return this._fullName +'私有值';
@@ -1941,7 +1976,7 @@ class Employee {
 }
 
 let employee = new Employee();
-employee.fullName;//通过属性直接调用
+employee.fullName;// 通过属性直接调用
 employee.fullName = "Semlinker";
 if (employee.fullName) {
   console.log(employee.fullName);
@@ -1953,13 +1988,13 @@ if (employee.fullName) {
 ```ts
 class Demo {
   private static instance: Demo;
-  //constructor为private时，外部new Demo时会报错，因此不能通过new的方式创建实例
+  // constructor为private时，外部new Demo时会报错，因此不能通过new的方式创建实例
   private constructor(public name: string) {}
-	//static前面默认是public，静态属性放在类上
-  //定义一个方法来创建实例
+	// static前面默认是public，静态属性放在类上
+  // 定义一个方法来创建实例
   static getInstance() {
     if (!this.instance) {
-      //如果没有创建实例时就创建一个新的实例
+      // 如果没有创建实例时就创建一个新的实例
       this.instance = new Demo('dell lee');
     }
     //如果之前创建了实例，多次调用时会返回之前已经创建好的实例
@@ -1973,8 +2008,6 @@ const demo2 = Demo.getInstance();
 console.log(demo1.name);
 console.log(demo2.name);
 ```
-
-
 
 ### 13.4类的继承
 
@@ -2001,9 +2034,9 @@ class Teacher extends Person {
   getTeacherName() {
     return 'Teacher';
   }
-  //重写父类的方法
+  // 重写父类的方法
  getName() {
-   //当重写父类的方法后，又想再次调用父类的方法时，需要使用super关键字去调用父类的方法
+   // 当重写父类的方法后，又想再次调用父类的方法时，需要使用super关键字去调用父类的方法
     return super.getName() + 'Teacher';
   }
 }
@@ -2013,26 +2046,24 @@ console.log(teacher.getName());
 console.log(teacher.getTeacherName());
 ```
 
-类继承传惨：
+类继承传参：
 
 ```ts
 class Person {
   constructor(public name: string) {}
 }
-//继承Person类
+// 继承Person类
 class Teacher extends Person {
   constructor(public age: number) {
-    //子类有构造器constructor时，必须使用super关键字也把父类构造器调用下，有参数就传参，无参数就不传
+    // 子类有构造器constructor时，必须使用super关键字也把父类构造器调用下，有参数就传参，无参数就不传
     super('name');//必须使用super关键字调用父类
   }
 }
 
 const teacher = new Teacher(28);
-console.log(teacher.age);//28
-console.log(teacher.name);//name
+console.log(teacher.age);// 28
+console.log(teacher.name);// name
 ```
-
-
 
 ### 13.5抽象类
 
@@ -2054,7 +2085,7 @@ const lolo = new Person(); // 报错
 ```typescript
 abstract class Person {
   constructor(public name: string){}
-  //实际方法
+  // 实际方法
 	getType() {
     return 'Gemo';
   }
@@ -2066,7 +2097,7 @@ class Developer extends Person {
   constructor(name: string) {
     super(name);
   }
-  //父类如果有抽象方法，则子类必须要实现，不然会报错
+  // 父类如果有抽象方法，则子类必须要实现，不然会报错
   say(words: string): void {
     console.log(`${this.name} says ${words}`);
   }
@@ -2104,7 +2135,7 @@ productService.getProducts(); // 获取所有的产品信息
 
 泛型（Generics）是允许同一个函数接受不同类型参数的一种模板。相比于使用 any 类型，使用泛型来创建可复用的组件要更好，因为泛型会保留参数类型。
 
-> 泛型的具体类型只有在调用的时候才能确定，一个显示定义，一个是类型推断
+> **泛型的具体类型只有在调用的时候才能确定，一个是显示定义，一个是类型推断**
 
 ### 14.1泛型语法
 
@@ -2112,7 +2143,7 @@ productService.getProducts(); // 获取所有的产品信息
 
 ![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/f295fd4930824a3ea0f015c81aa568e7~tplv-k3u1fbpfcp-zoom-1.image)
 
-参考上面的图片，当我们调用 ` identity<Number>(1)` ，`Number` 类型就像参数 `1` 一样，它将在出现 `T` 的任何位置填充该类型。图中 `<T>` 内部的 `T` 被称为类型变量，它是我们希望传递给 identity 函数的类型占位符，同时它被分配给 `value` 参数用来代替它的类型：此时 `T` 充当的是类型，而不是特定的 Number 类型。
+参考上面的图片，当我们调用 ` identity<Number>(1)` ，`Number` 类型就像参数 `1` 一样，它将在出现 `T` 的任何位置填充该类型。图中 `<T>` 内部的 `T` 被称为**类型变量**，它是我们希望传递给 identity 函数的**类型占位符**，同时它被分配给 `value` 参数用来代替它的类型：此时 `T` 充当的是类型，而不是特定的 Number 类型。
 
 其中 `T` 代表 **Type**，在定义泛型时通常用作第一个类型变量名称。但实际上 `T` 可以用任何有效名称代替。除了 `T` 之外，以下是常见泛型变量代表的意思：
 
@@ -2136,12 +2167,13 @@ console.log(identity<Number, string>(68, "Semlinker"));
 除了为类型变量显式设定值之外，一种更常见的做法是使编译器自动选择这些类型，从而使代码更简洁。我们可以完全省略尖括号，比如：
 
 ```ts
-//定义两个类型
+// 定义两个类型
 function identity <T, U>(value: T, message: U) : T {
   console.log(message);
   return value;
 }
 
+// 传参时省略类型
 console.log(identity(68, "Semlinker"));
 ```
 
@@ -2151,21 +2183,21 @@ console.log(identity(68, "Semlinker"));
 function join<S>(first: S, second: S) {
   return `${first}${second}`;
 }
-//此时S为string类型，first和second都为string类型，因此下面会报错
+// 此时S为string类型，first和second都为string类型，因此下面会报错
 join<string>(1, '1')
-//此时S为number类型，first和second都为number类型，下面正确执行
+
+// 此时S为number类型，first和second都为number类型，下面正确执行
 join<number>(1, 2)
 
 function map<T>(params: Array<T>) {
   return params;
 }
-//此时map接收一个string类型，params的类型是string类型的数组
+// 此时map接收一个string类型，params的类型是string类型的数组
 map<string>(['123'])
-//下面就会报错
+
+// 下面就会报错
 map<string>([123])
 ```
-
-
 
 ### 14.2泛型接口
 
@@ -2211,7 +2243,7 @@ data.getItem(0);
 interface Item {
   name: string;
 }
-//类中声明了泛型T，T目前不知道具体是什么类型。但是又继承Item，这个泛型未来会对应一个具体的类型，这个具体的类型一定要有Item中定义的name属性
+// 类中声明了泛型T，T目前不知道具体是什么类型。但是又继承Item，这个泛型未来会对应一个具体的类型，这个具体的类型一定要有Item中定义的name属性
 class DataManager<T extends Item> {
   constructor(private data: T[]) { }
   getItem(index: number): string {
@@ -2229,14 +2261,14 @@ const data = new DataManager([
 指定泛型中的类型：
 
 ```ts
-//此时泛型T可以是任意的类型
+// 此时泛型T可以是任意的类型
 class DataManager<T> {
   constructor(private data: T[]) { }
   getItem(index: number): T {
     return this.data[index];
   }
 }
-//此时泛型T只能是number或string类型。
+// 此时泛型T只能是number或string类型。
 class DataManager<T extends number | string> {
   constructor(private data: T[]) { }
   getItem(index: number): T {
@@ -3960,486 +3992,6 @@ tom.run();
 ```
 
 通过给 `getCacheData` 函数添加了一个泛型 `<T>`，我们可以更加规范的实现对 `getCacheData` 返回值的约束，这也同时去除掉了代码中的 `any`，是最优的一个解决方案。
-
-## 函数类型
-
-### 为函数定义类型
-
-三种写法：
-
-`:`后面是类型，`=`后面是函数的具体实现
-
-```js
-function add(x: number, y: number): number {
-    return x + y;
-}
-
-const add = (x: number, y: number):number=>{
-  return x + y;
-}
-
-const add: (x: number, y: number)=>number=(x,y) =>{
-    return x + y;
-}
-```
-
-我们可以给每个参数添加类型之后再为函数本身添加返回值类型。 TypeScript能够根据返回语句自动推断出返回值类型，因此我们通常省略它。
-
-> 函数没有返回值类型
-
-```js
-function add(x: number, y: number): void {
-    return x + y;
-}
-```
-
-`void`表示函数不能有返回值。
-
-> 函数参数解构类型
-
-```js
-function add( {x,y}: {x:number,y:number}): number {
-    return x + y;
-}
-```
-
-## interface接口
-
-```js
-const getPersonName = (person: {name:string}): void=>{
-  console.log(person.name)
-}
-
-const setPersonName =(person: {name:string},name: string): void=>{
-  person.name=name
-}
-//使用接口改写
-interface Person{
-  name:string;
-}
-const getPersonName = (person: Person): void=>{
-  console.log(person.name)
-}
-
-const setPersonName =(person: Person,name: string): void=>{
-  person.name=name
-}
-```
-
-与类型别名区别：
-
-接口只能是对象或者函数，但是类型别名可以是基本类型
-
-```js
-//接口
-interface Person{
-  name:string;
-}
-//类型别名
-type Person1= string
-```
-
-接口属性可有可无：
-
-```js
-interface Person{
-  name:string;
-  age?:number
-}
-```
-
-属性后面加`?`就代表这个属性可有可无
-
-只读属性:
-
-```js
-interface Person{
-  readonly name:string;
-  age?:number
-}
-```
-
-此时代表name是只读的，不能进行赋值操作。
-
-可以有其他属性：
-
-```js
-interface Person{
-  readonly name:string;
-  age?:number;
-  //将来的属性名为字符串类型，属性值为任何类型
-  [propName:string]:any;
-}
-const getPersonName = (person: Person): void=>{
-  console.log(person.name)
-}
-const person={
-  name:'',
-  sex:''
-}
-getPersonName(person)
-getPersonName({name:'',sex:''})
-```
-
-接口定义方法：
-
-```js
-interface Person{
-  readonly name:string;
-  age?:number;
-  //将来的属性名为字符串类型，属性值为任何类型
-  [propName:string]:any;
-  //必须要有say方法，并且返回值是string
-  say():string;
-}
-const person={
-  name:'',
-  sex:'',
-  say(){
-    return ''
-  }
-}
-getPersonName(person)
-```
-
-类应用接口：
-
-```js
-interface Person{
-  readonly name:string;
-  age?:number;
-  //将来的属性名为字符串类型，属性值为任何类型
-  [propName:string]:any;
-  //必须要有say方法，并且返回值是string
-  say():string;
-}
-//定义类并应用接口Person
-class User implements Person {
-  //指定初始值
-  name:'';
-	say(){
-  return ''
-}
-}
-```
-
-接口继承：
-
-```js
-interface Person{
-  readonly name:string;
-  age?:number;
-  //将来的属性名为字符串类型，属性值为任何类型
-  [propName:string]:any;
-  //必须要有say方法，并且返回值是string
-  say():string;
-}
-//接口继承
-interface Teacher extends Person {
-  teach():string
-}
-```
-
-接口定义函数：
-
-接口能够代表函数的类型
-
-```js
-//函数类型叫SayHi
-interface SayHi{
-  //函数必须接受一个string类型的参数，并且返回值也必须是string
-  (word:string):string
-}
-
-//使用接口
-const say: SayHi  = (word: string) =>{
-  return word
-}
-```
-
-## 类
-
-定义基本的类
-
-```js
-class Person {
-  name:'';
-	getName() {
-    return this.name
-  }
-}
-//使用
-const person = new Person()
-person.getName()
-```
-
-类的继承：
-
-```js
-class Person {
-  name:'';
-	getName() {
-    return this.name
-  }
-}
-//继承
-class Teacher extends Person {
-  getTeacherName() {
-    return ''
-  }
-}
-//使用
-const person = new Teacher()
-person.getName()
-person.getTeacherName()
-```
-
-子类调用父类：
-
-```js
-class Person {
-  name:'';
-	getName() {
-    return this.name
-  }
-}
-//继承
-class Teacher extends Person {
-  getTeacherName() {
-    return ''
-  }
-  //重写父类方法
-  getName(){
-    //使用super关键字调用父类方法
-    return super.getName()+''
-  }
-}
-//使用
-const person = new Teacher()
-person.getName()
-person.getTeacherName()
-```
-
-### 类的访问类型
-
-默认的访问类型是`public`
-
-```js
-class Person {
-  name:string;
-	say(){
-    return ''
-  }
-}
-//等同于
-class Person {
-  public name:string;
-	public say(){
-    return ''
-  }
-}
-```
-
-`public`:允许我在类的内外都能被调用
-
-```js
-class Person {
-  public name:string;
-	public say(){
-    //内部调用name
-    console.log(this.name)
-    return ''
-  }
-}
-
-const person = new Person()
-//外部调用name
-person.name=''
-```
-
-`private`只允许在类的内部使用，不允许在类的外部使用和继承的子类中使用
-
-```js
-class Person {
-  private name:string;
-	public say(){
-    //内部调用name
-    console.log(this.name)
-    return ''
-  }
-}
-
-const person = new Person()
-//外部调用name时就会报错
-//person.name=''
-```
-
-`protected`允许在类的内部以及继承的子类中使用，不允许在类的外部使用
-
-```js
-class Person {
-  protected name:string;
-	public say(){
-    //内部调用name
-    console.log(this.name)
-    return ''
-  }
-}
-//继承
-class Teacher extends Person{
-  public sayBye(){
-    //使用父类的name
-    this.name
-  }
-}
-```
-
-### 类中的构造器
-
-```js
-class Person {
-  private name:string;
-	constructor(name: string){
-    //this.name代表内部的name，而name参数代表实例化传递的参数
-    this.name=name
-  }
-}
-const person = new Person('ss')
-
-//简写形式
-class Person {
-  constructor(private name: string){
-    
-  }
-}
-const person = new Person('ss')
-```
-
-子类中使用构造器：
-
-```js
-class Person {
-  constructor(public name: string){
-    
-  }
-}
-//继承
-class Teacher extends Person {
-  constructor(public age: number){
-    //必须手动调用父类的构造器，并传入所需参数，否则会报错
-    //如果父类没有constructor函数，子类也必须调用super()函数，此时不需要传递参数
-    super('dd')
-  }
-}
-const person = new Teacher(28)
-```
-
-定义getter：
-
-```js
-class Person {
-  //私有属性一般前面加个下划线
-  constructor(private _name: string){}
-  //定义getter属性，名为getName。
-  //看似像个方法，实际上是个属性
-  get name(){
-    //返回私有属性给外部
-    return this._name
-  }
-}
-
-const person = new Person('ddd')
-person.name//输出ddd
-```
-
-定义setter：
-
-```js
-class Person {
-  //私有属性一般前面加个下划线
-  constructor(private _name: string){}
-  //定义getter属性，名为getName。
-  //看似像个方法，实际上是个属性
-  get name(){
-    //返回私有属性给外部
-    return this._name
-  }
-  set name(name: string){
-    this._name=name
-  }
-}
-
-const person = new Person('ddd')
-//调用getter
-person.name//输出ddd
-//调用setter
-person.name='sss'
-person.name//输出sss
-```
-
-实现单列模式：
-
-```js
-class Demo {
-  //创建静态属性instance
-  private static instance: Demo;
-  private constructor(public name: string) {}
-  
-  //使用static关键字将方法挂在Demo上，也就是静态方法
-  static getInstance() {
-    if(!this.instance){
-      this.instance = new Demo(‘dd)
-    }
-    return this.instance
-  }
-}
-
-//调用静态方法，创建唯一实例
-const demo1 = Demo.getInstance();
-const demo2 = Demo.getInstance();
-//此时创建的demo1和demo2是相等的。也就是同一个实例
-```
-
-只读属性：
-
-只能读取，不能修改。
-
-```js
-class Person {
-  //添加只读属性name
-  public readonly name: string
-  constructor(name: string){
-    this.name=name
-  }
-}
-const person =new Person('dd')
-//此时不能修改
-//person.name='sss'
-```
-
-### 抽象类
-
-只能被继承，不能被实例化。
-
-```js
-//抽象类
-abstract class Geom {
-  width: number;
-	getType() {
-  return 'ss'
-	}
-  //抽象方法，必须在子类中进行实现
-	abstract getArea(): number;
-}
-
-//继承抽象类
-class Circle extends Geom {
-  //实现父类的抽象方法
-  getArea() {
-    return 123
-  }
-}
-```
 
 ## typescript配置文件
 
