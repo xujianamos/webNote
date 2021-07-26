@@ -28,12 +28,12 @@
 ```json
 // 头部注释
   "fileheader.customMade": {
-    "Author": "xujian",
+      "Author": "xujian",
+    "Date": "Do not edit",// 文件创建时间(不变)
     "LastEditors": "xujian", // 文件最后编辑者
-    "Date": "Do not edit", // 文件创建时间(不变)
-    "LastEditTime": "Do not edit", // 文件最后编辑时间
-    "Description": "file content",
-    "FilePath": "Do not edit" // 文件在项目中的相对路径 自动更新
+    "LastEditTime": "Do not edit",// 文件最后编辑时间
+    "Description": "",
+    "FilePath": "Do not edit"// 文件在项目中的相对路径 自动更新
   },
 //这个配置必须放在后面
   "fileheader.configObj": {
