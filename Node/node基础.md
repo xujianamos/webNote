@@ -1306,17 +1306,269 @@ emitter.removeAllListeners("click");
 
 ## 5.npm详解
 
+### 5.1认识npm
 
+我们已经学习了在JavaScript中可以通过模块化的方式将代码划分成一个个小的结构：
 
+- 在以后的开发中我们就可以通过模块化的方式来封装自己的代码，并且封装成一个工具；
+- 这个工具我们可以让同事通过导入的方式来使用，甚至你可以分享给世界各地的程序员来使用；
 
+**如果我们分享给世界上所有的程序员使用，有哪些方式呢？**
 
+方式一：上传到GitHub上、其他程序员通过GitHub下载我们的代码手动的引用；
 
+- 缺点是大家必须知道你的代码GitHub的地址，并且从GitHub上手动下载；
+- 需要在自己的项目中手动的引用，并且管理相关的依赖；
+- 不需要使用的时候，需要手动来删除相关的依赖；
+- 当遇到版本升级或者切换时，需要重复上面的操作；
 
+显然，上面的方式是有效的，但是这种传统的方式非常麻烦，并且容易出错；
 
+方式二：使用一个专业的工具来管理我们的代码
 
+- 我们通过工具将代码发布到特定的位置；
+- 其他程序员直接通过工具来安装、升级、删除我们的工具代码；
 
+显然，通过第二种方式我们可以更好的管理自己的工具包，其他人也可以更好的使用我们的工具包。
 
+包管理工具npm：
 
+- Node Package Manager，也就是Node包管理器；
+- 但是目前已经不仅仅是Node包管理器了，在前端项目中我们也在使用它来管理依赖的包；
+- 比如express、koa、react、react-dom、axios、babel、webpack等等；
+
+npm管理的包可以在哪里查看、搜索呢？
+
+- https://www.npmjs.com/
+- 这是我们安装相关的npm包的官网；
+
+npm管理的包存放在哪里呢？
+
+- 我们发布自己的包其实是发布到registry上面的；
+- 当我们安装一个包时其实是从registry上面下载的包；
+
+### 5.2项目配置文件
+
+事实上，我们每一个项目都会有一个对应的配置文件，无论是前端项目还是后端项目：
+
+- 这个配置文件会记录着你项目的名称、版本号、项目描述等；
+- 也会记录着你项目所依赖的其他库的信息和依赖库的版本号；
+
+这个配置文件在Node环境下面（无论是前端还是后端）就是package.json。
+
+我们以vue cli4脚手架创建的项目为例：
+
+```json
+{
+  "name": "my-vue",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint"
+  },
+  "dependencies": {
+    "core-js": "^3.6.5",
+    "vue": "^2.6.11"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "~4.5.0",
+    "@vue/cli-plugin-eslint": "~4.5.0",
+    "@vue/cli-service": "~4.5.0",
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.7.2",
+    "eslint-plugin-vue": "^6.2.2",
+    "vue-template-compiler": "^2.6.11"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
+```
+
+事实上Vue ClI4脚手架创建的项目相对进行了简化，我们来看一下CLI2创建的项目：
+
+```json
+{
+  "name": "vuerouterbasic",
+  "version": "1.0.0",
+  "description": "A Vue.js project",
+  "author": "'xujian'",
+  "private": true,
+  "scripts": {
+    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "start": "npm run dev",
+    "build": "node build/build.js"
+  },
+  "dependencies": {
+    "vue": "^2.5.2",
+    "vue-router": "^3.0.1"
+  },
+  "devDependencies": {
+    "autoprefixer": "^7.1.2",
+    "babel-core": "^6.22.1",
+    "babel-helper-vue-jsx-merge-props": "^2.0.3",
+    "babel-loader": "^7.1.1",
+    "babel-plugin-syntax-jsx": "^6.18.0",
+    "babel-plugin-transform-runtime": "^6.22.0",
+    "babel-plugin-transform-vue-jsx": "^3.5.0",
+    "babel-preset-env": "^1.3.2",
+    "babel-preset-stage-2": "^6.22.0",
+    "chalk": "^2.0.1",
+    "copy-webpack-plugin": "^4.0.1",
+    "css-loader": "^0.28.0",
+    "extract-text-webpack-plugin": "^3.0.0",
+    "file-loader": "^1.1.4",
+    "friendly-errors-webpack-plugin": "^1.6.1",
+    "html-webpack-plugin": "^2.30.1",
+    "node-notifier": "^5.1.2",
+    "optimize-css-assets-webpack-plugin": "^3.2.0",
+    "ora": "^1.2.0",
+    "portfinder": "^1.0.13",
+    "postcss-import": "^11.0.0",
+    "postcss-loader": "^2.0.8",
+    "postcss-url": "^7.2.1",
+    "rimraf": "^2.6.0",
+    "semver": "^5.3.0",
+    "shelljs": "^0.7.6",
+    "uglifyjs-webpack-plugin": "^1.1.1",
+    "url-loader": "^0.5.8",
+    "vue-loader": "^13.3.0",
+    "vue-style-loader": "^3.0.1",
+    "vue-template-compiler": "^2.5.2",
+    "webpack": "^3.6.0",
+    "webpack-bundle-analyzer": "^2.9.0",
+    "webpack-dev-server": "^2.9.1",
+    "webpack-merge": "^4.1.0"
+  },
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
+```
+
+我们也可以手动创建一个package.json文件：
+
+```bash
+npm init #创建时填写信息
+npm init -y # 所有信息使用默认的
+```
+
+`npm init -y`生成文件的效果：
+
+```json
+{
+  "name": "learn-npm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
+```
+
+我们会发现属性非常的多，我们这里对一些常见属性进行一些解析。
+
+**必须填写的属性：name、version**
+
+- name是项目的名称；
+- version是当前项目的版本号；
+- description是描述信息，很多时候是作为项目的基本描述；
+- author是作者相关信息（发布时用到）；
+- license是开源协议（发布时用到）；
+
+**private属性：**
+
+- private属性记录当前的项目是否是私有的；
+- 当值为true时，npm是不能发布它的，这是防止私有项目或模块发布出去的方式；
+
+**main属性：**
+
+- 设置程序的入口。
+
+- 很多人会有疑惑，webpack不是会自动找到程序的入口吗？
+
+- - 这个入口和webpack打包的入口并不冲突；
+  - 它是在你发布一个模块的时候会用到的；
+  - 比如我们使用axios模块 `const axios = require('axios');`
+  - 实际上是找到对应的main属性查找文件的；
+
+![image-20210728123215184](D:\webNote\Node\image-20210728123215184.png)
+
+**scripts属性**
+
+- scripts属性用于配置一些脚本命令，以键值对的形式存在；
+
+- 配置后我们可以通过 `npm run 命令的key`来执行这个命令；
+
+- `npm start`和`npm run start`的区别是什么？
+
+- - 它们是等价的；
+  - 对于常用的 start、 test、stop、restart可以省略掉run直接通过 `npm start`等方式运行；
+
+**dependencies属性**
+
+- dependencies属性是指定无论开发环境还是生产环境都需要依赖的包；
+- 通常是我们项目实际开发用到的一些库模块；
+- 与之对应的是devDependencies；**dependencies属性**
+  - dependencies属性是指定无论开发环境还是生成环境都需要依赖的包；
+  - 通常是我们项目实际开发用到的一些库模块；
+  - 与之对应的是devDependencies；
+
+**devDependencies属性**
+
+- 一些包在生产环境是不需要的，比如webpack、babel等；
+- 这个时候我们会通过 `npm install webpack --save-dev`，将它安装到devDependencies属性中；
+
+疑问：那么在生产环境如何保证不安装这些包呢？
+
+- 生成环境不需要安装时，我们需要通过 `npm install --production` 来安装文件的依赖；
+
+**版本管理的问题**
+
+我们会发现安装的依赖版本出现：`^2.0.3`或`~2.0.3`，这是什么意思呢？
+
+npm的包通常需要遵从semver版本规范：
+
+- semver：https://semver.org/lang/zh-CN/
+- npm semver：https://docs.npmjs.com/misc/semver
+
+semver版本规范是X.Y.Z：
+
+- X主版本号（major）：当你做了不兼容的 API 修改（可能不兼容之前的版本）；
+- Y次版本号（minor）：当你做了向下兼容的功能性新增（新功能增加，但是兼容之前的版本）；
+- Z修订号（patch）：当你做了向下兼容的问题修正（没有新功能，修复了之前版本的bug）；
+
+我们这里解释一下 ^和~的区别：
+
+- `^x.y.z`：表示x是保持不变的，y和z永远安装最新的版本；
+- `~x.y.z`：表示x和y保持不变的，z永远安装最新的版本；
+
+**engines属性**
+
+- engines属性用于指定Node和NPM的版本号；
+- 在安装的过程中，会先检查对应的引擎版本，如果不符合就会报错；
+- 事实上也可以指定所在的操作系统 `"os" : [ "darwin", "linux" ]`，只是很少用到；
+
+**browserslist属性**
+
+- 用于配置打包后的JavaScript浏览器的兼容情况，参考；
+- 否则我们需要手动的添加polyfills来让支持某些语法；
+- 也就是说它是为webpack等打包工具服务的一个属性（这里不是详细讲解webpack等工具的工作原理，所以不再给出详情）；
+
+### 5.3npm工具解析
 
 
 
