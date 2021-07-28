@@ -1505,7 +1505,7 @@ npm init -y # 所有信息使用默认的
   - 比如我们使用axios模块 `const axios = require('axios');`
   - 实际上是找到对应的main属性查找文件的；
 
-![image-20210728123215184](D:\webNote\Node\image-20210728123215184.png)
+![image-20210728123215184](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728123215184.png)
 
 **scripts属性**
 
@@ -1570,11 +1570,673 @@ semver版本规范是X.Y.Z：
 
 ### 5.3npm工具解析
 
+#### 5.3.1npm install命令
 
+安装npm包分两种情况：
+
+- 全局安装（global install）：`npm install yarn -g`;
+- 项目（局部）安装（local install）：`npm install`
+
+**全局安装**
+
+全局安装是直接将某个包安装到全局：
+
+比如yarn的全局安装：
+
+```bash
+npm install yarn -g
+```
+
+但是很多人对全局安装有一些误会：
+
+- 通常使用npm全局安装的包都是一些工具包：yarn、webpack等；
+- 并不是类似于 axios、express、koa等库文件；
+- 所以全局安装了之后并不能让我们在所有的项目中使用 axios等库；
+
+**项目安装**
+
+项目安装会在当前目录下生产一个 `node_modules` 文件夹，我们之前讲解require查找顺序时有讲解过这个包在什么情况下被查找；
+
+局部安装分为开发时依赖和生产时依赖：
+
+```bash
+# 安装开发和生产依赖
+npm install axios --save
+npm install axios -S
+npm install axios
+npm i axios
+
+# 开发者
+npm install axios --save-dev
+npm install axios -D
+npm i axios -D
+```
+
+#### 5.3.2npm install原理
+
+- npm install会检测是有package-lock.json文件：
+
+- - 检测lock中包的版本是否和package.json中一致（会按照semver版本规范检测）；
+  - 一致的情况下，会去优先查找缓存
+  - 查找到，会获取缓存中的压缩文件，并且将压缩文件解压到node_modules文件夹中；
+  - 不一致，那么会重新构建依赖关系，直接会走顶层的流程；
+  - 没有找到，会从registry仓库下载，直接走顶层流程；
+  - 分析依赖关系，这是因为我们可能包会依赖其他的包，并且多个包之间会产生相同依赖的情况；
+  - 从registry仓库中下载压缩包（如果我们设置了镜像，那么会从镜像服务器下载压缩包）；
+  - 获取到压缩包后会对压缩包进行缓存（从npm5开始有的）；
+  - 将压缩包解压到项目的node_modules文件夹中（前面我们讲过，require的查找顺序会在该包下面查找）
+  - 没有lock文件
+  - 有lock文件
+
+<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728231227747.png" alt="image-20210728231227747" style="zoom:80%;" />
+
+package-lock.json文件：
+
+```json
+{
+  "name": "learn-npm",
+  "version": "1.0.0",
+  "lockfileVersion": 1,
+  "requires": true,
+  "dependencies": {
+    "axios": {
+      "version": "0.20.0",
+      "resolved": "https://registry.npmjs.org/axios/-/axios-0.20.0.tgz",
+      "integrity": "sha512-ANA4rr2BDcmmAQLOKft2fufrtuvlqR+cXNNinUmvfeSNCOF98PZL+7M/v1zIdGo7OLjEA9J2gXJL+j4zGsl0bA==",
+      "requires": {
+        "follow-redirects": "^1.10.0"
+      }
+    },
+    "follow-redirects": {
+      "version": "1.13.0",
+      "resolved": "https://registry.npmjs.org/follow-redirects/-/follow-redirects-1.13.0.tgz",
+      "integrity": "sha512-aq6gF1BEKje4a9i9+5jimNFIpq4Q1WiwBToeRK5NvZBd/TRsmW8BsJfOEGkr76TbOyPVD3OVDN910EcUNtRYEA=="
+    }
+  }
+}
+```
+
+package-lock.json文件解析：
+
+- name：项目的名称；
+
+- version：项目的版本；
+
+- lockfileVersion：lock文件的版本；
+
+- requires：使用requires来跟着模块的依赖关系；
+
+- dependencies：项目的依赖
+
+- - version表示实际安装的axios的版本；
+  - resolved用来记录下载的地址，registry仓库中的位置；
+  - requires记录当前模块的依赖；
+  - integrity用来从缓存中获取索引，再通过索引去获取压缩包文件；
+  - 当前项目依赖axios，但是axios依赖follow-redireacts；
+  - axios中的属性如下
+
+#### 5.3.3其他npm命令
+
+卸载某个依赖包：
+
+```bash
+npm uninstall package
+npm uninstall package --save-dev
+npm uninstall package -D
+```
+
+强制重新build
+
+```bash
+npm rebuild
+```
+
+清除缓存
+
+```bash
+npm cache clean
+```
+
+#### 5.3.4yarn和cnpm
+
+另一个node包管理工具yarn：
+
+- yarn是由Facebook、Google、Exponent 和 Tilde 联合推出了一个新的 JS 包管理工具；
+- yarn 是为了弥补 npm 的一些缺陷而出现的；
+- 早期的npm存在很多的缺陷，比如安装依赖速度很慢、版本依赖混乱等等一系列的问题；
+- 虽然从npm5版本开始，进行了很多的升级和改进，但是依然很多人喜欢使用yarn；
+
+这里给出一张常用命令的对比:
+
+
+
+**补充：cnpm**
+
+由于一些特殊的原因，某些情况下我们没办法很好的从 `https://registry.npmjs.org`下载下来一些需要的包。
+
+查看npm镜像：
+
+```bash
+npm config get registry # npm config get registry
+```
+
+我们可以直接设置npm的镜像：
+
+```bash
+npm config set registry https://registry.npm.taobao.org
+```
+
+但是对于大多数人来说（比如我），并不希望将npm镜像修改了：
+
+- 第一，不太希望随意修改npm原本从官方下来包的渠道；
+- 第二，担心某天淘宝的镜像挂了或者不维护了，又要改来改去；
+
+这个时候，我们可以使用cnpm，并且将cnpm设置为淘宝的镜像：
+
+```bash
+npm install -g cnpm --registry=https://registry.npm.taobao.org
+cnpm config get registry # https://r.npm.taobao.org/
+```
+
+**补充：npx**
+
+npx是npm5.2之后自带的一个命令。
+
+npx的作用非常多，但是比较常见的是使用它来调用项目中的某个模块的指令。
+
+我们以webpack为例：
+
+- 全局安装的是webpack5.1.3
+- 项目安装的是webpack3.6.0
+
+如果我在终端执行 `webpack --version`使用的是哪一个命令呢？
+
+- 显示结果会是 `webpack 5.1.3`，事实上使用的是全局的，为什么呢？
+- 原因非常简单，在当前目录下找不到webpack时，就会去全局找，并且执行命令；
+
+那么如何使用项目（局部）的webpack，常见的是两种方式：
+
+- 方式一：明确查找到node_module下面的webpack
+- 方式二：在 `scripts`定义脚本，来执行webpack；
+
+方式一：在终端中使用如下命令（在项目根目录下）
+
+```bash
+./node_modules/.bin/webpack --version
+```
+
+方式二：修改package.json中的scripts
+
+```bash
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "webpack": "webpack --version"
+  },
+```
+
+终端中执行：
+
+```bash
+npm run webpack
+```
+
+但是这两种方式都有一点点麻烦，更好的办法是直接使用npx：
+
+```bash
+npx webpack --version
+```
+
+npx的原理非常简单，它会到当前目录的node_modules/.bin目录下查找对应的命令；
 
 ## 6.Buffer使用
 
+### 6.1数据的二进制
 
+计算机中所有的内容：文字、数字、图片、音频、视频最终都会使用二进制来表示。
+
+JavaScript可以直接去处理非常直观的数据：比如字符串，我们通常展示给用户的也是这些内容。
+
+不对啊，JavaScript不是也可以处理图片吗？
+
+- 事实上在网页端，图片我们一直是交给浏览器来处理的；
+- JavaScript或者HTML，只是负责告诉浏览器一个图片的地址；
+- 浏览器负责获取这个图片，并且最终将这个图片渲染出来；
+
+但是对于服务器来说是不一样的：
+
+- 服务器要处理的本地文件类型相对较多;
+- 比如某一个保存文本的文件并不是使用 `utf-8`进行编码的，而是用 `GBK`，那么我们必须读取到他们的二进制数据，再通过GKB转换成对应的文字；
+- 比如我们需要读取的是一张图片数据（二进制），再通过某些手段对图片数据进行二次的处理（裁剪、格式转换、旋转、添加滤镜），Node中有一个Sharp的库，就是读取图片或者传入图片的Buffer对其再进行处理；
+- 比如在Node中通过TCP建立长连接，TCP传输的是字节流，我们需要将数据转成字节再进行传入，并且需要知道传输字节的大小（客服端需要根据大小来判断读取多少内容）；
+
+我们会发现，对于前端开发来说，通常很少会和二进制打交道，但是对于服务器端为了做很多的功能，我们必须直接去操作其二进制的数据；
+
+所以Node为了可以方便开发者完成更多功能，提供给了我们一个类Buffer，并且它是全局的。
+
+### 6.2Buffer和二进制
+
+我们前面说过，Buffer中存储的是二进制数据，那么到底是如何存储呢？
+
+- 我们可以将Buffer看成是一个存储二进制的数组；
+- 这个数组中的每一项，可以保存8位二进制：`00000000`
+
+为什么是8位呢？
+
+- 在计算机中，很少的情况我们会直接操作一位二进制，因为一位二进制存储的数据是非常有限的；
+- 所以通常会将8位合在一起作为一个单元，这个单元称之为一个字节（byte）；
+- 也就是说 `1byte = 8bit`，`1kb=1024byte`，`1M=1024kb`;
+
+- 比如很多编程语言中的int类型是4个字节，long类型是8个字节；
+- 比如TCP传输的是字节流，在写入和读取时都需要说明字节的个数；
+- 比如RGB的值分别都是255，所以本质上在计算机中都是用一个字节存储的；
+
+也就是说，Buffer相当于是一个字节的数组，数组中的每一项对于一个字节的大小：
+
+如果我们希望将一个字符串放入到Buffer中，是怎么样的过程呢？
+
+```js
+const buffer01 = new Buffer("why");
+
+console.log(buffer01);
+```
+
+![image-20210728234811298](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728234811298.png)
+
+当然目前已经不希望我们这样来做了。
+
+那么我们可以通过另外一个创建方法：
+
+```js
+const buffer2 = Buffer.from("why");
+console.log(buffer2);
+```
+
+如果是中文呢？
+
+```js
+const buffer3 = Buffer.from("王红元");
+console.log(buffer3);
+// <Buffer e7 8e 8b e7 ba a2 e5 85 83>
+const str = buffer3.toString();
+console.log(str);
+// 王红元
+```
+
+如果编码和解码不同：
+
+```js
+const buffer3 = Buffer.from("王红元", 'utf16le');
+console.log(buffer3);
+
+const str = buffer3.toString('utf8');
+console.log(str); // �s�~CQ
+```
+
+### 6.3Buffer的其他创建
+
+Buffer的创建方式有很多：
+
+![image-20210728235246632](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728235246632.png)
+
+来看一下`Buffer.alloc`:
+
+- 我们会发现创建了一个8位长度的Buffer，里面所有的数据默认为00；
+
+```js
+const buffer01 = Buffer.alloc(8);
+
+console.log(buffer01); // <Buffer 00 00 00 00 00 00 00 00>
+```
+
+我们也可以对其进行操作：
+
+```js
+buffer01[0] = 'w'.charCodeAt();
+buffer01[1] = 100;
+buffer01[2] = 0x66;
+console.log(buffer01);
+```
+
+也可以使用相同的方式来获取：
+
+```js
+console.log(buffer01[0]);
+console.log(buffer01[0].toString(16));
+```
+
+### 6.4Buffer和文件读取
+
+文本文件的读取：
+
+```js
+const fs = require('fs');
+
+fs.readFile('./test.txt', (err, data) => {
+  console.log(data); // <Buffer 48 65 6c 6c 6f 20 57 6f 72 6c 64>
+  console.log(data.toString()); // Hello World
+})
+```
+
+图片文件的读取：
+
+```js
+fs.readFile('./zznh.jpg', (err, data) => {
+  console.log(data); // <Buffer ff d8 ff e0 ... 40418 more bytes>
+});
+```
+
+图片文件的读取和转换：
+
+- 将读取的某一张图片，转换成一张200x200的图片；
+- 这里我们可以借助于 `sharp` 库来完成；
+
+```js
+const sharp = require('sharp');
+const fs = require('fs');
+
+sharp('./test.png')
+  .resize(1000, 1000)
+  .toBuffer()
+  .then(data => {
+    fs.writeFileSync('./test_copy.png', data);
+  })
+```
+
+### 6.5Buffer的内存分配
+
+事实上我们创建Buffer时，并不会频繁的向操作系统申请内存，它会默认先申请一个8 * 1024个字节大小的内存，也就是8kb
+
+- node/lib/buffer.js：135行
+
+```js
+Buffer.poolSize = 8 * 1024;
+let poolSize, poolOffset, allocPool;
+
+const encodingsMap = ObjectCreate(null);
+for (let i = 0; i < encodings.length; ++i)
+  encodingsMap[encodings[i]] = i;
+
+function createPool() {
+  poolSize = Buffer.poolSize;
+  allocPool = createUnsafeBuffer(poolSize).buffer;
+  markAsUntransferable(allocPool);
+  poolOffset = 0;
+}
+createPool();
+```
+
+假如我们调用Buffer.from申请Buffer：
+
+- 这里我们以从字符串创建为例
+- node/lib/buffer.js：290行
+
+```js
+Buffer.from = function from(value, encodingOrOffset, length) {
+  if (typeof value === 'string')
+    return fromString(value, encodingOrOffset);
+ 
+ // 如果是对象，另外一种处理情况
+  // ...
+};
+```
+
+我们查看fromString的调用：
+
+- node/lib/buffer.js：428行
+
+```js
+function fromString(string, encoding) {
+  let ops;
+  if (typeof encoding !== 'string' || encoding.length === 0) {
+    if (string.length === 0)
+      return new FastBuffer();
+    ops = encodingOps.utf8;
+    encoding = undefined;
+  } else {
+    ops = getEncodingOps(encoding);
+    if (ops === undefined)
+      throw new ERR_UNKNOWN_ENCODING(encoding);
+    if (string.length === 0)
+      return new FastBuffer();
+  }
+  return fromStringFast(string, ops);
+}
+```
+
+接着我们查看fromStringFast：
+
+- 这里做的事情是判断剩余的长度是否还足够填充这个字符串；
+- 如果不足够，那么就要通过 `createPool` 创建新的空间；
+- 如果够就直接使用，但是之后要进行 `poolOffset`的偏移变化；
+- node/lib/buffer.js：428行
+
+```js
+function fromStringFast(string, ops) {
+  const length = ops.byteLength(string);
+
+  if (length >= (Buffer.poolSize >>> 1))
+    return createFromString(string, ops.encodingVal);
+
+  if (length > (poolSize - poolOffset))
+    createPool();
+  let b = new FastBuffer(allocPool, poolOffset, length);
+  const actual = ops.write(b, string, 0, length);
+  if (actual !== length) {
+    // byteLength() may overestimate. That's a rare case, though.
+    b = new FastBuffer(allocPool, poolOffset, actual);
+  }
+  poolOffset += actual;
+  alignPool();
+  return b;
+}
+```
+
+### 6.6Stream
+
+#### 6.6.1认识Stream
+
+什么是流呢？
+
+- 我们的第一反应应该是流水，源源不断的流动；
+- 程序中的流也是类似的含义，我们可以想象当我们从一个文件中读取数据时，文件的二进制（字节）数据会源源不断的被读取到我们程序中；
+- 而这个一连串的字节，就是我们程序中的流；
+
+所以，我们可以这样理解流：
+
+- 是连续字节的一种表现形式和抽象概念；
+- 流应该是可读的，也是可写的；
+
+在之前学习文件的读写时，我们可以直接通过 `readFile`或者 `writeFile`方式读写文件，为什么还需要流呢？
+
+- 直接读写文件的方式，虽然简单，但是无法控制一些细节的操作；
+- 比如从什么位置开始读、读到什么位置、一次性读取多少个字节；
+- 读到某个位置后，暂停读取，某个时刻恢复读取等等；
+- 或者这个文件非常大，比如一个视频文件，一次性全部读取并不合适；
+
+事实上Node中很多对象是基于流实现的：
+
+- http模块的Request和Response对象；
+- process.stdout对象；
+
+官方：另外所有的流都是EventEmitter的实例：
+
+流（Stream）的分类：
+
+- `Writable`：可以向其写入数据的流（例如 `fs.createWriteStream()`）。
+- `Readable`：可以从中读取数据的流（例如 `fs.createReadStream()`）。
+- `Duplex`：同时为`Readable`和的流`Writable`（例如 `net.Socket`）。
+- `Transform`：`Duplex`可以在写入和读取数据时修改或转换数据的流（例如`zlib.createDeflate()`）。
+
+#### 6.6.2Readable
+
+之前我们读取一个文件的信息：
+
+```js
+fs.readFile('./foo.txt', (err, data) => {
+  console.log(data);
+})
+```
+
+这种方式是一次性将一个文件中所有的内容都读取到程序（内存）中，但是这种读取方式就会出现我们之前提到的很多问题：
+
+- 文件过大、读取的位置、结束的位置、一次读取的大小；
+
+这个时候，我们可以使用 `createReadStream`，我们来看几个参数，更多参数可以参考官网：
+
+- start：文件读取开始的位置；
+- end：文件读取结束的位置；
+- highWaterMark：一次性读取字节的长度，默认是64kb；
+
+```js
+const read = fs.createReadStream("./foo.txt", {
+  start: 3,
+  end: 8,
+  highWaterMark: 4
+});
+```
+
+我们如何获取到数据呢？
+
+- 可以通过监听data事件，获取读取到的数据；
+
+```js
+read.on("data", (data) => {
+  console.log(data);
+});
+```
+
+我们也可以监听其他的事件：
+
+```js
+read.on('open', (fd) => {
+  console.log("文件被打开");
+})
+
+read.on('end', () => {
+  console.log("文件读取结束");
+})
+
+read.on('close', () => {
+  console.log("文件被关闭");
+})
+```
+
+甚至我们可以在某一个时刻暂停和恢复读取：
+
+```js
+read.on("data", (data) => {
+  console.log(data);
+
+  read.pause();
+
+  setTimeout(() => {
+    read.resume();
+  }, 2000);
+});
+```
+
+#### 6.6.3Writable
+
+之前我们写入一个文件的方式是这样的：
+
+```js
+fs.writeFile('./foo.txt', "内容", (err) => {
+  
+});
+```
+
+这种方式相当于一次性将所有的内容写入到文件中，但是这种方式也有很多问题：
+
+- 比如我们希望一点点写入内容，精确每次写入的位置等；
+
+这个时候，我们可以使用 `createWriteStream`，我们来看几个参数，更多参数可以参考官网：
+
+- flags：默认是`w`，如果我们希望是追加写入，可以使用 `a`或者 `a+`；
+- start：写入的位置；
+
+我们进行一次简单的写入
+
+```js
+const writer = fs.createWriteStream("./foo.txt", {
+  flags: "a+",
+  start: 8
+});
+
+writer.write("你好啊", err => {
+  console.log("写入成功");
+});
+```
+
+如果我们希望监听一些事件：
+
+```js
+writer.on("open", () => {
+  console.log("文件打开");
+})
+
+writer.on("finish", () => {
+  console.log("文件写入结束");
+})
+
+writer.on("close", () => {
+  console.log("文件关闭");
+})
+```
+
+我们会发现，我们并不能监听到 `close` 事件：
+
+- 这是因为写入流在打开后是不会自动关闭的；
+- 我们必须手动关闭，来告诉Node已经写入结束了；
+- 并且会发出一个 `finish` 事件的；
+
+```js
+writer.close();
+
+writer.on("finish", () => {
+  console.log("文件写入结束");
+})
+
+writer.on("close", () => {
+  console.log("文件关闭");
+})
+```
+
+另外一个非常常用的方法是 `end`：
+
+- `end`方法相当于做了两步操作：`write`传入的数据和调用`close`方法；
+
+```js
+writer.end("Hello World");
+```
+
+#### 6.6.4pipe方法
+
+正常情况下，我们可以将读取到的 `输入流`，手动的放到 `输出流`中进行写入：
+
+```js
+const fs = require('fs');
+const { read } = require('fs/promises');
+
+const reader = fs.createReadStream('./foo.txt');
+const writer = fs.createWriteStream('./bar.txt');
+
+reader.on("data", (data) => {
+  console.log(data);
+  writer.write(data, (err) => {
+    console.log(err);
+  });
+});
+```
+
+我们也可以通过pipe来完成这样的操作：
+
+```js
+reader.pipe(writer);
+
+writer.on('close', () => {
+  console.log("输出流关闭");
+})
+```
 
 ## 7.脚手架开发
 
