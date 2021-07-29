@@ -2244,6 +2244,249 @@ writer.on('close', () => {
 
 ## 8.深入事件循环
 
+### 8.1浏览器的事件循环
+
+#### 8.1.1进程和线程
+
+线程和进程是操作系统中的两个概念：
+
+- 进程（process）：计算机已经运行的程序；
+- 线程（thread）：操作系统能够运行运算调度的最小单位；
+
+听起来很抽象，我们直观一点解释：
+
+- 进程：我们可以认为，启动一个应用程序，就会默认启动一个进程（也可能是多个进程）；
+- 线程：每一个进程中，都会启动一个线程用来执行程序中的代码，这个线程被称之为主线程；
+- 所以我们也可以说进程是线程的容器；
+
+再用一个形象的例子解释：
+
+- 操作系统类似于一个工厂；
+- 工厂中里有很多车间，这个车间就是进程；
+- 每个车间可能有一个以上的工人在工厂，这个工人就是线程；
+
+![image-20210729121705308](D:\webNote\Node\image-20210729121705308.png)
+
+操作系统是如何做到同时让多个进程（边听歌、边写代码、边查阅资料）同时工作呢？
+
+- 这是因为CPU的运算速度非常快，它可以快速的在多个进程之间迅速的切换；
+- 当我们的进程中的线程获取获取到时间片时，就可以快速执行我们编写的代码；
+- 对于用于来说是感受不到这种快速的切换的；
+
+你可以在Mac的活动监视器或者Windows的资源管理器中查看到很多进程：
+
+![image-20210729121927633](D:\webNote\Node\image-20210729121927633.png)
+
+#### 8.1.2浏览器和JavaScript
+
+我们经常会说JavaScript是单线程的，但是JavaScript的线程应该有自己的容器进程：浏览器或者Node。
+
+浏览器是一个进程吗，它里面只有一个线程吗？
+
+- 目前多数的浏览器其实都是多进程的，当我们打开一个tab页面时就会开启一个新的进程，这是为了防止一个页面卡死而造成所有页面无法响应，整个浏览器需要强制退出；
+- 每个进程中又有很多的线程，其中包括执行JavaScript代码的线程；
+
+但是JavaScript的代码执行是在一个单独的线程中执行的：
+
+- 这就意味着JavaScript的代码，在同一个时刻只能做一件事；
+- 如果这件事是非常耗时的，就意味着当前的线程就会被阻塞；
+
+分析下面代码的执行过程：
+
+- 定义变量name；
+- 执行log函数，函数会被放入到调用栈中执行；
+- 调用bar()函数，被压入到调用栈中，但是执行未结束；
+- bar因为调用了sum，sum函数被压入到调用栈中，获取到结果后出栈；
+- bar获取到结果后出栈，获取到结果result；
+- 将log函数压入到调用栈，log被执行，并且出栈；
+
+```js
+const name = "name";
+
+// 1.将该函数放入到调用栈中被执行
+console.log(name);
+
+// 2. 调用栈
+function sum(num1, num2) {
+  return num1 + num2;
+}
+
+function bar() {
+  return sum(20, 30);
+}
+
+console.log(bar());
+```
+
+#### 8.1.3浏览器的事件循环
+
+如果在执行JavaScript代码的过程中，有异步操作呢？
+
+- 中间我们插入了一个setTimeout的函数调用；
+- 这个函数被放到入调用栈中，执行会立即结束，并不会阻塞后续代码的执行；
+
+```js
+const name = "name";
+
+// 1.将该函数放入到调用栈中被执行
+console.log(name);
+
+// 2.调用栈
+function sum(num1, num2) {
+  return num1 + num2;
+}
+
+function bar() {
+  return sum(20, 30);
+}
+
+setTimeout(() => {
+  console.log("settimeout");
+}, 1000);
+
+const result = bar();
+
+console.log(result);
+```
+
+那么，传入的一个函数（比如我们称之为timer函数），会在什么时候被执行呢？
+
+- 事实上，setTimeout是调用了web api，在合适的时机，会将timer函数加入到一个事件队列中；
+- 事件队列中的函数，会被放入到调用栈中，在调用栈中被执行；
+
+![image-20210729122733500](D:\webNote\Node\image-20210729122733500.png)
+
+#### 8.1.4宏任务和微任务
+
+但是事件循环中并非只维护着一个队列，事实上是有两个队列：
+
+- 宏任务队列（macrotask queue）：ajax、setTimeout、setInterval、DOM监听、UI Rendering等
+- 微任务队列（microtask queue）：Promise的then回调、 Mutation Observer API、queueMicrotask()等
+
+那么事件循环对于两个队列的优先级是怎么样的呢？
+
+- 1.main script中的代码优先执行（编写的顶层script代码）；
+
+- 2.在执行任何一个宏任务之前（不是队列，是一个宏任务），都会先查看微任务队列中是否有任务需要执行
+
+- - 也就是宏任务执行之前，必须保证微任务队列是空的；
+  - 如果不为空，那么就优先执行微任务队列中的任务（回调）；
+
+我们来看一个面试题：执行结果如何？
+
+```js
+setTimeout(function () {
+  console.log("set1");
+
+  new Promise(function (resolve) {
+    resolve();
+  }).then(function () {
+    new Promise(function (resolve) {
+      resolve();
+    }).then(function () {
+      console.log("then4");
+    });
+    console.log("then2");
+  });
+});
+
+new Promise(function (resolve) {
+  console.log("pr1");
+  resolve();
+}).then(function () {
+  console.log("then1");
+});
+
+setTimeout(function () {
+  console.log("set2");
+});
+
+console.log(2);
+
+queueMicrotask(() => {
+  console.log("queueMicrotask1")
+});
+
+new Promise(function (resolve) {
+  resolve();
+}).then(function () {
+  console.log("then3");
+});
+```
+
+执行结果：
+
+```js
+pr1
+2
+then1
+queueMicrotask1
+then3
+set1
+then2
+then4
+set2
+```
+
+async、await是Promise的一个语法糖：
+
+- 我们可以将await关键字后面执行的代码，看做是包裹在`(resolve, reject) => {函数执行}`中的代码；
+- await的下一条语句，可以看做是`then(res => {函数执行})`中的代码；
+
+今日头条的面试题：
+
+```js
+async function async1 () {
+  console.log('async1 start')
+  await async2();
+  console.log('async1 end')
+}
+ 
+async function async2 () {
+  console.log('async2')
+}
+
+console.log('script start')
+ 
+setTimeout(function () {
+  console.log('setTimeout')
+}, 0)
+ 
+async1();
+ 
+new Promise (function (resolve) {
+  console.log('promise1')
+  resolve();
+}).then (function () {
+  console.log('promise2')
+})
+
+console.log('script end')
+```
+
+执行结果如下：
+
+```js
+script start
+async1 start
+async2
+promise1
+script end
+async1 end
+promise2
+setTimeout
+```
+
+### 8.2Node的事件循环
+
+#### 8.2.1Node的事件循环
+
+
+
+
+
+
+
 
 
 ## 9.http开发web服务器
