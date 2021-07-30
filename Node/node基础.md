@@ -3832,11 +3832,164 @@ app.use((err, req, res, next) => {
 })
 ```
 
-
-
-
-
 ## 11.koa开发web服务器
+
+### 11.1. 认识Koa
+
+前面我们已经学习了express，另外一个非常流行的Node Web服务器框架就是Koa。
+
+Koa官方的介绍：
+
+- koa：next generation web framework for node.js；
+- koa：node.js的下一代web框架；
+
+事实上，koa是express同一个团队开发的一个新的Web框架：
+
+- 目前团队的核心开发者TJ的主要精力也在维护Koa，express已经交给团队维护了；
+- Koa旨在为Web应用程序和API提供更小、更丰富和更强大的能力；
+- 相对于express具有更强的异步处理能力（后续我们再对比）；
+- Koa的核心代码只有1600+行，是一个更加轻量级的框架，我们可以根据需要安装和使用中间件；
+
+### 11.2. koa初体验
+
+因为学习过了express，它们的基本开发模式是比较相似的。
+
+我们来体验一下koa的Web服务器：
+
+```js
+const Koa = require('koa');
+
+const app = new Koa();
+
+app.use((ctx, next) => {
+  console.log("middleware 01");
+  next();
+})
+
+app.use((ctx, next) => {
+  console.log("middleware 02");
+  ctx.response.body = "Hello World";
+})
+
+
+app.listen(8000, () => {
+  console.log("服务器启动成功~");
+});
+```
+
+koa注册的中间件提供了两个参数：
+
+- ctx：上下文（Context）对象；
+
+- - koa并没有像express一样，将req和res分开，而是将它们作为ctx的属性；
+  - ctx代表依次请求的上下文对象；
+  - `ctx.request`：获取请求对象；
+  - `ctx.response`：获取响应对象；
+
+- next：本质上是一个dispatch，类似于之前的next；
+
+- - 后续我们学习Koa的源码，来看一下它是一个怎么样的函数；
+
+koa通过创建的app对象，注册中间件只能通过use方法：
+
+- Koa并没有提供methods的方式来注册中间件；
+- 也没有提供path中间件来匹配路径；
+
+但是真实开发中我们如何将路径和method分离呢？
+
+- 方式一：根据request自己来判断；
+- 方式二：使用第三方路由中间件；
+
+方式一：根据request自己判断
+
+```js
+app.use((ctx, next) => {
+  if (ctx.request.path === '/users') {
+    if (ctx.request.method === 'POST') {
+      ctx.response.body = "Create User Success~";
+    } else {
+      ctx.response.body = "Users List~";
+    }
+  } else {
+    ctx.response.body = "Other Request Response";
+  }
+})
+```
+
+整个代码的逻辑是非常复杂和混乱的，真实开发中我们会使用路由。
+
+### 11.3. 路由的使用
+
+koa官方并没有给我们提供路由的库，我们可以选择第三方库：koa-router
+
+#### 11.3.1. 安装koa-router
+
+因为是第三方的库，所以我们需要单独下项目中安装：
+
+```
+npm install koa-router
+```
+
+#### 11.3.2. koa-router基本使用
+
+我们可以先封装一个 `user.router.js` 的文件：
+
+```js
+const Router = require('koa-router');
+
+const userRouter = new Router();
+
+userRouter.get('/users', (ctx, next) => {
+  ctx.response.body = "user list~";
+});
+
+userRouter.post('/users', (ctx, next) => {
+  ctx.response.body = "create user info~";
+});
+
+module.exports = userRouter;
+```
+
+在app中将`router.routes()`注册为中间件：
+
+```js
+app.use(userRouter.routes());
+app.use(userRouter.allowedMethods());
+```
+
+注意：`allowedMethods`用于判断`某一个method`是否支持：
+
+- 如果我们请求 get，那么是正常的请求，因为我们有实现get；
+- 如果我们请求 put、delete、patch，那么就自动报错：`Method Not Allowed`，状态码：405；
+- 如果我们请求 link、copy、lock，那么就自动报错：`Not Implemented`，状态码：501；
+
+#### 11.3.3. router的前缀
+
+通常一个路由对象是对一组相似路径的封装，那么路径的前缀都是一直的，所以我们可以直接在创建Router时，添加前缀：
+
+```js
+const userRouter = new Router({prefix: '/users'});
+
+userRouter.get('/', (ctx, next) => {
+  ctx.response.body = "user list~";
+});
+
+userRouter.post('/', (ctx, next) => {
+  ctx.response.body = "create user info~";
+});
+
+module.exports = userRouter;
+```
+
+### 11.4. 请求解析
+
+
+
+
+
+
+
+
 
 
 
