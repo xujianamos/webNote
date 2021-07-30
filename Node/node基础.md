@@ -1,4 +1,4 @@
-## 1. JavaScript运行原理
+1. JavaScript运行原理
 
 ### 1.1JavaScript如何运行
 
@@ -3417,7 +3417,7 @@ Express是一个路由和中间件的Web框架，它本身的功能非常少：
 
 中间件函数调用的元素：
 
-![image-20210730123124234](D:\webNote\Node\image-20210730123124234.png)
+![image-20210730123124234](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730123124234.png)
 
 #### 10.5.2应用中间件
 
@@ -3535,7 +3535,7 @@ app.get('/home', homeMiddleware1, homeMiddleware2, homeHandle);
 
 我们这里先使用json传递给服务器body：
 
-![image-20210730155150019](D:\webNote\Node\image-20210730155150019.png)
+![image-20210730155150019](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730155150019.png)
 
 不进行解析时的操作：
 
@@ -3586,7 +3586,7 @@ app.post('/login', (req, res, next) => {
 
 如果我们解析的是 `application/x-www-form-urlencoded`：
 
-![image-20210730155233279](D:\webNote\Node\image-20210730155233279.png)
+![image-20210730155233279](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730155233279.png)
 
 我们可以使用express自带的 `urlencoded`函数来作为中间件：
 
@@ -3680,7 +3680,7 @@ app.use('/upload', upload.array('files'), (req, res, next) => {
 
 - 请求如下：
 
-![image-20210730155445306](D:\webNote\Node\image-20210730155445306.png)
+![image-20210730155445306](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730155445306.png)
 
 ```js
 app.use(upload.any());
@@ -3983,14 +3983,431 @@ module.exports = userRouter;
 
 ### 11.4. 请求解析
 
+客户端传递到服务器参数的方法常见的是5种：
+
+- 方式一：通过get请求中的URL的params；
+- 方式二：通过get请求中的URL的query；
+- 方式三：通过post请求中的body的json格式；
+- 方式四：通过post请求中的body的x-www-form-urlencoded格式；
+- 方式五：通过post请求中的form-data格式；
+
+#### 11.4.1. 方式一：params
+
+请求地址：http://localhost:8000/users/123
+
+获取params：
+
+```js
+const userRouter = new Router({prefix: "/users"})
+
+userRouter.get("/:id", (ctx, next) => {
+  console.log(ctx.params.id);
+  ctx.body = "Hello World";
+})
+```
+
+#### 11.4.2. 方式二：query
+
+请求地址：http://localhost:8000/login?username=why&password=123
+
+获取query：
+
+```js
+app.use((ctx, next) => {
+  console.log(ctx.request.query);
+  ctx.body = "Hello World";
+})
+```
+
+#### 11.4.3. 方式三：json
+
+请求地址：http://localhost:8000/login
+
+body是json格式：
+
+```json
+{
+    "username": "coderwhy",
+    "password": "123"
+}
+```
+
+获取json数据：
+
+- 安装依赖：`npm install koa-bodyparser`;
+- 使用 `koa-bodyparser`的中间件；
+
+```js
+app.use(bodyParser());
+
+app.use((ctx, next) => {
+  console.log(ctx.request.body);
+  ctx.body = "Hello World";
+})
+```
+
+#### 11.4.4. 方式四：x-www-form-urlencoded
+
+请求地址：http://localhost:8000/login
+
+body是x-www-form-urlencoded格式：
+
+![image-20210730220807750](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730220807750.png)
+
+获取json数据：(和json是一致的)
+
+- 安装依赖：`npm install koa-bodyparser`;
+- 使用 `koa-bodyparser`的中间件；
+
+```js
+app.use(bodyParser());
+
+app.use((ctx, next) => {
+  console.log(ctx.request.body);
+  ctx.body = "Hello World";
+})
+```
+
+#### 11.4.5. 方式五：form-data
+
+请求地址：http://localhost:8000/login
+
+body是form-data格式：
+
+![image-20210730220849070](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730220849070.png)
+
+解析body中的数据，我们需要使用multer
+
+- 安装依赖：`npm install koa-multer`;
+- 使用 `multer`中间件；
+
+```js
+const upload = multer({
+});
+
+app.use(upload.any());
+
+app.use((ctx, next) => {
+  console.log(ctx.req.body);
+  ctx.body = "Hello World";
+});
+```
+
+我们知道multer还可以实现文件的上传：
+
+```js
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads/")
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname))
+  }
+})
+
+const upload = multer({
+  storage
+});
+
+const fileRouter = new Router();
+
+fileRouter.post("/upload", upload.single('avatar'), (ctx, next) => {
+  console.log(ctx.req.file);
+})
+
+app.use(fileRouter.routes());
+```
+
+### 11.5. 响应方式
+
+**输出结果：body**
+
+将响应主体设置为以下之一：
+
+- `string` ：字符串数据
+- `Buffer` ：Buffer数据
+- `Stream` ：流数据
+- `Object`|| `Array`：对象或者数组
+- `null` ：不输出任何内容
+
+如果`response.status`尚未设置，Koa会自动将状态设置为`200`或`204`。
+
+比较常见的输出方式：
+
+```js
+ctx.response.body = "Hello World";
+ctx.body = {
+  name: "why",
+  age: 18,
+  height: 1.88
+};
+ctx.body = ["abc", "cba", "nba"];
+```
+
+疑惑：`ctx.response.body`和`ctx.body`之间的区别：
+
+- 事实上，我们访问ctx.body时，本质上是访问ctx.response.body；
+- 我们可以看到源码中，我们访问 proto（这里就是ctx），其实是访问proto中的response的属性；
+
+**请求状态：status**
+
+请求状态我们可以直接给ctx设置，或者给ctx.response设置也是一样的效果：
+
+```js
+ctx.status = 201;
+ctx.response.status = 204;
+```
+
+### 11.6. 错误处理
+
+```js
+const Koa = require('koa');
+
+const app = new Koa();
+
+app.use((ctx, next) => {
+  ctx.app.emit('error', new Error("哈哈哈"), ctx);
+})
+
+app.on('error', (err, ctx) => {
+  console.log(err.message);
+  ctx.response.body = "哈哈哈";
+})
+
+app.listen(8000, () => {
+  console.log("错误处理服务启动成功~");
+})
+```
+
+### 11.7. 静态服务器
+
+koa并没有内置部署相关的功能，所以我们需要使用第三方库：
+
+```bash
+npm install koa-static
+```
+
+部署的过程类似于express：
+
+```js
+const Koa = require('koa');
+const static = require('koa-static');
+
+const app = new Koa();
+
+app.use(static('./build'));
+
+app.listen(8000, () => {
+  console.log("静态服务器启动成功~");
+});
+```
+
+### 11.8和express对比
+
+在学习了两个框架之后，我们应该已经可以发现koa和express的区别：
+
+从架构设计上来说：
+
+- express是完整和强大的，其中帮助我们内置了非常多好用的功能；
+
+- koa是简洁和自由的，它只包含最新的功能，并不会对我们使用其他中间件进行任何的限制。
+
+- - 甚至是在app中连最基本的get、post都没有给我们提供；
+  - 我们需要通过自己或者路由来判断请求方式或者其他功能；
+
+因为express和koa框架他们的核心其实都是中间件：
+
+- 但是他们的中间件事实上，它们的中间件的执行机制是不同的，特别是针对某个中间件中包含异步操作时；
+- 所以，接下来，我们再来研究一下express和koa中间件的执行顺序问题；
+
+我通过一个需求来演示所有的过程：
+
+- 假如有三个中间件会在一次请求中匹配到，并且按照顺序执行；
+
+- 我希望最终实现的方案是：
+
+- - 注意：是middleware1中；
+  - 在middleware1中，在req.message中添加一个字符串 `aaa`；
+  - 在middleware2中，在req.message中添加一个 字符串`bbb`；
+  - 在middleware3中，在req.message中添加一个 字符串`ccc`；
+  - 当所有内容添加结束后，在middleware1中，通过res返回最终的结果；
+
+#### 11.8.1. 同步执行顺序
+
+假如我们获取的所有数据，是可以同步获取的；
+
+**我们先通过express实现这个过程：**
+
+```js
+const express = require('express');
+
+const app = express();
 
 
+const middleware1 = (req, res, next) => {
+  req.message = "aaa";
+  next();
+  res.end(req.message);
+}
 
+const middleware2 = (req, res, next) => {
+  req.message = req.message + 'bbb';
+  next();
+}
 
+const middleware3 = (req, res, next) => {
+  req.message = req.message + 'ccc';
+}
 
+app.use(middleware1, middleware2, middleware3);
 
+app.listen(8000, () => {
+  console.log("启动成功~");
+})
+```
 
+最终的结果是：`aaabbbccc`，没问题；
 
+**我们再通过koa实现这个过程：**
 
+```js
+const Koa = require('koa');
+
+const app = new Koa();
+
+const middleware1 = (ctx, next) => {
+  ctx.message = "aaa";
+  next();
+  console.log("aaaa");
+  ctx.body = ctx.message;
+}
+
+const middleware2 = (ctx, next) => {
+  ctx.message = ctx.message + 'bbb';
+  console.log("bbbb");
+  next();
+}
+
+const middleware3 = (ctx, next) => {
+  ctx.message = ctx.message + 'ccc';
+}
+
+app.use(middleware1);
+app.use(middleware2);
+app.use(middleware3);
+
+app.listen(8000, () => {
+  console.log("启动成功~");
+})
+```
+
+最终的结果也是：`aaabbbccc`，也没问题；
+
+#### 11.8.2. 异步执行顺序
+
+但是，如果我们最后的ccc中的结果，是需要异步操作才能获取到的，是否会产生问题呢？
+
+##### 1. express中遇到异步操作
+
+**express有异步操作（没有在next前，加async、await）：**
+
+```js
+const middleware1 = (req, res, next) => {
+  req.message = "aaa";
+  next();
+  res.end(req.message);
+}
+
+const middleware2 = (req, res, next) => {
+  req.message = req.message + 'bbb';
+  next();
+}
+
+const middleware3 = async (req, res, next) => {
+  const result = await axios.get('http://123.207.32.32:9001/lyric?id=167876');
+  req.message = req.message + result.data.lrc.lyric;
+  console.log(req.message);
+}
+```
+
+最终的结果`aaabbb`，是不正确。
+
+**express有异步操作（有在next前，加async、await）：**
+
+```js
+const middleware1 = async (req, res, next) => {
+  req.message = "aaa";
+  await next();
+  res.end(req.message);
+}
+
+const middleware2 = async (req, res, next) => {
+  req.message = req.message + 'bbb';
+  await next();
+}
+
+const middleware3 = async (req, res, next) => {
+  const result = await axios.get('http://123.207.32.32:9001/lyric?id=167876');
+  req.message = req.message + result.data.lrc.lyric;
+  console.log(req.message);
+}
+```
+
+最终的结果也是`aaabbb`，也是不正确。
+
+为什么呢？
+
+- 原因是本质上的next()和异步没有任何关系；
+- 它本身就是一个同步函数的调用，所以它不会等到你异步有结果之后，再继续执行后续的操作；
+
+##### 2. koa中遇到异步操作
+
+**koa有异步操作（没有在next前，加async、await）：**
+
+```js
+const middleware1 = async (ctx, next) => {
+  ctx.message = "aaa";
+  next();
+  ctx.body = ctx.message;
+}
+
+const middleware2 = async (ctx, next) => {
+  ctx.message = ctx.message + 'bbb';
+  next();
+}
+
+const middleware3 = async (ctx, next) => {
+  const result = await axios.get('http://123.207.32.32:9001/lyric?id=167876');
+  ctx.message = ctx.message + result.data.lrc.lyric;
+}
+```
+
+最终的结果也是`aaabbb`，也是不正确。
+
+- 这是因为虽然next函数是一个返回promise的异步操作，但是在前面不加await的情况，是不同等待结果的返回，就会继续向后执行了；
+
+**koa有异步操作（有在next前，加async、await）：**
+
+```js
+const middleware1 = async (ctx, next) => {
+  ctx.message = "aaa";
+  await next();
+  ctx.body = ctx.message;
+}
+
+const middleware2 = async (ctx, next) => {
+  ctx.message = ctx.message + 'bbb';
+  await next();
+}
+
+const middleware3 = async (ctx, next) => {
+  const result = await axios.get('http://123.207.32.32:9001/lyric?id=167876');
+  ctx.message = ctx.message + result.data.lrc.lyric;
+}
+```
+
+最终的结果是`aaabbb+歌词信息`，是正确。
+
+- 这是因为，当我们在koa中的next前面加await时，它会等到后续有一个确定结果时，在执行后续的代码；
 
 ## 12.数据库MYSQL
