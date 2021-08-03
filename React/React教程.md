@@ -972,6 +972,8 @@ React的组件相对于Vue更加的灵活和多样，按照不同的方式可以
 
 类组件的定义有如下要求：
 
+- 组件的名称是大写字符开头（无论类组件还是函数组件）
+
 - 类组件需要继承自 `React.Component`
 - 类组件必须实现`render`函数
 
@@ -985,6 +987,7 @@ React的组件相对于Vue更加的灵活和多样，按照不同的方式可以
 import React, { Component } from 'react';
 
 export default class App extends Component {
+  //构造函数
   constructor() {
     super();
     this.state = {}
@@ -1000,7 +1003,8 @@ export default class App extends Component {
 
 - **React 元素**：
 
-- - 通常通过 JSX 创建。
+  - 通常通过 JSX 创建。
+
   - 例如，`<div />` 会被 React 渲染为 DOM 节点，`<MyComponent />` 会被 React 渲染为自定义组件；
   - 无论是 `<div />` 还是 `<MyComponent />` 均为 React 元素。
 
@@ -1010,19 +1014,21 @@ export default class App extends Component {
 
 - **字符串或数值类型**：它们在 DOM 中会被渲染为文本节点
 
-- **布尔类型或 `null`**：什么都不渲染。
+- **布尔类型或 `null`**：页面什么都不会渲染。
+
+注意：在jsx中只要首字母大写的元素都会当为组件，例如：`<DIV></DIV>`就会渲染为组件，而不是元素`<div</div>`。
 
 #### 4.1.2创建函数组件
 
 函数组件是使用function来进行定义的函数，只是这个函数会返回和类组件中render函数返回一样的内容。
 
-函数组件有自己的特点（当然，后面我们会讲hooks，就不一样了）：
+函数式组件的特点：
 
 - 没有生命周期，也会被更新并挂载，但是没有生命周期函数；
 - 没有this(组件实例）；
 - 没有内部状态（state）；
 
-我们来定义一个函数组件：
+定义一个函数组件：
 
 ```jsx
 export default function App() {
@@ -1034,20 +1040,20 @@ export default function App() {
 
 ### 4.2组件的生命周期
 
-![image-20210725174537950](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725174537950.png)
+![v2-09f698c70d89d72b146653ce67f79c0c_1440w](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/v2-09f698c70d89d72b146653ce67f79c0c_1440w.jpeg)
 
-上图第一个区域解析：
+上图第一个区域解析（组件挂载）：
 
 - 当我们挂载一个组件时，会先执行constructor构造方法来创建组件；
 - 紧接着调用render函数，获取要渲染的DOM结构（jsx），并且开始渲染DOM；
-- 当组件挂载成功（DOM渲染完成），会执行`componentDidMount`生命周期函数；
+- 当组件挂载成功（DOM渲染完成），会执行`componentDidMount`生命周期函数，表示组件已经挂载成功了；
 
-上图第二个区域解析：
+上图第二个区域解析（组件更新）：
 
 - 当我们通过修改props，或者调用setState修改内部状态，或者直接调用forceUpdate时会重新调用render函数，进行更新操作；
 - 当更新完成时，会回调`componentDidUpdate`生命周期函数；
 
-上图第三个区域解析：
+上图第三个区域解析（组件卸载）：
 
 - 当我们的组件不再使用，会被从DOM中移除掉（卸载）；
 - 这个时候会回调`componentWillUnmount`生命周期函数；
@@ -1130,7 +1136,7 @@ class HYTestCpn extends Component {
 export default class App extends Component {
   constructor(props) {
     super(props);
-
+		//初始化数据
     this.state = {
       counter: 0
     }
@@ -1264,6 +1270,7 @@ export default class App extends Component {
   render() {
     return (
       <div>
+        {/*父组件通过 属性=值 的形式来传递数据给子组件*/}
         <ChildCpn1 name="why" age="18" height="1.88" />
       </div>
     )
@@ -1318,6 +1325,7 @@ constructor(...args) {
 2. 子组件是function组件
 
 ```jsx
+//子组件
 function ChildCpn2(props) {
   const {name, age, height} = props;
 
@@ -1329,10 +1337,12 @@ function ChildCpn2(props) {
   )
 }
 
+//父组件
 export default class App extends Component {
   render() {
     return (
       <div>
+        {/*父组件通过 属性=值 的形式来传递数据给子组件*/}
         <ChildCpn2 name="kobe" age="30" height="1.98"/>
       </div>
     )
