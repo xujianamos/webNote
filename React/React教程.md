@@ -1251,6 +1251,7 @@ import React, { Component } from 'react';
 class ChildCpn1 extends Component {
   constructor(props) {
     super();
+    //这里不掉用也会在render中获取到props的值
     this.props = props;
   }
 
@@ -1364,10 +1365,38 @@ function组件相对来说比较简单，因为不需要有构造方法，也不
 我们对之前的class组件进行验证：
 
 ```jsx
-ChildCpn1.propTypes = {
+import React, { Component } from 'react';
+
+import PropTypes from 'prop-types';
+//子组件
+function ChildCpn(props) {
+  const { name, age, height } = props;
+
+  return (
+    <div>
+      <h2>我是function的组件</h2>
+      <p>展示父组件传递过来的数据: {name + " " + age + " " + height}</p>
+    </div>
+  )
+}
+
+ChildCpn.propTypes = {
   name: PropTypes.string,
   age: PropTypes.number,
   height: PropTypes.number
+}
+
+//父组件
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        {/*父组件通过 属性=值 的形式来传递数据给子组件*/}
+        <ChildCpn name="kobe" age="30" height="1.98"/>
+        <ChildCpn name="kobe" age={30} height={1.98}/>
+      </div>
+    )
+  }
 }
 ```
 
@@ -1397,11 +1426,15 @@ ChildCpn1.defaultProps = {
 ```jsx
 import React, { Component } from 'react';
 
+//子组件
 function CounterButton(props) {
+  //传递的btnClick属性值为一个函数
   const { operator, btnClick } = props;
+  //调用父组件传递的函数，传递参数给父组件
   return <button onClick={btnClick}>{operator}</button>
 }
 
+//父组件
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -1410,7 +1443,7 @@ export default class App extends Component {
       counter: 0
     }
   }
-
+	//传递给子组件的函数
   changeCounter(count) {
     this.setState({
       counter: this.state.counter + count
@@ -1421,6 +1454,7 @@ export default class App extends Component {
     return (
       <div>
         <h2>当前计数: {this.state.counter}</h2>
+        {/*调用子组件，并传递属性和函数到子组件*/}
         <CounterButton operator="+1" btnClick={e => this.changeCounter(1)} />
         <CounterButton operator="-1" btnClick={e => this.changeCounter(-1)} />
       </div>
@@ -1436,6 +1470,7 @@ index.js代码：
 ```jsx
 import React from "react";
 import ReactDOM from 'react-dom';
+// 引入全局样式：作用与所有子组件
 import "./style.css";
 
 import App from './App';
@@ -1443,11 +1478,11 @@ import App from './App';
 ReactDOM.render(<App/>, document.getElementById("root"));
 ```
 
-App.js
+App.js：根组件
 
 ```jsx
 import React, { Component } from 'react';
-
+//引入子组件
 import TabControl from './TabControl';
 
 export default class App extends Component {
@@ -1460,7 +1495,7 @@ export default class App extends Component {
       currentTitle: "流行"
     }
   }
-
+	//修改当前点击的哪个tab，通过子组件动态修改
   itemClick(index) {
     this.setState({
       currentTitle: this.titles[index]
@@ -1470,6 +1505,8 @@ export default class App extends Component {
   render() {
     return (
       <div>
+        {/*使用子组件，并传递属性titles和itemClick到子组件*/}
+        {/*itemClick属性值为函数，目的是：子组件向父组件传值*/}
         <TabControl titles={this.titles} itemClick={index => this.itemClick(index)} />
         <h2>{this.state.currentTitle}</h2>
       </div>
@@ -1478,7 +1515,7 @@ export default class App extends Component {
 }
 ```
 
-TabControl.js
+TabControl.js：tab子组件
 
 ```jsx
 import React, { Component } from 'react'
@@ -1488,6 +1525,7 @@ export default class TabControl extends Component {
     super(props);
 
     this.state = {
+      //当前选中的哪一项：默认第一项
       currentIndex: 0
     }
   }
@@ -1501,7 +1539,7 @@ export default class TabControl extends Component {
         {
           titles.map((item, index) => {
             return (
-              <div className="tab-item" onClick={e => this.itemClick(index)}>
+              <div className="tab-item" key={item} onClick={e => this.itemClick(index)}>
                 <span className={"title " + (index === currentIndex ? "active": "")}>{item}</span>
               </div>
             )
