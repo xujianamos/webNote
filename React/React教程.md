@@ -1706,7 +1706,7 @@ export default class App extends Component {
         <NavBar>
           <div>返回</div>
           <div>购物街</div>
-          {/*href属性值如果写#占位符，需要在前面加上'/' 不然控制太会报eslint的错误*/}
+          {/*href属性值如果写#占位符，需要在前面加上'/' 不然控制台会报eslint的错误*/}
           <a href="/#">更多</a>
         </NavBar>
       </div>
@@ -2283,6 +2283,7 @@ export default class App extends Component {
     return (
       <div>
         <h2>{this.state.message}</h2>
+        {/*react合成事件*/}
         <button onClick={e => this.changeText()}>改变文本</button>
       </div>
     )
@@ -2295,7 +2296,7 @@ export default class App extends Component {
 }
 ```
 
-注意：点击不会有任何反应，因为我们修改了state之后，希望React根据最新的State来重新渲染界面，但是这种方式的修改React并不知道数据发生了变化；React并没有实现类似于Vue2中的Object.defineProperty或者Vue3中的Proxy的方式来监听数据的变化；我们必须通过setState来告知React数据已经发生了变化；
+**注意**：点击不会有任何反应，因为我们修改了state之后，希望React根据最新的State来重新渲染界面，但是这种方式的修改React并不知道数据发生了变化；React并没有实现类似于Vue2中的Object.defineProperty或者Vue3中的Proxy的方式来监听数据的变化；我们必须通过setState来告知React数据已经发生了变化；
 
 我们必须通过setState来更新数据：
 
@@ -2330,12 +2331,14 @@ changeText() {
 
 - `setState`设计为异步，可以显著的提升性能；
 
-- - 如果每次调用 setState都进行一次更新，那么意味着render函数会被频繁调用，界面重新渲染，这样效率是很低的；
+  - 如果每次调用 setState都进行一次更新，那么意味着render函数会被频繁调用，界面重新渲染，这样效率是很低的；
+
   - 最好的办法应该是获取到多个更新，之后进行批量更新；
 
 - 如果同步更新了state，但是还没有执行render函数，那么state和props不能保持同步；
 
-- - state和props不能保持一致性，会在开发中产生很多的问题；
+  - state和props不能保持一致性，会在开发中产生很多的问题；
+
 
 那么如何可以获取到更新后的值呢？
 
@@ -2352,7 +2355,7 @@ changeText() {
 }
 ```
 
-当然，我们也可以在生命周期函数：这个生命周期早于`setState`的回调函数
+当然，我们也可以在生命周期函数`componentDidUpdate`：这个生命周期早于`setState`的回调函数
 
 ```jsx
 componentDidUpdate(prevProps, provState, snapshot) {
@@ -2369,6 +2372,7 @@ componentDidUpdate(prevProps, provState, snapshot) {
 ```jsx
 changeText() {
   setTimeout(() => {
+    //放在setTimeout中会变为同步的
     this.setState({
       message: "你好啊,李银河"
     });
@@ -2382,6 +2386,7 @@ changeText() {
 ```jsx
 componentDidMount() {
   const btnEl = document.getElementById("btn");
+  //原生事件
   btnEl.addEventListener('click', () => {
     this.setState({
       message: "你好啊,李银河"
@@ -2411,7 +2416,7 @@ this.state = {
 
 我们需要更新message：
 
-- 我通过setState去修改message，是不会对name产生影响的；
+- 通过setState去修改message，是不会对name产生影响的；
 
 ```jsx
 changeText() {
@@ -2454,6 +2459,8 @@ changeText() {
 
 ```jsx
 increment() {
+  //state为上一次结果
+  //props
   this.setState((state, props) => {
     return {
       counter: state.counter + 1
