@@ -19,10 +19,10 @@
   <script type="text/babel">
     class App extends React.Component {
   		constructor() {
-    	super();
-    	this.state = {
-      	message: "Hello World"
-    	};
+    		super();
+    		this.state = {
+      			message: "Hello World"
+    		};
   }
 
   render() {
@@ -231,7 +231,7 @@ class App extends React.Component {
 - 比如原生使用内联样式style
 
 - - style后面跟的是一个对象类型，对象中是样式的属性名和属性值；
-  - 注意：**这里会讲属性名转成驼峰标识**，**而不是连接符**`-`；
+  - 注意：**这里会将属性名转成驼峰标识**，**而不是连接符**`-`；
 
 我们来演示一下属性的绑定：
 
@@ -256,6 +256,7 @@ class App extends React.Component {
         <a href={this.state.link} target="_blank">百度一下</a>
         <div className={"message " + (this.state.active ? "active": "")}>你好啊</div>
         <div className={["message", (this.state.active ? "active": "")].join(" ")}>你好啊</div>
+        {/*属性名转成驼峰标识*/}
         <div style={{fontSize: "30px", color: "red", backgroundColor: "blue"}}>我是文本</div>
       </div>
     )
@@ -265,7 +266,7 @@ class App extends React.Component {
 
 ### 2.3jsx事件监听
 
-React 事件的命名采用小驼峰式（camelCase），而不是纯小写；
+**React 事件的命名采用小驼峰式（camelCase），而不是纯小写；**
 
 我们需要通过`{}`传入一个事件处理函数，这个函数会在事件发生时被执行；
 
@@ -274,7 +275,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        <button onClick={this.btnClick}>点我一下(React)</button>
+        <button onClick={this.btnClick.bind(this)}>点我一下(React)</button>
       </div>
     )
   }
@@ -360,13 +361,14 @@ class App extends React.Component {
     this.state = {
       message: "你好啊,李银河"
     }
-
+	//绑定this
     this.btnClick = this.btnClick.bind(this);
   }
 
   render() {
     return (
       <div>
+        {/*可以直接绑定方法*/}
         <button onClick={this.btnClick}>点我一下(React)</button>
         <button onClick={this.btnClick}>也点我一下(React)</button>
       </div>
@@ -406,7 +408,7 @@ class App extends React.Component {
       </div>
     )
   }
-
+  //使用箭头函数解决this绑定问题
   btnClick = () => {
     console.log(this);
     console.log(this.state.message);
@@ -434,6 +436,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
+        {/*使用箭头函数调用方法来绑定函数*/}
         <button onClick={() => this.btnClick()}>点我一下(React)</button>
         <button onClick={() => this.btnClick()}>也点我一下(React)</button>
       </div>
@@ -454,7 +457,7 @@ class App extends React.Component {
 **情况一：获取event对象**
 
 - 很多时候我们需要拿到event对象来做一些事情（比如阻止默认行为）
-- 假如我们用不到this，那么直接传入函数就可以获取到event对象；
+- **假如我们用不到this，那么直接传入函数就可以获取到event对象**；
 
 ```jsx
 class App extends React.Component {
@@ -561,6 +564,7 @@ class App extends React.Component {
   render() {
     return (
       <div>
+        {/*调用函数*/}
         {this.getTitleJsx()}
       </div>
     )
@@ -1016,7 +1020,7 @@ export default class App extends Component {
 
 - **布尔类型或 `null`**：页面什么都不会渲染。
 
-注意：在jsx中只要首字母大写的元素都会当为组件，例如：`<DIV></DIV>`就会渲染为组件，而不是元素`<div</div>`。
+**注意**：在jsx中只要首字母大写的元素都会当为组件，例如：`<DIV></DIV>`就会渲染为组件，而不是元素`<div</div>`。
 
 #### 4.1.2创建函数组件
 
@@ -1240,7 +1244,7 @@ export default class App extends Component {
 - 父组件通过 **属性=值** 的形式来传递给子组件数据；
 - 子组件通过 **props** 参数获取父组件传递过来的数据；
 
-#### 4.3.2父组件传递子组件
+#### 4.3.2父组件传递数据到子组件
 
 1. 子组件是class组件
 
@@ -1266,7 +1270,7 @@ class ChildCpn1 extends Component {
     )
   }
 }
-
+//父组件
 export default class App extends Component {
   render() {
     return (
@@ -1507,6 +1511,7 @@ export default class App extends Component {
       <div>
         {/*使用子组件，并传递属性titles和itemClick到子组件*/}
         {/*itemClick属性值为函数，目的是：子组件向父组件传值*/}
+        {/*index为子组件传递过来的参数*/}
         <TabControl titles={this.titles} itemClick={index => this.itemClick(index)} />
         <h2>{this.state.currentTitle}</h2>
       </div>
@@ -1531,15 +1536,15 @@ export default class TabControl extends Component {
   }
 
   render() {
-    const {titles} = this.props;
-    const {currentIndex} = this.state;
+    const { titles } = this.props;
+    const { currentIndex } = this.state;
 
     return (
       <div className="tab-control">
         {
           titles.map((item, index) => {
             return (
-              <div className="tab-item" key={item} onClick={e => this.itemClick(index)}>
+              <div className="tab-item" key={ item } onClick={e => this.itemClick(index)}>
                 <span className={"title " + (index === currentIndex ? "active": "")}>{item}</span>
               </div>
             )
@@ -1553,7 +1558,7 @@ export default class TabControl extends Component {
     this.setState({
       currentIndex: index
     });
-    //调用父组件事件
+    //调用父组件事件，并传递参数到父组件
     this.props.itemClick(index);
   }
 }
@@ -1609,7 +1614,7 @@ class ChildCpn extends Component {
 
 - 我一直喜欢说：计算机中没有黑魔法；
 - 之所以可以，恰恰是因为React担心你的代码会出现上面这种写法而进行了一些 `骚操作`；
-- React不管你有没有通过super将props设置到当前的对象中，它都会重新给你设置一遍；
+- **React不管你有没有通过super将props设置到当前的对象中，它都会重新给你设置一遍**；
 
 **结论：你无论是否手动的将props保存到组件的实例上，React内部都会帮你保存的，**
 
@@ -1629,7 +1634,7 @@ class ChildCpn extends Component {
 这种需求在Vue当中有一个固定的做法是通过slot来完成的，React呢？
 
 - React对于这种需要插槽的情况非常灵活；
-- 有两种方案可以实现：children和props；
+- **有两种方案可以实现：children和props**；
 
 我这里先提前给出NavBar的样式：
 
@@ -1658,7 +1663,8 @@ class ChildCpn extends Component {
 
 比如：
 
-```
+```jsx
+//使用子组件
 <Welcome>Hello world!</Welcome>
 ```
 
@@ -1679,7 +1685,7 @@ function Welcome(props) {
 
 ```jsx
 import React, { Component } from 'react';
-
+//封装的导航组件
 class NavBar extends Component {
   render() {
     return (
@@ -1696,10 +1702,12 @@ export default class App extends Component {
   render() {
     return (
       <div>
+        {/*调用子组件*/}
         <NavBar>
           <div>返回</div>
           <div>购物街</div>
-          <div>更多</div>
+          {/*href属性值如果写#占位符，需要在前面加上'/' 不然控制太会报eslint的错误*/}
+          <a href="/#">更多</a>
         </NavBar>
       </div>
     )
@@ -1740,6 +1748,7 @@ export default class App extends Component {
 
     return (
       <div>
+        {/*使用子组件，并传递插槽的内容*/}
         <NavBar leftSlot={navLeft} centerSlot={navCenter} rightSlot={navRight} />
       </div>
     )
@@ -1773,6 +1782,7 @@ class Profile extends Component {
   render() {
     return (
       <div>
+        {/*孙组件*/}
         <ProfileHeader nickname={this.props.nickname} level={this.props.level} />
         <ul>
           <li>设置1</li>
@@ -1791,7 +1801,7 @@ export default class App extends Component {
     super();
 
     this.state = {
-      nickname: "coderwhy",
+      nickname: "name",
       level: 99
     }
   }
@@ -1801,6 +1811,7 @@ export default class App extends Component {
 
     return (
       <div>
+        {/*子组件*/}
         <Profile nickname={nickname} level={level} />
         <h2>其他内容</h2>
       </div>
@@ -1809,7 +1820,7 @@ export default class App extends Component {
 }
 ```
 
-我这边顺便补充一个小的知识点：Spread Attributes
+我这边顺便补充一个小的知识点：属性展开
 
 - https://zh-hans.reactjs.org/docs/jsx-in-depth.html
 
@@ -1819,7 +1830,7 @@ export default class App extends Component {
 function App1() {
   return <Greeting firstName="Ben" lastName="Hector" />;
 }
-
+//等价于
 function App2() {
   const props = {firstName: 'Ben', lastName: 'Hector'};
   return <Greeting {...props} />;
@@ -1834,9 +1845,9 @@ function App2() {
 
 但是，如果层级更多的话，一层层传递是非常麻烦，并且代码是非常冗余的：
 
-- React提供了一个API：Context；
+- React提供了一个API：`Context`；
 - Context 提供了一种在组件之间共享此类值的方式，而不必显式地通过组件树的逐层传递 props；
-- Context 设计目的是为了共享那些对于一个组件树而言是“全局”的数据，例如当前认证的用户、主题或首选语言；
+- **Context 设计目的是为了共享那些对于一个组件树而言是“全局”的数据**，例如当前认证的用户、主题或首选语言；
 
 #### 4.5.1Context相关的API
 
@@ -1854,7 +1865,7 @@ const MyContext = React.createContext(defaultValue);
 **Context.Provider**
 
 ```jsx
-<MyContext.Provider value={/* 某个值 */}>
+<MyContext.Provider value={/* 某个值 */}></MyContext.Provider>
 ```
 
 每个 Context 对象都会返回一个 Provider React 组件，它允许消费组件订阅 context 的变化：
@@ -1886,6 +1897,7 @@ class MyClass extends React.Component {
     /* 基于 MyContext 组件的值进行渲染 */
   }
 }
+const MyContext = React.createContext(defaultValue);
 MyClass.contextType = MyContext;
 ```
 
@@ -1916,19 +1928,22 @@ MyClass.contextType = MyContext;
 ```jsx
 import React, { Component } from 'react';
 //1.创建一个context对象
-const UserContext = React.createContext({ nickname: "默认", level: -1 })
+// { nickname: "默认", level: -1 }为默认值
+const UserContext = React.createContext({ nickname: "默认值", level: -1 })
 
 class ProfileHeader extends Component {
   render() {
     return (
       <div>
+        {/*每个类组件都有一个context属性，函数式组件没有context属性*/}
+        {/*每个类组件都有一个context属性*/}
         <h2>用户昵称: {this.context.nickname}</h2>
         <h2>用户等级: {this.context.level}</h2>
       </div>
     )
   }
 }
-//3.孙组件使用共享的值
+//3.孙组件使用共享的值：必须主动使用
 ProfileHeader.contextType = UserContext;
 
 class Profile extends Component {
@@ -1952,7 +1967,9 @@ export default class App extends Component {
   render() {
     return (
       <div>
-        <UserContext.Provider value={{ nickname: "why", level: 99 }}>
+        {/*UserContext.Provider返回一个组件，共享数据的子组件必须包含在内部*/}
+        {/*value属性为共享的数据*/}
+        <UserContext.Provider value={{ nickname: "共享的数据", level: 99 }}>
           <Profile />
         </UserContext.Provider>
         <h2>其他内容</h2>
@@ -1967,7 +1984,13 @@ export default class App extends Component {
 - `<Profile />`并没有作为 `UserContext.Provider` 的子组件；
 
 ```jsx
+//创建一个context对象
+// { nickname: "默认", level: -1 }为默认值
+const UserContext = React.createContext({ nickname: "默认值", level: -1 })
+// 此时共享给子组件的数据为创建context对象时设置的默认值，也就是{ nickname: "默认值", level: -1 }
+// 而不是传递的value值{ nickname: "why", level: 99 }
 <Profile />
+
 <UserContext.Provider value={{ nickname: "why", level: 99 }}>
 </UserContext.Provider>
 ```
@@ -1977,14 +2000,22 @@ export default class App extends Component {
 - 1.当使用value的组件是一个函数式组件时；
 - 2.当组件中需要使用多个Context时；
 
-演练一：
+演练一：当使用value的组件是一个函数式组件时
 
 ```jsx
+import React, { Component } from 'react';
+//1.创建一个context对象
+// { nickname: "默认", level: -1 }为默认值
+const UserContext = React.createContext({ nickname: "默认值", level: -1 })
+
+//函数式孙组件
 function ProfileHeader(props) {
   return (
     <div>
+      //Consumer为消费者
       <UserContext.Consumer>
         {value => {
+         {/*value为传递过来的共享的值*/}
           return (
             <div>
               <h2>用户昵称: {value.nickname}</h2>
@@ -1996,9 +2027,41 @@ function ProfileHeader(props) {
     </div>
   )
 }
+// ProfileHeader.contextType = UserContext;函数式组件不能这样设置，需要使用Consumer属性
+class Profile extends Component {
+  render() {
+    return (
+      <div>
+        <ProfileHeader />
+        <ul>
+          <li>设置1</li>
+          <li>设置2</li>
+          <li>设置3</li>
+          <li>设置4</li>
+          <li>设置5</li>
+        </ul>
+      </div>
+    )
+  }
+}
+//2.向子孙组件传递共享值
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        {/*UserContext.Provider返回一个组件，共享数据的子组件必须包含在内部*/}
+        {/*value属性为共享的数据*/}
+        <UserContext.Provider value={{ nickname: "共享的数据", level: 99 }}>
+          <Profile />
+        </UserContext.Provider>
+        <h2>其他内容</h2>
+      </div>
+    )
+  }
+}
 ```
 
-演练二：当使用value的组件是一个函数式组件时；
+演练二：多次共享context时
 
 1.创建一个新的Context
 
@@ -2035,6 +2098,78 @@ const ThemeContext = React.createContext({ color: "black" });
     )
   }}
 </UserContext.Consumer>
+```
+
+完整代码：
+
+```jsx
+import React, { Component } from 'react';
+//1.创建一个context对象
+// { nickname: "默认", level: -1 }为默认值
+const UserContext = React.createContext({ nickname: "默认值", level: -1 })
+//创建一个主题context
+const ThemeContext = React.createContext({ color: "black" });
+//函数式孙组件
+function ProfileHeader(props) {
+  return (
+    <div>
+      //Consumer为消费者
+     <UserContext.Consumer>
+  		{value => {
+  		  return (
+    		  <ThemeContext.Consumer>
+     		   {
+       			   theme => (
+         		   <div>
+                     {/*theme为ThemeContext提供的共享数据*/}
+                     {/*value为UserContext提供的共享数据*/}
+             		 <h2 style={theme}>用户昵称: {value.nickname}</h2>
+             		 <h2 style={theme}>用户等级: {value.level}</h2>
+                     <h2>颜色: {theme.color}</h2>
+           		   </div>
+          )
+        }
+     		 </ThemeContext.Consumer>
+    	)
+  	}}
+	</UserContext.Consumer>
+    </div>
+  )
+}
+
+class Profile extends Component {
+  render() {
+    return (
+      <div>
+        <ProfileHeader />
+        <ul>
+          <li>设置1</li>
+          <li>设置2</li>
+          <li>设置3</li>
+          <li>设置4</li>
+          <li>设置5</li>
+        </ul>
+      </div>
+    )
+  }
+}
+//2.向子孙组件传递共享值
+export default class App extends Component {
+  render() {
+    return (
+      <div>
+        {/*UserContext.Provider返回一个组件，共享数据的子组件必须包含在内部*/}
+        {/*value属性为共享的数据*/}
+       <UserContext.Provider value={{ nickname: "why", level: 99 }}>
+ 		 <ThemeContext.Provider value={{color: "red"}}>
+  			  <Profile />
+  		</ThemeContext.Provider>
+	  </UserContext.Provider>
+        <h2>其他内容</h2>
+      </div>
+    )
+  }
+}
 ```
 
 ### 4.6事件总线
