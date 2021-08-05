@@ -2184,7 +2184,7 @@ export default class App extends Component {
 我们可以通过npm或者yarn来安装events：
 
 ```bash
-yarn add events;
+yarn add events
 ```
 
 events常用的API：
