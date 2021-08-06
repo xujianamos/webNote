@@ -2508,7 +2508,7 @@ React需要基于这两颗不同的树之间的差别来判断如何有效的更
 
 于是，React对这个算法进行了优化，将其优化成了O(n)，如何优化的呢？
 
-- 同层节点之间相互比较，不会垮节点比较；
+- 同层节点之间相互比较，不会跨节点比较；
 - 不同类型的节点，产生不同的树结构；
 - 开发中，可以通过key来指定哪些节点在不同的渲染下保持稳定；
 
@@ -2633,7 +2633,7 @@ export default class App extends Component {
         <ul>
           {
             this.state.movies.map((item, index) => {
-              return <li>{item}</li>
+              return <li key={item}>{item}</li>
             })
           }
         </ul>
@@ -2691,7 +2691,7 @@ insertMovie() {
 </ul>
 ```
 
-key的注意事项：
+**key的注意事项**：
 
 - key应该是唯一的；
 - key不要使用随机数（随机数在下一次render时，会重新生成一个数字）；
@@ -2711,7 +2711,7 @@ key的注意事项：
 import React, { Component } from 'react';
 //Header组件
 function Header() {
-  console.log("Header Render 被调用");
+  console.log("Header  被调用");
   return <h2>Header</h2>
 }
 //Main组件
@@ -2728,12 +2728,12 @@ class Main extends Component {
 }
 //Banner组件
 function Banner() {
-  console.log("Banner Render 被调用");
+  console.log("Banner  被调用");
   return <div>Banner</div>
 }
 //ProductList组件
 function ProductList() {
-  console.log("ProductList Render 被调用");
+  console.log("ProductList  被调用");
   return (
     <ul>
       <li>商品1</li>
@@ -2746,7 +2746,7 @@ function ProductList() {
 }
 //Footer组件
 function Footer() {
-  console.log("Footer Render 被调用");
+  console.log("Footer  被调用");
   return <h2>Footer</h2>
 }
 //App组件
@@ -2766,14 +2766,18 @@ export default class App extends Component {
       <div>
         <h2>当前计数: {this.state.counter}</h2>
         <button onClick={e => this.increment()}>+1</button>
+        {/*使用header组件*/}
         <Header/>
+        {/*使用main组件*/}
         <Main/>
+        {/*使用footer组件*/}
         <Footer/>
       </div>
     )
   }
 
   increment() {
+   // 当执行此方法时，App Render被调用，所有在app中使用的子组件也会被重新调用
     this.setState({
       counter: this.state.counter + 1
     })
@@ -2819,6 +2823,7 @@ shouldComponentUpdate(nextProps, nextState) {
 - 但是因为render监听到state的改变，就会重新render，所以最后render方法还是被重新调用了；
 
 ```jsx
+import React, { Component } from 'react';
 export default class App extends Component {
   constructor(props) {
     super(props);
@@ -2858,7 +2863,7 @@ export default class App extends Component {
 }
 ```
 
-这个时候，我们可以通过实现shouldComponentUpdate来决定要不要重新调用render方法：
+这个时候，我们可以通过实现`shouldComponentUpdate`来决定要不要重新调用render方法：
 
 - 这个时候，我们改变counter时，会重新渲染；
 - 如果，我们改变的是message，那么默认返回的是false，那么就不会重新渲染；
@@ -2866,16 +2871,17 @@ export default class App extends Component {
 ```jsx
 shouldComponentUpdate(nextProps, nextState) {
   if (nextState.counter !== this.state.counter) {
+      //此时render会重新渲染
     return true;
   }
-
+	//此时render不会重新渲染
   return false;
 }
 ```
 
 但是我们的代码依然没有优化到最好，因为当counter改变时，所有的子组件依然重新渲染了：
 
-- 所以，事实上，我们应该实现所有的子组件的shouldComponentUpdate；
+- 所以，事实上，我们应该实现所有的子组件的`shouldComponentUpdate`；
 
 比如Main组件，可以进行如下实现：
 
@@ -2911,12 +2917,18 @@ class Main extends Component {
 
 事实上React已经考虑到了这一点，所以React已经默认帮我们实现好了，如何实现呢？
 
-- 将class基础自PureComponent。
+- 将class继承自PureComponent。
 
 比如我们修改Main组件的代码：
 
 ```jsx
 import { PureComponent } from 'react'
+//Header组件：函数式组件
+function Header() {
+  console.log("Header  被调用");
+  return <h2>Header</h2>
+}
+//Main组件：类组件
 class Main extends PureComponent {
   render() {
     console.log("Main Render 被调用");
@@ -2926,6 +2938,63 @@ class Main extends PureComponent {
         <ProductList/>
       </div>
     )
+  }
+}
+//Banner组件：函数式组件
+function Banner() {
+  console.log("Banner  被调用");
+  return <div>Banner</div>
+}
+//ProductList组件：函数式组件
+function ProductList() {
+  console.log("ProductList  被调用");
+  return (
+    <ul>
+      <li>商品1</li>
+      <li>商品2</li>
+      <li>商品3</li>
+      <li>商品4</li>
+      <li>商品5</li>
+    </ul>
+  )
+}
+//Footer组件：函数式组件
+function Footer() {
+  console.log("Footer  被调用");
+  return <h2>Footer</h2>
+}
+//App组件
+export default class App extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      counter: 0
+    }
+  }
+
+  render() {
+    console.log("App Render 被调用");
+
+    return (
+      <div>
+        <h2>当前计数: {this.state.counter}</h2>
+        <button onClick={e => this.increment()}>+1</button>
+        {/*使用header组件*/}
+        <Header/>
+        {/*使用main组件*/}
+        <Main/>
+        {/*使用footer组件*/}
+        <Footer/>
+      </div>
+    )
+  }
+
+  increment() {
+   // 当执行此方法时，App Render被调用，所有的函数式组件会被重新渲染，但继承自PureComponent的子类组件不会被重新渲染
+    this.setState({
+      counter: this.state.counter + 1
+    })
   }
 }
 ```
