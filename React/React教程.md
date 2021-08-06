@@ -3014,6 +3014,7 @@ PureComponent的原理是什么呢？
 ```jsx
 import React, { Component, PureComponent, memo } from 'react';
 
+// 当函数式组件使用memo后，只有props改变时，才会重新渲染，其他情况不会渲染
 const MemoHeader = memo(function() {
   console.log("Header Render 被调用");
   return <h2>Header</h2>
@@ -3049,6 +3050,7 @@ const MemoProductList = memo(function() {
   )
 })
 
+// 没有使用memo执行
 function Footer() {
   console.log("Footer Render 被调用");
   return <h2>Footer</h2>
@@ -3074,6 +3076,7 @@ export default class App extends Component {
         <button onClick={e => this.changeText()}>改变文本</button>
         <MemoHeader/>
         <Main/>
+        {/*app重新渲染时，Footer组件也会重新渲染，因为Footer为函数式组件，并且没有使用memo*/}
         <Footer/>
       </div>
     )
