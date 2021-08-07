@@ -2237,16 +2237,20 @@ class Profile extends Component {
 }
 /*父组件*/
 export default class App extends Component {
-
+	
+  //在这个生命周期进行时间监听
   componentDidMount() {
     //3.监听headerClick事件
     eventBus.addListener("headerClick", this.headerClick)
   }
-
+	
+  //监听后执行的函数
   headerClick(name, age) {
+    //name为传递过来的why
+    //age为传递过来的18
     console.log(name, age);
   }
-
+	//在这个生命周期进行移出事件监听
   componentWillUnmount() {
     //4.卸载headerClick事件
     eventBus.removeListener("headerClick", this.headerClick);
@@ -3182,6 +3186,14 @@ insertFriend() {
     friends: [...this.state.friends, {name: "why", age: 18, height: 1.88}]
   })
 }
+//推荐写法
+insertFriend() {
+  const newFriends = [...this.state.friends];
+  newFriends.push({name: "why", age: 18, height: 1.88})
+  this.setState({
+    friends: newFriends
+  })
+}
 ```
 
 **我们再来思考一下incrementAge应该如何实现？**
@@ -3215,7 +3227,7 @@ incrementAge(index) {
 
 所以，在真实开发中，我们要尽量保证state、props中的数据不可变性，这样我们才能合理和安全的使用PureComponent和memo。
 
-当然，后面项目中我会结合immutable.js来保证数据的不可变性。
+当然，后面项目中我会结合`immutable.js`来保证数据的不可变性。
 
 ## 6.受控与非受控组件
 
@@ -3233,17 +3245,20 @@ incrementAge(index) {
 
 - 方式一：传入字符串
 
-- - 使用时通过 `this.refs.传入的字符串`格式获取对应的元素；
+  - 使用时通过 `this.refs.传入的字符串`格式获取对应的元素；
 
 - 方式二：传入一个对象（推荐）
 
-- - 对象是通过 `React.createRef()` 方式创建出来的；
+  - 对象是通过 `React.createRef()` 方式创建出来的；
+
   - 使用时获取到创建的对象其中有一个`current`属性就是对应的元素；
 
 - 方式三：传入一个函数
 
-- - 该函数会在DOM被挂载时进行回调，这个函数会传入一个 元素对象，我们可以自己保存；
+  - 该函数会在DOM被挂载时进行回调，这个函数会传入一个 元素对象，我们可以自己保存；
+
   - 使用时，直接拿到之前保存的元素对象即可；
+
 
 代码演练：
 
@@ -3253,16 +3268,20 @@ import React, { PureComponent, createRef } from 'react'
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
+		// 方式2创建ref对象
     this.titleRef = createRef();
+    // 方式3保存的ref对象
     this.titleEl = null;
   }
 
   render() {
     return (
       <div>
+        { /* 方式1:传入字符串 */ }
         <h2 ref="title">String Ref</h2>
+        {/* 方式2:传入对象 */}
         <h2 ref={this.titleRef}>Hello Create Ref</h2>
+        {/* 方式1:传入函数 */}
         <h2 ref={element => this.titleEl = element}>Callback Ref</h2>
 
         <button onClick={e => this.changeText()}>改变文本</button>
@@ -3271,8 +3290,11 @@ export default class App extends PureComponent {
   }
 
   changeText() {
+    // 方式1：使用字符串获取dom
     this.refs.title.innerHTML = "你好啊,李银河";
+    // 方式2：使用对象获取dom
     this.titleRef.current.innerHTML = "你好啊,李银河";
+    // 方式3：回调函数方式
     this.titleEl.innerHTML = "你好啊,李银河";
   }
 }
@@ -3291,6 +3313,7 @@ ref 的值根据节点的类型而有所不同：
 ```jsx
 import React, { PureComponent, createRef } from 'react';
 
+// 子组件
 class Counter extends PureComponent {
   constructor(props) {
     super(props);
@@ -3319,7 +3342,7 @@ class Counter extends PureComponent {
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
+		//创建ref对象
     this.counterRef = createRef();
   }
 
@@ -3333,6 +3356,8 @@ export default class App extends PureComponent {
   }
 
   increment() {
+    // this.counterRef.current为组件对象
+    // 父组件中通过ref调用子组件的方法
     this.counterRef.current.increment();
   }
 }
@@ -3384,14 +3409,14 @@ import React, { PureComponent } from 'react'
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
+		//保存表单数据
     this.state = {
       username: ""
     }
   }
 
   render() {
-    const {username} = this.state;
+    const { username } = this.state;
 
     return (
       <div>
@@ -3401,6 +3426,7 @@ export default class App extends PureComponent {
             <input type="text" 
                    id="username" 
                    onChange={e => this.handleUsernameChange(e)} 
+              		 {/* 实现单向数据流*/}
                    value={username}/>
           </label>
           <input type="submit" value="提交"/>
@@ -3408,7 +3434,8 @@ export default class App extends PureComponent {
       </div>
     )
   }
-
+	
+  // 监听输入框的输入
   handleUsernameChange(event) {
     this.setState({
       username: event.target.value
@@ -3417,6 +3444,7 @@ export default class App extends PureComponent {
 
   handleSubmit(event) {
     console.log(this.state.username);
+    // 阻止默认行为
     event.preventDefault();
   }
 }
@@ -3490,7 +3518,7 @@ import React, { PureComponent } from 'react'
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
+		//保存数据
     this.state = {
       fruits: "orange"
     }
@@ -3516,15 +3544,16 @@ export default class App extends PureComponent {
       </div>
     )
   }
-
+	//监听选择值的变化，并保存数据
   handleFruitsChange(event) {
     this.setState({
       fruits: event.target.value
     })
   }
-
+	//提交方法
   handleSubmit(event) {
     console.log(this.state.article);
+    //阻止默认行为
     event.preventDefault();
   }
 }
@@ -3565,7 +3594,7 @@ import React, { PureComponent } from 'react'
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
+		//保存表单数据
     this.state = {
       username: "",
       password: ""
@@ -3573,6 +3602,7 @@ export default class App extends PureComponent {
   }
 
   render() {
+    //解构表单数据
     const {username, password} = this.state;
 
     return (
@@ -3599,13 +3629,13 @@ export default class App extends PureComponent {
       </div>
     )
   }
-
+	//监听多个输入方法
   handleChange(event) {
     this.setState({
       [event.target.name]: event.target.value
     })
   }
-
+	//提交表单方法
   handleSubmit(event) {
     console.log(this.state.username, this.state.password);
     event.preventDefault();
@@ -3633,7 +3663,7 @@ import React, { PureComponent, createRef } from 'react'
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
+		//创建ref对象
     this.usernameRef = createRef();
   }
 
@@ -3649,9 +3679,11 @@ export default class App extends PureComponent {
       </div>
     )
   }
-
+	//监听提交
   handleSubmit(event) {
+    //阻止默认行为
     event.preventDefault();
+    //通过dom操作获取数据
     console.log(this.usernameRef.current.value);
   }
 }
