@@ -1,4 +1,4 @@
-## 1.React基础知识
+1.React基础知识
 
 ### 1.1React开发依赖
 
@@ -3723,36 +3723,89 @@ const EnhancedComponent = higherOrderComponent(WrappedComponent);
 高阶函数的编写过程类似于这样：
 
 ```jsx
+/**
+ * @description: 定义高阶函数
+ * @param {object} WrapperComponent 传入一个组件对象
+ * @return {*} 返回一个新组件
+ */
 function higherOrderComponent(WrapperComponent) {
+  // 返回类组件
   return class NewComponent extends PureComponent {
     render() {
+       // 使用传入的组件
       return <WrapperComponent/>
     }
   }
 }
 ```
+
+效果图如下：父组件名为：`NewComponent`，传入的组件为APP
+
+![image-20210808175511403](D:\webNote\React\image-20210808175511403.png)
+
+
 
 在ES6中，类表达式中类名是可以省略的，所以可以可以写成下面的写法：
 
 ```jsx
+import React, { PureComponent } from "react";
+//定义高阶组件
 function higherOrderComponent(WrapperComponent) {
+  // 省略类名后，组件名字为Anonymous
   return class extends PureComponent {
     render() {
-      return <WrapperComponent/>
+      return <WrapperComponent />;
     }
+  };
+}
+
+//app组件
+class App extends PureComponent {
+  render() {
+    return <div>App</div>;
   }
 }
+
+// 导出的是新的组件，而不是App组件
+export default higherOrderComponent(App);
 ```
+
+![image-20210808175914272](D:\webNote\React\image-20210808175914272.png)
 
 另外，组件的名称都可以通过displayName来修改：
 
-![image-20210116235529680](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20210116235529680.png)
+```jsx
+import React, { PureComponent } from "react";
+//定义高阶组件
+function higherOrderComponent(WrapperComponent) {
+  class NewComponent extends PureComponent {
+    render() {
+      return <WrapperComponent />;
+    }
+  }
+   // 设置组件的名字为newName
+  NewComponent.displayName = "newName";
+  return NewComponent;
+}
+
+//app组件
+class App extends PureComponent {
+  render() {
+    return <div>App</div>;
+  }
+}
+
+// 导出的是新的组件，而不是App组件
+export default higherOrderComponent(App);
+```
+
+![image-20210808180040345](D:\webNote\React\image-20210808180040345.png)
 
 完整的代码，我们可以这样来编写：
 
 ```jsx
 import React, { PureComponent } from 'react';
-
+//定义高阶组件
 function higherOrderComponent(WrapperComponent) {
   return class NewComponent extends PureComponent {
     render() {
@@ -3761,6 +3814,7 @@ function higherOrderComponent(WrapperComponent) {
   }
 }
 
+//app组件
 class App extends PureComponent {
   render() {
     return (
@@ -3771,6 +3825,7 @@ class App extends PureComponent {
   }
 }
 
+// 导出的是新的组件，而不是App组件
 export default higherOrderComponent(App);
 ```
 
@@ -3783,17 +3838,18 @@ export default higherOrderComponent(App);
 
 在我们的开发中，高阶组件可以帮助我们做哪些事情呢？
 
-#### 7.1.1高阶组件的使用
+### 7.2高阶组件的使用
 
-> #### props的增强
+#### 7.2.1props的增强
 
-**不修改原有代码的情况下，添加新的props**
+不修改原有代码的情况下，添加新的props。
 
-加入我们有如下案例：
+- 父组件向子组件传参的正常流程：
 
 ```jsx
 class Header extends PureComponent {
   render() {
+    {/*接收父组件传递过来的数据*/}
     const { name, age } = this.props;
     return <h2>Header {name + age}</h2>
   } 
@@ -3803,6 +3859,7 @@ export default class App extends PureComponent {
   render() {
     return (
       <div>
+        {/*向子组件传值*/}
         <Header name="aaa" age={18} />
       </div>
     )
@@ -3810,19 +3867,113 @@ export default class App extends PureComponent {
 }
 ```
 
-我们可以通过一个高阶组件，让使用者在不破坏原有结构的情况下对某个组件增强props：
+- 通过一个高阶组件，让使用者在不破坏原有结构的情况下对某个组件增强props：
 
 ```jsx
-function enhanceProps(WrapperCpn, otherProps) {
- return props => <WrapperCpn {...props} {...otherProps} />
+import React, { PureComponent } from 'react';
+
+// 定义一个高阶组件
+function enhanceRegionProps(WrappedComponent) {
+  //返回一个函数式组件
+  return props => {
+    // 在高阶组件中对组件进行拦截，然后统一传递额外参数
+    return <WrappedComponent {...props} region="中国"/>
+  }
 }
 
-const EnhanceHeader = enhanceProps(Header, {height: 1.88})
+// 定义类组件Home
+class Home extends PureComponent {
+  render() {
+    return <h2>Home: {`昵称: ${this.props.nickname} 等级: ${this.props.level} 区域: ${this.props.region}`}</h2>
+  }
+}
+
+// 定义类组件About
+class About extends PureComponent {
+  render() {
+    return <h2>About: {`昵称: ${this.props.nickname} 等级: ${this.props.level} 区域: ${this.props.region}`}</h2>
+  }
+}
+
+// 调用高阶组件
+const EnhanceHome = enhanceRegionProps(Home);
+const EnhanceAbout = enhanceRegionProps(About);
+
+//根组件
+class App extends PureComponent {
+  render() {
+    return (
+      <div>
+        App
+        <EnhanceHome nickname="coderwhy" level={90}/>
+        <EnhanceAbout nickname="kobe" level={99}/>
+      </div>
+    )
+  }
+}
+
+export default App;
 ```
 
-**利用高阶组件来共享Context**
+#### 7.2.2利用高阶组件来共享Context
 
-利用高阶组件来共享Context属性
+不使用高阶组件的问题：会多次编写`UserContext.Consumer`
+
+```jsx
+import React, { PureComponent, createContext } from 'react';
+
+// 创建Context
+const UserContext = createContext({
+  nickname: "默认",
+  level: -1,
+  区域: "中国"
+});
+class Home extends PureComponent {
+  render() {
+    return (
+      <UserContext.Consumer>
+        {
+          user => {
+            return <h2>Home: {`昵称: ${user.nickname} 等级: ${user.level} 区域: ${user.region}`}</h2>
+          } 
+        }
+      </UserContext.Consumer>
+    )
+  }
+}
+
+class About extends PureComponent {
+  render() {
+    return (
+      <UserContext.Consumer>
+        {
+          user => {
+            return <h2>About: {`昵称: ${user.nickname} 等级: ${user.level} 区域: ${user.region}`}</h2>
+          } 
+        }
+      </UserContext.Consumer>
+    )
+  }
+}
+
+class App extends PureComponent {
+  render() {
+    return (
+      <div>
+        App
+        <UserContext.Provider value={{nickname: "why", level: 90, region: "中国"}}>
+          <Home/>
+          <About/>
+        </UserContext.Provider>
+      </div>
+    )
+  }
+}
+
+export default App;
+```
+
+利用高阶组件来共享Context属性:
 
 ```jsx
 import React, { PureComponent, createContext } from 'react';
@@ -3926,7 +4077,7 @@ export default class App extends PureComponent {
 }
 ```
 
-> #### 渲染判断鉴权
+#### 7.2.3渲染判断鉴权
 
 在开发中，我们可能遇到这样的场景：
 
@@ -4005,7 +4156,7 @@ export default class App extends PureComponent {
 }
 ```
 
-> #### 生命周期劫持
+#### 7.2.4生命周期劫持
 
 ```jsx
 import React, { PureComponent } from 'react';
