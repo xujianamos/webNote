@@ -3833,14 +3833,10 @@ export default higherOrderComponent(App);
 
 高阶组件在一些React第三方库中非常常见：
 
-- 比如redux中的connect；（后续会讲到）
-- 比如react-router中的withRouter；（后续会讲到）
+- 比如redux中的connect；
+- 比如react-router中的withRouter；
 
-在我们的开发中，高阶组件可以帮助我们做哪些事情呢？
-
-### 7.2高阶组件的使用
-
-#### 7.2.1props的增强
+### 7.2使用高阶组件增强props
 
 不修改原有代码的情况下，添加新的props。
 
@@ -3895,7 +3891,7 @@ class About extends PureComponent {
   }
 }
 
-// 调用高阶组件
+// 调用高阶组件，返回一个新组件
 const EnhanceHome = enhanceRegionProps(Home);
 const EnhanceAbout = enhanceRegionProps(About);
 
@@ -3905,6 +3901,7 @@ class App extends PureComponent {
     return (
       <div>
         App
+        {/* 使用高阶组件返回的新组件 */}
         <EnhanceHome nickname="coderwhy" level={90}/>
         <EnhanceAbout nickname="kobe" level={99}/>
       </div>
@@ -3915,9 +3912,9 @@ class App extends PureComponent {
 export default App;
 ```
 
-#### 7.2.2利用高阶组件来共享Context
+### 7.3利用高阶组件来共享Context
 
-不使用高阶组件的问题：会多次编写`UserContext.Consumer`
+- 不使用高阶组件的问题：会多次编写`UserContext.Consumer`
 
 ```jsx
 import React, { PureComponent, createContext } from 'react';
@@ -3926,11 +3923,14 @@ import React, { PureComponent, createContext } from 'react';
 const UserContext = createContext({
   nickname: "默认",
   level: -1,
-  区域: "中国"
+  region: "中国"
 });
+
+// 定义Home组件
 class Home extends PureComponent {
   render() {
     return (
+      {/* 使用共享的数据 */}
       <UserContext.Consumer>
         {
           user => {
@@ -3942,9 +3942,11 @@ class Home extends PureComponent {
   }
 }
 
+// 定义About组件
 class About extends PureComponent {
   render() {
     return (
+       {/* 使用共享的数据 */}
       <UserContext.Consumer>
         {
           user => {
@@ -3956,12 +3958,15 @@ class About extends PureComponent {
   }
 }
 
+//根组件
 class App extends PureComponent {
   render() {
     return (
       <div>
         App
+        {/* 共享数据 */}
         <UserContext.Provider value={{nickname: "why", level: 90, region: "中国"}}>
+          {/* 下面的子组件都能使用共享的数据value */}
           <Home/>
           <About/>
         </UserContext.Provider>
@@ -3973,57 +3978,7 @@ class App extends PureComponent {
 export default App;
 ```
 
-利用高阶组件来共享Context属性:
-
-```jsx
-import React, { PureComponent, createContext } from 'react';
-
-const UserContext = createContext({
-  nickname: "默认",
-  level: -1
-})
-
-function Header(props) {
-  return (
-    <UserContext.Consumer>
-      {
-        value => {
-          const { nickname, level } = value;
-          return <h2>Header {"昵称:" + nickname + "等级" + level}</h2>
-        }
-      }
-    </UserContext.Consumer>
-  )
-}
-
-function Footer(props) {
-  return (
-    <UserContext.Consumer>
-      {
-        value => {
-          const { nickname, level } = value;
-          return <h2>Footer {"昵称:" + nickname + "等级" + level}</h2>
-        }
-      }
-    </UserContext.Consumer>
-  )
-}
-
-const EnhanceHeader = enhanceProps(Header, { height: 1.88 })
-
-export default class App extends PureComponent {
-  render() {
-    return (
-      <div>
-        <UserContext.Provider value={{ nickname: "why", level: 90 }}>
-          <Header />
-          <Footer />
-        </UserContext.Provider>
-      </div>
-    )
-  }
-}
-```
+- 利用高阶组件来共享Context属性:
 
 利用高阶组件`withUser`：
 
@@ -4035,12 +3990,14 @@ const UserContext = createContext({
   level: -1
 })
 
+// 定义高阶组件
 function withUser(WrapperCpn) {
   return props => {
     return (
       <UserContext.Consumer>
         {
           value => {
+            {/*以属性的方式传递数据给子组件，子组件就可以直接使用props*/}
             return <WrapperCpn {...props} {...value}/>
           }
         }
@@ -4049,27 +4006,41 @@ function withUser(WrapperCpn) {
   }
 }
 
+// 创建函数式组件Header
 function Header(props) {
   const { nickname, level } = props;
   return <h2>Header {"昵称:" + nickname + "等级:" + level}</h2>
 }
 
-
+// 创建函数式组件Footer
 function Footer(props) {
   const { nickname, level } = props;
   return <h2>Footer {"昵称:" + nickname + "等级:" + level}</h2>
 }
 
+// 创建类组件Home
+class Home extends PureComponent {
+  render() {
+    {/*通过this.props直接使用*/}
+    return <h2>Home: {`昵称: ${this.props.nickname} 等级: ${this.props.level} 区域: ${this.props.region}`}</h2>
+  }
+}
+
+// 使用高阶组件
 const UserHeader = withUser(Header);
 const UserFooter = withUser(Footer);
+const UserHome = withUser(Home);
 
+// 根组件
 export default class App extends PureComponent {
   render() {
     return (
       <div>
+        {/*共享数据*/}
         <UserContext.Provider value={{ nickname: "why", level: 90 }}>
           <UserHeader />
           <UserFooter />
+          <UserHome/>
         </UserContext.Provider>
       </div>
     )
@@ -4077,7 +4048,7 @@ export default class App extends PureComponent {
 }
 ```
 
-#### 7.2.3渲染判断鉴权
+### 7.4利用高阶组件渲染判断鉴权
 
 在开发中，我们可能遇到这样的场景：
 
@@ -4087,19 +4058,26 @@ export default class App extends PureComponent {
 这个时候，我们就可以使用高阶组件来完成鉴权操作：
 
 ```jsx
-function LoginPage() {
-  return <h2>LoginPage</h2>
+// 登录组件
+class LoginPage extends PureComponent {
+  render() {
+    return <h2>LoginPage</h2>
+  }
 }
 
-function CartPage() {
-  return <h2>CartPage</h2>
+// 购物车组件
+class CartPage extends PureComponent {
+  render() {
+    return <h2>CartPage</h2>
+  }
 }
 
+// 根组件
 export default class App extends PureComponent {
   render() {
     return (
       <div>
-        <CartPage/>
+        <AuthCartPage isLogin={true}/>
       </div>
     )
   }
@@ -4109,14 +4087,20 @@ export default class App extends PureComponent {
 编写鉴权的高阶组件：
 
 ```jsx
-function loginAuth(Page) {
-  return props => {
-    if (props.isLogin) {
-      return <Page/>
+function withAuth(WrappedComponent) {
+  const NewCpn = props => {
+    const {isLogin} = props;
+    if (isLogin) {
+        // 登录成功，
+      return <WrappedComponent {...props}/>
     } else {
+        // 未登录
       return <LoginPage/>
     }
   }
+	// 修改组件名称
+  NewCpn.displayName = "AuthCpn"
+  return NewCpn;
 }
 ```
 
@@ -4125,25 +4109,35 @@ function loginAuth(Page) {
 ```jsx
 import React, { PureComponent } from 'react';
 
-function loginAuth(Page) {
-  return props => {
-    if (props.isLogin) {
-      return <Page/>
+class LoginPage extends PureComponent {
+  render() {
+    return <h2>LoginPage</h2>
+  }
+}
+
+function withAuth(WrappedComponent) {
+  const NewCpn = props => {
+    const {isLogin} = props;
+    if (isLogin) {
+      return <WrappedComponent {...props}/>
     } else {
       return <LoginPage/>
     }
   }
+
+  NewCpn.displayName = "AuthCpn"
+
+  return NewCpn;
 }
 
-function LoginPage() {
-  return <h2>LoginPage</h2>
+// 购物车组件
+class CartPage extends PureComponent {
+  render() {
+    return <h2>CartPage</h2>
+  }
 }
 
-function CartPage() {
-  return <h2>CartPage</h2>
-}
-
-const AuthCartPage = loginAuth(CartPage);
+const AuthCartPage = withAuth(CartPage);
 
 export default class App extends PureComponent {
   render() {
@@ -4156,51 +4150,51 @@ export default class App extends PureComponent {
 }
 ```
 
-#### 7.2.4生命周期劫持
+### 7.5利用高阶组件进行生命周期劫持
+
+- 获取每个组件的渲染时间：
 
 ```jsx
 import React, { PureComponent } from 'react';
 
+// 定义Home组件
 class Home extends PureComponent {
 
+  // 即将渲染获取一个时间 beginTime
+  // 这个生命周期官方不建议使用了
   UNSAFE_componentWillMount() {
-    this.begin = Date.now();
+    this.beginTime = Date.now();
   }
 
+  // 渲染完成再获取一个时间 endTime
   componentDidMount() {
-    this.end = Date.now();
-    const interval = this.end - this.begin;
-    console.log(`Home渲染使用时间:${interval}`)
+    this.endTime = Date.now();
+    const interval = this.endTime - this.beginTime;
+    console.log(`Home渲染时间: ${interval}`)
   }
 
   render() {
-    return (
-      <div>
-        <h2>Home</h2>
-        <p>我是home的元素,哈哈哈</p>
-      </div>
-    )
+    return <h2>Home</h2>
   }
 }
 
-class Detail extends PureComponent {
+
+// 创建About组件
+class About extends PureComponent {
+  // 即将渲染获取一个时间 beginTime
   UNSAFE_componentWillMount() {
-    this.begin = Date.now();
+    this.beginTime = Date.now();
   }
 
+  // 渲染完成再获取一个时间 endTime
   componentDidMount() {
-    this.end = Date.now();
-    const interval = this.end - this.begin;
-    console.log(`Detail渲染使用时间:${interval}`)
+    this.endTime = Date.now();
+    const interval = this.endTime - this.beginTime;
+    console.log(`About渲染时间: ${interval}`)
   }
 
   render() {
-    return (
-      <div>
-        <h2>Detail</h2>
-        <p>我是detail的元素,哈哈哈</p>
-      </div>
-    )
+    return <h2>About</h2>
   }
 }
 
@@ -4208,37 +4202,41 @@ export default class App extends PureComponent {
   render() {
     return (
       <div>
-        <Home/>
-        <Detail/>
+        <Home />
+        <About />
       </div>
     )
   }
 }
 ```
 
-我们可以定义如下高阶组件：
+上面获取组件的渲染时间存在一个问题：每个组件都需要写相同的代码去获取当前组件的渲染时间。
+
+- 使用高阶组件来改进：
 
 ```jsx
-function logRenderTime(WrapperCpn) {
+function withRenderTime(WrappedComponent) {
   return class extends PureComponent {
+    // 即将渲染获取一个时间 beginTime
     UNSAFE_componentWillMount() {
-      this.begin = Date.now();
+      this.beginTime = Date.now();
     }
 
+    // 渲染完成再获取一个时间 endTime
     componentDidMount() {
-      this.end = Date.now();
-      const interval = this.end - this.begin;
-      console.log(`Home渲染使用时间:${interval}`)
+      this.endTime = Date.now();
+      const interval = this.endTime - this.beginTime;
+      console.log(`${WrappedComponent.name}渲染时间: ${interval}`)
     }
 
     render() {
-      return <WrapperCpn {...this.props}/>
+      return <WrappedComponent {...this.props}/>
     }
   }
 }
 
-const LogHome = logRenderTime(Home);
-const LogDetail = logRenderTime(Detail);
+const TimeHome = withRenderTime(Home);
+const TimeAbout = withRenderTime(About);
 ```
 
 完整代码如下：
@@ -4246,63 +4244,60 @@ const LogDetail = logRenderTime(Detail);
 ```jsx
 import React, { PureComponent } from 'react';
 
-function logRenderTime(WrapperCpn) {
+// 创建高阶组件来获取组件渲染时间
+function withRenderTime(WrappedComponent) {
   return class extends PureComponent {
+    // 即将渲染获取一个时间 beginTime
     UNSAFE_componentWillMount() {
-      this.begin = Date.now();
+      this.beginTime = Date.now();
     }
 
+    // 渲染完成再获取一个时间 endTime
     componentDidMount() {
-      this.end = Date.now();
-      const interval = this.end - this.begin;
-      console.log(`${WrapperCpn.name}渲染使用时间:${interval}`)
+      this.endTime = Date.now();
+      const interval = this.endTime - this.beginTime;
+        // WrappedComponent.name为组件的名字，也就是定义的类名
+      console.log(`${WrappedComponent.name}渲染时间: ${interval}`)
     }
 
     render() {
-      return <WrapperCpn {...this.props}/>
+      return <WrappedComponent {...this.props}/>
     }
   }
 }
 
+// 创建类组件Home
 class Home extends PureComponent {
   render() {
-    return (
-      <div>
-        <h2>Home</h2>
-        <p>我是home的元素,哈哈哈</p>
-      </div>
-    )
+    return <h2>Home</h2>
   }
 }
 
-
-class Detail extends PureComponent {
+// 创建类组件About
+class About extends PureComponent {
   render() {
-    return (
-      <div>
-        <h2>Detail</h2>
-        <p>我是detail的元素,哈哈哈</p>
-      </div>
-    )
+    return <h2>About</h2>
   }
 }
 
-const LogHome = logRenderTime(Home);
-const LogDetail = logRenderTime(Detail);
+// 调用高阶组件
+const TimeHome = withRenderTime(Home);
+const TimeAbout = withRenderTime(About);
 
 export default class App extends PureComponent {
   render() {
     return (
       <div>
-        <LogHome />
-        <LogDetail />
+        {/*使用高阶组件返回的新组件*/}
+        <TimeHome />
+        <TimeAbout />
       </div>
     )
   }
 }
 ```
 
-#### 7.1.2高阶函数的意义
+### 7.6高阶函数的意义
 
 我们会发现利用高阶组件可以针对某些React代码进行更加优雅的处理。
 
@@ -4319,9 +4314,13 @@ export default class App extends PureComponent {
 
 Hooks的出现，是开创性的，它解决了很多React之前的存在的问题，比如this指向问题、比如hoc的嵌套复杂度问题等等；
 
-### 7.2组件补充
+### 7.7组件补充
 
-#### 7.2.1ref转发
+#### 7.7.1ref转发
+
+ref不能应用于函数式组件；因为函数式组件没有实例，所以不能获取到对应的组件对象。
+
+- 在jsx中的元素上，添加了ref属性，这个ref都不会当作props传递给下一个组件
 
 ```jsx
 import React, { PureComponent, createRef } from 'react';
@@ -4329,6 +4328,7 @@ import React, { PureComponent, createRef } from 'react';
 function Home(props) {
   return (
     <div>
+      {/*获取不到ref这个属性，父组件不会传递这个ref属性到子组件*/}
       <h2 ref={props.ref}>Home</h2>
       <button>按钮</button>
     </div>
@@ -4345,6 +4345,7 @@ export default class App extends PureComponent {
   render() {
     return (
       <div>
+        {/* ref不会当作属性传递给子组件*/}
         <Home ref={this.homeTitleRef}/>
         <button onClick={e => this.printInfo()}>打印ref</button>
       </div>
@@ -4357,43 +4358,56 @@ export default class App extends PureComponent {
 }
 ```
 
-使用forwardRef
+注意：上面代码会在控制台报警告，不能使用上面的方式获取函数式组件的组件对象。
+
+使用`forwardRef`高阶组件获取函数式组件的组件对象：
 
 ```jsx
-import React, { PureComponent, createRef, forwardRef } from 'react';
+import React, { PureComponent, createRef, forwardRef } from "react";
 
-const Home = forwardRef(function(props, ref) {
-  return (
-    <div>
-      <h2 ref={ref}>Home</h2>
-      <button>按钮</button>
-    </div>
-  )
-})
+class Home extends PureComponent {
+  render() {
+    return <h2>Home</h2>;
+  }
+}
+
+// 高阶组件forwardRef：返回一个新组件Profile
+// ref来自于调用时传递的ref
+const Profile = forwardRef(function (props, ref) {
+  return <p ref={ref}>Profile</p>;
+});
 
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
 
-    this.homeTitleRef = createRef();
+    this.titleRef = createRef();
+    this.homeRef = createRef();
+    this.profileRef = createRef();
   }
 
   render() {
     return (
       <div>
-        <Home ref={this.homeTitleRef}/>
-        <button onClick={e => this.printInfo()}>打印ref</button>
+        <h2 ref={this.titleRef}>Hello World</h2>
+        <Home ref={this.homeRef} />
+
+        <Profile ref={this.profileRef} name={"why"} />
+
+        <button onClick={(e) => this.printRef()}>打印ref</button>
       </div>
-    )
+    );
   }
 
-  printInfo() {
-    console.log(this.homeTitleRef.current);
+  printRef() {
+    console.log(this.titleRef.current);
+    console.log(this.homeRef.current);
+    console.log(this.profileRef.current);
   }
 }
 ```
 
-#### 7.2.2Portals
+#### 7.7.2Portals
 
 某些情况下，我们希望渲染的内容独立于父组件，甚至是独立于当前挂载到的DOM元素中（默认都是挂载到id为root的DOM元素上的）。
 
@@ -4436,7 +4450,7 @@ render() {
 
 步骤一：修改index.html添加新的节点
 
-```jsx
+```html
 <div id="root"></div>
 <!-- 新节点 -->
 <div id="modal"></div>
@@ -4444,7 +4458,7 @@ render() {
 
 步骤二：编写这个节点的样式：
 
-```jsx
+```css
 #modal {
   position: fixed;
   left: 50%;
@@ -4460,6 +4474,7 @@ render() {
 import React, { PureComponent } from 'react';
 import ReactDOM from 'react-dom';
 
+// 封装modal组件，挂载到id=modal的标签上
 class Modal extends PureComponent {
   constructor(props) {
     super(props);
@@ -4467,26 +4482,40 @@ class Modal extends PureComponent {
 
   render() {
     return ReactDOM.createPortal(
+        {/*this.props.children为传递过来的插槽内容*/}
       this.props.children,
+        {/*获取目标元素*/}
       document.getElementById("modal")
     )
   }
 }
 
+// home组件中使用modal组件
+class Home extends PureComponent {
+  render() {
+    return (
+      <div>
+        <h2>Home</h2>
+        <Modal>
+          <h2>Title</h2>
+        </Modal>
+      </div>
+    )
+  }
+}
+// 根组件
 export default class App extends PureComponent {
   render() {
     return (
       <div>
-        <Modal>
-          <h2>我是标题</h2>
-        </Modal>
+         <Home/>
       </div>
     )
   }
 }
 ```
 
-#### 7.2.3Fragment
+#### 7.7.3Fragment
 
 在之前的开发中，我们总是在一个组件中返回内容时包裹一个div元素：
 
@@ -4524,6 +4553,7 @@ React还提供了Fragment的段语法：
 export default class App extends PureComponent {
   render() {
     return (
+        {/*短语法不能使用任何属性*/}
       <>
         <h2>当前计数: 0</h2>
         <button>+1</button>
@@ -4534,18 +4564,53 @@ export default class App extends PureComponent {
 }
 ```
 
-但是，如果我们需要在Fragment中添加key，那么就不能使用段语法：
+但是，如果我们需要在Fragment中添加key，那么就不能使用短语法：
 
 ```jsx
-{
-  this.state.friends.map((item, index) => {
+import React, { PureComponent, Fragment } from 'react';
+
+export default class App extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      counter: 0,
+      friends: [
+        {name: "why", age: 18},
+        {name: "lilei", age: 20},
+        {name: "kobe", age: 25},
+      ]
+    }
+  }
+
+  render() {
     return (
-      <Fragment key={item.name}>
-        <div>{item.name}</div>
-        <div>{item.age}</div>
-      </Fragment>
+      <>
+        <h2>当前计数: {this.state.counter}</h2>
+        <button onClick={e => this.increment()}>+1</button>
+        <div>
+          {
+            this.state.friends.map((item, index) => {
+              return (
+                  {/*需要添加key*/}
+                <Fragment key={item.name}>
+                  <div>{item.name}</div>
+                  <p>{item.age}</p>
+                  <hr/>
+                </Fragment>
+              )
+            })
+          }
+        </div>
+      </>
     )
-  })
+  }
+
+  increment() {
+    this.setState({
+      counter: this.state.counter + 1
+    })
+  }
 }
 ```
 
@@ -4558,17 +4623,17 @@ export default class App extends PureComponent {
 </>
 ```
 
-#### 7.2.4StrictMode
+#### 7.7.4StrictMode
 
 `StrictMode` 是一个用来突出显示应用程序中潜在问题的工具。
 
 - 与 `Fragment` 一样，`StrictMode` 不会渲染任何可见的 UI；
 - 它为其后代元素触发额外的检查和警告；
-- 严格模式检查仅在开发模式下运行；*它们不会影响生产构建*；
+- 严格模式检查仅在开发模式下运行；**它们不会影响生产构建**；
 
 可以为应用程序的任何部分启用严格模式：
 
-- *不*会对 `Header` 和 `Footer` 组件运行严格模式检查；
+- 不会对 `Header` 和 `Footer` 组件运行严格模式检查；
 - 但是，`ComponentOne` 和 `ComponentTwo` 以及它们的所有后代元素都将进行检查；
 
 ```jsx
@@ -4578,7 +4643,9 @@ function ExampleApplication() {
   return (
     <div>
       <Header />
+          {/*严格模式：只有子组件才会启用，外层的组件都不会启用严格模式*/}
       <React.StrictMode>
+          {/*里面的组件都是StrictMode的子组件*/}
         <div>
           <ComponentOne />
           <ComponentTwo />
@@ -4595,26 +4662,37 @@ function ExampleApplication() {
 1.识别不安全的生命周期：
 
 ```jsx
-class Home extends PureComponent {
-  UNSAFE_componentWillMount() {
+import React, { PureComponent, StrictMode } from "react";
 
-  }
+class Home extends PureComponent {
+  UNSAFE_componentWillMount() {}
 
   render() {
-    return <h2>Home</h2>
+    return <h2>Home</h2>;
   }
 }
+//app组件
+class App extends PureComponent {
+  render() {
+    return (
+      <div>
+        {/*开启严格模式*/}
+        <StrictMode>
+          <Home></Home>
+        </StrictMode>
+      </div>
+    );
+  }
+}
+export default App;
 ```
 
-![image-20210117000552774](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20210117000552774.png)
+![image-20210809160953429](D:\webNote\React\image-20210809160953429.png)
 
 2.使用过时的ref API
 
 ```jsx
 class Home extends PureComponent {
-  UNSAFE_componentWillMount() {
-
-  }
 
   render() {
     return <h2 ref="home">Home</h2>
@@ -4622,11 +4700,11 @@ class Home extends PureComponent {
 }
 ```
 
-![image-20210117000615028](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20210117000615028.png)
+![image-20210809161117565](D:\webNote\React\image-20210809161117565.png)
 
 3.使用废弃的findDOMNode方法
 
-在之前的React API中，可以通过findDOMNode来获取DOM，不过已经不推荐使用了，可以自行学习演练一下
+在之前的React API中，可以通过findDOMNode来获取DOM，不过已经不推荐使用了。
 
 4.检查意外的副作用
 
@@ -4638,16 +4716,11 @@ class Home extends PureComponent {
 class Home extends PureComponent {
   constructor(props) {
     super(props);
-
     console.log("home constructor");
   }
 
-  UNSAFE_componentWillMount() {
-
-  }
-
   render() {
-    return <h2 ref="home">Home</h2>
+    return <h2>Home</h2>
   }
 }
 ```
@@ -4668,7 +4741,6 @@ class Home extends PureComponent {
 - 可以编写动态的css：可以获取当前组件的一些状态，根据状态的变化生成不同的css样式；
 - 支持所有的css特性：伪类、动画、媒体查询等；
 - 编写起来简洁方便、最好符合一贯的css风格特点；
-- 等等...
 
 在这一点上，Vue做的要远远好于React：
 
@@ -4703,7 +4775,6 @@ Vue在CSS上虽然不能称之为完美，但是已经足够简洁、自然、�
 export default class App extends PureComponent {
   constructor(props) {
     super(props);
-
     this.state = {
       titleColor: "red"
     }
@@ -4732,7 +4803,7 @@ export default class App extends PureComponent {
 - 3.大量的样式, 代码混乱
 - 4.某些样式无法编写(比如伪类/伪元素)
 
-所以官方依然是希望内联合适和普通的css来结合编写；
+所以官方依然是希望内联样式和普通的css来结合编写；
 
 ### 8.2普通的css
 
@@ -4742,9 +4813,8 @@ App.js中编写React逻辑代码：
 
 ```jsx
 import React, { PureComponent } from 'react';
-
 import Home from './Home';
-
+// 引入app组件的css文件
 import './App.css';
 
 export default class App extends PureComponent {
@@ -4753,6 +4823,7 @@ export default class App extends PureComponent {
       <div className="app">
         <h2 className="title">我是App的标题</h2>
         <p className="desc">我是App中的一段文字描述</p>
+         {/*使用home组件*/}
         <Home/>
       </div>
     )
@@ -4811,7 +4882,7 @@ export default class Home extends PureComponent {
 }
 ```
 
-最终样式之间会相互层叠，只有一个样式会生效；
+最终app组件和home组件样式之间会相互层叠，只有一个样式会生效；
 
 ### 8.3css modules
 
@@ -4825,6 +4896,75 @@ css modules并不是React特有的解决方案，而是所有使用了类似于w
 - 之后就可以引用并且进行使用了；
 
 使用的方式如下：
+
+app组件：
+
+```jsx
+import React, { PureComponent } from 'react';
+
+import appStyle from './style.module.css';
+
+import Home from '../home';
+import Profile from '../profile';
+
+export default class App extends PureComponent {
+  render() {
+    return (
+      <div id="app">
+        App
+        <h2 className={appStyle.title}>我是App的title</h2>
+        <Home/>
+        <Profile/>
+      </div>
+    )
+  }
+}
+```
+
+style.module.css：
+
+```css
+.title {
+  color: blue;
+}
+```
+
+Home组件：
+
+```jsx
+import React, { PureComponent } from 'react';
+
+import homeStyle from './home.module.css';
+
+export default class Home extends PureComponent {
+  render() {
+    return (
+      <div className="home">
+        <h2 className={homeStyle.title}>我是home的标题</h2>
+        <div className={homeStyle.banner}>
+          <span>轮播图</span>
+        </div>
+      </div>
+    )
+  }
+}
+
+```
+
+home.module.css:
+
+```css
+.title {
+  font-size: 30px;
+  color: red;
+}
+
+.banner {
+  color: orange;
+}
+```
+
+组件结构：
 
 ![image-20210117225621402](/Users/xujian/Library/Application Support/typora-user-images/image-20210117225621402.png)
 
@@ -4846,8 +4986,8 @@ css modules确实解决了局部作用域的问题，也是很多人喜欢在Rea
 
 实际上，官方文档也有提到过CSS in JS这种方案：
 
-- “CSS-in-JS” 是指一种模式，其中 CSS 由 JavaScript 生成而不是在外部文件中定义；
-- *注意此功能并不是 React 的一部分，而是由第三方库提供。* React 对样式如何定义并没有明确态度；
+- `CSS-in-JS`是指一种模式，其中 CSS 由 JavaScript 生成而不是在外部文件中定义；
+- 注意此功能并不是 React 的一部分，而是由第三方库提供。*React 对样式如何定义并没有明确态度；
 
 在传统的前端开发中，我们通常会将结构（HTML）、样式（CSS）、逻辑（JavaScript）进行分离。
 
