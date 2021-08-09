@@ -3741,7 +3741,7 @@ function higherOrderComponent(WrapperComponent) {
 
 效果图如下：父组件名为：`NewComponent`，传入的组件为APP
 
-![image-20210808175511403](D:\webNote\React\image-20210808175511403.png)
+![image-20210808175511403](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210808175511403.png)
 
 
 
@@ -3770,7 +3770,7 @@ class App extends PureComponent {
 export default higherOrderComponent(App);
 ```
 
-![image-20210808175914272](D:\webNote\React\image-20210808175914272.png)
+![image-20210808175914272](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210808175914272.png)
 
 另外，组件的名称都可以通过displayName来修改：
 
@@ -3799,7 +3799,7 @@ class App extends PureComponent {
 export default higherOrderComponent(App);
 ```
 
-![image-20210808180040345](D:\webNote\React\image-20210808180040345.png)
+![image-20210808180040345](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210808180040345.png)
 
 完整的代码，我们可以这样来编写：
 
@@ -4687,7 +4687,7 @@ class App extends PureComponent {
 export default App;
 ```
 
-![image-20210809160953429](D:\webNote\React\image-20210809160953429.png)
+![image-20210809160953429](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210809160953429.png)
 
 2.使用过时的ref API
 
@@ -4700,7 +4700,7 @@ class Home extends PureComponent {
 }
 ```
 
-![image-20210809161117565](D:\webNote\React\image-20210809161117565.png)
+![image-20210809161117565](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210809161117565.png)
 
 3.使用废弃的findDOMNode方法
 
