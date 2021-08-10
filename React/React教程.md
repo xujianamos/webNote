@@ -5113,7 +5113,78 @@ const HomeWrapper = styled.div`
 `
 ```
 
-3. #### props、attrs属性
+完整代码
+
+index.js:
+
+```jsx
+import React, { PureComponent } from 'react';
+
+import { 
+  HomeWrapper,
+  TitleWrapper
+} from "./style";
+
+export default class Home extends PureComponent {
+  render() {
+    return (
+      <HomeWrapper>
+        <TitleWrapper>我是home的标题</TitleWrapper>
+        <div className="banner">
+          <span>轮播图1</span>
+          <span className="active">轮播图2</span>
+          <span>轮播图3</span>
+          <span>轮播图4</span>
+        </div>
+      </HomeWrapper>
+    )
+  }
+}
+```
+
+style.js
+
+```js
+// styled生成一个div元素，并且自带了样式，可以将jsx中的div元素换成这个组件
+export const HomeWrapper = styled.div`
+  font-size: 12px;
+  color: red;
+
+  .banner {
+    background-color: blue;
+
+    span {
+      color: #fff;
+
+      &.active {
+        color: red;
+      }
+
+      &:hover {
+        color: green;
+      }
+
+      &::after {
+        content: "aaa";
+      }
+    }
+
+    /* .active {
+      color: #f00;
+    } */
+  }
+`;
+
+export const TitleWrapper = styled.h2`
+  text-decoration: underline;
+  color: ${(props) => props.theme.themeColor};
+  font-size: ${(props) => props.theme.fontSize};
+`;
+```
+
+
+
+3. props、attrs属性
 
 **props可以穿透**
 
@@ -5169,7 +5240,58 @@ const HYInput = styled.input.attrs({
 `
 ```
 
-4. #### styled高级特性
+完整代码:
+
+```js
+import React, { PureComponent } from 'react';
+import styled from 'styled-components';
+
+/**
+ * 特点:
+ *  1.props穿透
+ *  2.attrs的使用
+ *  3.传入state作为props属性
+ */
+
+const HYInput = styled.input.attrs({
+    // 这里的属性一般是写死的属性，会作为props传递到后面
+  placeholder: "coderwhy",
+  bColor: "red"
+})`
+//下面的属性一般是动态的属性
+  background-color: lightblue;
+  border-color: ${props => props.bColor};
+  color: ${props => props.color};
+`
+
+export default class Profile extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      color: "purple"
+    }
+  }
+
+  render() {
+    return (
+      <div>
+        <input type="password"/>
+        {/*color会作为props传递到组件*/}
+        <HYInput type="password" color={this.state.color}/>
+        <h2>我是Profile的标题</h2>
+        <ul>
+          <li>设置列表1</li>
+          <li>设置列表2</li>
+          <li>设置列表3</li>
+        </ul>
+      </div>
+    )
+  }
+}
+```
+
+4. styled高级特性
 
 **支持样式的继承**
 
@@ -5180,12 +5302,12 @@ const HYButton = styled.button`
   padding: 8px 30px;
   border-radius: 5px;
 `
-
+// 继承上面的样式
 const HYWarnButton = styled(HYButton)`
   background-color: red;
   color: #fff;
 `
-
+// 继承上面的样式
 const HYPrimaryButton = styled(HYButton)`
   background-color: green;
   color: #fff;
@@ -5287,7 +5409,8 @@ export default class App extends PureComponent {
 ```jsx
 classNames('foo', 'bar'); // => 'foo bar'
 classNames('foo', { bar: true }); // => 'foo bar'
-classNames({ 'foo-bar': true }); // => 'foo-bar'
+classNames
+({ 'foo-bar': true }); // => 'foo-bar'
 classNames({ 'foo-bar': false }); // => ''
 classNames({ foo: true }, { bar: true }); // => 'foo bar'
 classNames({ foo: true, bar: true }); // => 'foo bar'
