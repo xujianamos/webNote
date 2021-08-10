@@ -5458,29 +5458,29 @@ import "antd/dist/antd.css";
 - react-app-rewired + customize-cra；（这个是antd早期推荐的方案）
 - craco；（目前antd推荐的方案）
 
-第一步：安装craco：
+第一步：安装`craco`：
 
 ```bash
 yarn add @craco/craco
 ```
 
-第二步：修改package.json文件
+第二步：修改`package.json`文件
 
 - 原本启动时，我们是通过react-scripts来管理的；
 - 现在启动时，我们通过craco来管理；
 
 ```zsh
 "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    #"start": "react-scripts start",
+    #"build": "react-scripts build",
+    #"test": "react-scripts test",
     "start": "craco start",
     "build": "craco build",
     "test": "craco test",
 }
 ```
 
-第三步：在根目录下创建craco.config.js文件用于修改默认配置
+第三步：在根目录下创建`craco.config.js`文件用于修改默认配置
 
 ```js
 module.exports = {
@@ -5490,7 +5490,7 @@ module.exports = {
 
 #### 9.2.2配置主题
 
-按照 配置主题 的要求，自定义主题需要用到类似 less-loader 提供的 less 变量覆盖功能：
+按照配置主题的要求，自定义主题需要用到类似less-loader提供的less变量覆盖功能：
 
 - 我们可以引入 craco-less 来帮助加载 less 样式和修改变量；
 
@@ -5515,6 +5515,7 @@ module.exports = {
       options: {
         lessLoaderOptions: {
           lessOptions: {
+              //定义变量@primary-color
             modifyVars: { '@primary-color': '#1DA57A' },
             javascriptEnabled: true,
           },
