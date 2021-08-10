@@ -1,4 +1,4 @@
-1.React基础知识
+## 1.React基础知识
 
 ### 1.1React开发依赖
 
@@ -2499,7 +2499,7 @@ increment() {
 
 那么React的更新流程呢？
 
-![image-20210115231812936](/Users/xujian/前端笔记/webNote/React/image-20210115231812936.png)
+![image-20210810230717601](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210810230717601.png)
 
 React在props或state发生改变时，会调用React的render方法，会创建一颗不同的树。
 
@@ -4966,7 +4966,7 @@ home.module.css:
 
 组件结构：
 
-![image-20210117225621402](/Users/xujian/前端笔记/webNote/React/image-20210117225621402.png)
+![image-20210810230923824](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210810230923824.png)
 
 这种css使用方式最终生成的class名称会全局唯一：
 
@@ -5079,7 +5079,7 @@ styled-components的本质是通过函数的调用，最终创建出一个`组�
 
 我们希望给外层的div添加一个特殊的class，并且添加相关的样式：
 
-![image-20210117225909054](/Users/xujian/前端笔记/webNote/React/image-20210117225909054.png)
+![image-20210810231047216](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210810231047216.png)
 
 另外，它支持类似于CSS预处理器一样的样式嵌套：
 
