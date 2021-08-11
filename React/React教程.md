@@ -8117,3 +8117,70 @@ function useLocalStorange(key) {
 }
 ```
 
+## 14.react中使用axios
+
+在`componentDidMount`生命周期中发送网络请求。
+
+使用await、async在componentDidMount中发送网络请求：
+
+```js
+async componentDidMount() {
+    const result = await axios.get("https://httpbin.org/get", {
+      params: {
+        name: "kobe",
+        age: 40
+      }
+    })
+    console.log(result);
+  }
+```
+
+那么，有错误的时候，await中如何处理呢？使用try-catch来处理错误信息
+
+```js
+async componentDidMount() {
+    try {
+      const result = await axios.get("https://httpbin.org/get", {
+        params: {
+          name: "kobe",
+          age: 40
+        }
+      })
+      console.log(result);
+    } catch(err) {
+      console.log(err);
+    }
+  }
+```
+
+发送多个并发的请求：
+
+```js
+const request1 = axios.get("https://httpbin.org/get", {
+      params: {name: "why", age: 18}
+    });
+    const request2 = axios.post("https://httpbin.org/post", {
+      name: "kobe",
+      age: 40
+    })
+    axios.all([request1, request2]).then(([res1, res2]) => {
+      console.log(res1, res2);
+    }).catch(err => {
+      console.log(err);
+    })
+```
+
+`axios.all`的本质上是调用`Promise.all`。
+
+
+
+
+
+
+
+
+
+
+
+
+
