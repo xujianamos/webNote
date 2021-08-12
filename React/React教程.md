@@ -5592,20 +5592,22 @@ react-transition-group主要包含四个组件：
 
 - 过渡
 
-- - 该组件是一个和平台无关的组件（不一定要结合CSS）；
+  - 该组件是一个和平台无关的组件（不一定要结合CSS）；
+
   - 在前端开发中，我们一般是结合CSS来完成样式，所以比较常用的是CSSTransition；
 
 - CSS过渡
 
-- - 在前端开发中，通常使用CSSTransition来完成过渡动画效果
+  - 在前端开发中，通常使用CSSTransition来完成过渡动画效果
 
 - 转换开关
 
-- - 两个组件显示和隐藏切换时，使用该组件
+  - 两个组件显示和隐藏切换时，使用该组件
 
 - 过渡集团
 
-- - 将多个动画组件包裹在其中，一般用于列表中元素的动画；
+  - 将多个动画组件包裹在其中，一般用于列表中元素的动画；
+
 
 ### 10.2react-transition-group使用
 
@@ -5617,33 +5619,37 @@ CSSTransition是基于Transition组件内置的：
 
 - 它们有三种状态，需要定义对应的CSS样式：
 
-- - 第一类，开始状态：对于的类是-出现，进入，退出；
+  - 第一类，开始状态：对于的类是-出现，进入，退出；
+
   - 第二类：执行动画：对应的类是-出现活跃，进入活跃，退出活跃；
   - 第三类：执行结束：对应的类是-完成，进入，退出
+
 
 CSSTransition常见对应的属性：
 
 - in：触发进入或退出状态
 
-- - 如果添加了`unmountOnExit={true}`，那么该该组件会在执行退出动画结束后被删除掉；
+  - 如果添加了`unmountOnExit={true}`，那么该该组件会在执行退出动画结束后被删除掉；
+
   - 当在真正时，触发进入状态，会添加-enter，-enter-acitve的类开始执行动画，当动画执行结束后，会删除两个类，并添加-enter-done的类；
   - 当在为假时，触发退出状态，会添加-exit，-exit-active的类开始执行动画，当动画执行结束后，会删除两个类，并添加-enter-done的类；
 
 - classNames：动画class的名称
 
-- - 决定了在编写css时，对应的类名称：
+  - 决定了在编写css时，对应的类名称：
 
 - 超时：
 
-- - 过渡动画的时间
+  - 过渡动画的时间
 
 - 出现：
 
-- - 是否在初次进入添加动画（需要和in同时为true）
+  - 是否在初次进入添加动画（需要和in同时为true）
 
 - 其他属性可以参考官网来学习：
 
-- - https://reactcommunity.org/react-transition-group/transition
+  - https://reactcommunity.org/react-transition-group/transition
+
 
 CSSTransition对应的钩子函数：主要为了检测动画的执行过程，来完成一些JavaScript的操作
 
@@ -5674,15 +5680,22 @@ export default class App extends PureComponent {
     return (
       <div>
         <Button type="primary" onClick={e => this.setState({isShowCard: !this.state.isShowCard})}>显示/隐藏</Button>
-        <CSSTransition in={this.state.isShowCard}
+        <CSSTransition 
+						{/**/}
+					   in={this.state.isShowCard}
+					   {/*动画的类名，定义样式时需要用这个前缀*/}
                        classNames="card"
+					   {/*控制类的添加时间，而不是动画的执行时长。动画执行时长本质上还是css来控制*/}
                        timeout={1000}
+					   {/*控制动画结束时是否卸载掉（移除dom元素）*/}
                        unmountOnExit={true}
+					   {/*只有添加这个属性，第一次出现时才有动画，并且需要添加样式*/}
+					   appear
                        onEnter={el => console.log("进入动画前")}
-                       onEntering={el => console.log("进入动画")}
+                       onEntering={el => console.log("正在进入动画")}
                        onEntered={el => console.log("进入动画后")}
                        onExit={el => console.log("退出动画前")}
-                       onExiting={el => console.log("退出动画")}
+                       onExiting={el => console.log("正在退出动画")}
                        onExited={el => console.log("退出动画后")}
                       >
           <Card
@@ -5726,10 +5739,11 @@ export default class App extends PureComponent {
   transition: opacity 300ms, transform 300ms;
 }
 
+/*退出样式*/
 .card-exit {
   opacity: 1;
 }
-
+/*执行动画过程中的样式*/
 .card-exit-active {
   opacity: 0;
   transform: scale(.8);
@@ -5752,7 +5766,7 @@ SwitchTransition中主要有一个属性：mode，有两个值
 
 如何使用SwitchTransition呢？
 
-- SwitchTransition组件里面要有CSSTransition或Transition组件，不能直接包裹你想要切换的组件；
+- SwitchTransition组件里面要有CSSTransition或Transition组件，**不能直接包裹你想要切换的组件**；
 - SwitchTransition里面的CSSTransition或Transition组件不再像以前那样接受in属性来判断元素是某些状态，取而代之的是key属性；
 
 我们来演练一个按钮的入场和出场效果：
@@ -5770,11 +5784,12 @@ export default class SwitchAnimation extends PureComponent {
   }
 
   render() {
-    const {isOn} = this.state;
+    const { isOn } = this.state;
 
     return (
       <SwitchTransition mode="out-in">
         <CSSTransition classNames="btn"
+        			   {/*控制类的添加时间，而不是动画的执行时长。动画执行时长本质上还是css来控制*/}
                        timeout={500}
                        key={isOn ? "on" : "off"}>
           {
@@ -5876,8 +5891,8 @@ export default class GroupAnimation extends PureComponent {
 
 当然上面的定义会过于的晦涩，所以我简单总结一下：
 
-- 确定的输入，一定会产生确定的输出；
-- 函数在执行过程中，不能产生副作用；
+- **确定的输入，一定会产生确定的输出；**
+- **函数在执行过程中，不能产生副作用；**
 
 那么我们来看几个函数是否是纯函数：
 
