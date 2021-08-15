@@ -6298,6 +6298,7 @@ import {
   SUB_NUMBER
 } from './constants.js'
 
+//一般使用箭头函数
 const addAction = (count) => ({
   type: ADD_NUMBER,
   num: count
@@ -6326,6 +6327,34 @@ export {
 } 
 ```
 
+使用：
+
+index.js
+
+```js
+import store from './store/index.js';
+
+// 导入action
+import {
+  addAction,
+  subAction,
+  incAction,
+  decAction
+} from './store/actionCreators.js';
+
+//订阅store
+store.subscribe(() => {
+  console.log(store.getState());
+})
+//派发action
+store.dispatch(addAction(10));
+store.dispatch(addAction(15));
+store.dispatch(subAction(8));
+store.dispatch(subAction(5));
+store.dispatch(incAction());
+store.dispatch(decAction());
+```
+
 ### 11.7Redux流程图
 
 我们已经知道了redux的基本使用过程，那么我们就更加清晰来认识一下redux在实际开发中的流程：
@@ -6339,6 +6368,635 @@ export {
 ![图片](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/640-20210418224244024)
 
 ### 11.8react中使用redux
+
+#### 11.8.1全局定义
+
+- constants常量文件
+
+```js
+export const ADD_NUMBER = "ADD_NUMBER";
+export const SUB_NUMBER = "SUB_NUMBER";
+export const INCREMENT = "INCREMENT";
+export const DECREMENT = "DECREMENT";
+
+export const FETCH_HOME_MULTIDATA = "FETCH_HOME_MULTIDATA";
+export const CHANGE_BANNERS = "CHANGE_BANNERS";
+export const CHANGE_RECOMMEND = "CHANGE_RECOMMEND";
+```
+
+
+
+```
+src                                 
+├─ pages                            
+│  ├─ about.js                      
+│  ├─ about2.js                     
+│  ├─ about3.js                     
+│  ├─ about4.js                     
+│  ├─ home1-手动和redux联系.js           
+│  ├─ home2-自定义的connect.js          
+│  ├─ home3-react-redux-connect.js  
+│  ├─ home4-redux-thunk使用.js        
+│  └─ home5-redux-saga使用.js         
+├─ store                            
+│  ├─ actionCreators.js             
+│  ├─ constants.js                  
+│  ├─ index.js                      
+│  ├─ reducer.js                    
+│  └─ saga.js                       
+├─ utils                            
+│  ├─ connect.js                    
+│  └─ context.js                    
+├─ App.js                           
+└─ index.js                         
+```
+
+#### 11.8.2手动和redux联系
+
+- 目录结构
+
+```
+src                                 
+├─ pages                            
+│  ├─ about.js  # 关于页面组件                                                       
+│  └─ home.js   # 首页组件       
+├─ store                            
+│  ├─ actionCreators.js   # 定义的action          
+│  ├─ constants.js 		  # 常量                 
+│  ├─ index.js  		  # store入口文件                    
+│  └─ reducer.js  		  # 定义reducer                                                        
+├─ App.js                           
+└─ index.js                         
+```
+
+1. **创建store/index.js**
+
+```js
+import { createStore } from 'redux';
+
+import reducer from './reducer.js';
+
+const store = createStore(reducer);
+
+export default store;
+```
+
+2. **创建store/reducer.js**
+
+```js
+import {
+  ADD_NUMBER,
+  SUB_NUMBER
+} from './constants.js';
+
+const defaultState = {
+  counter: 0
+}
+
+function reducer(state = defaultState, action) {
+  switch (action.type) {
+    case ADD_NUMBER:
+      return { ...state, counter: state.counter + action.num };
+    case SUB_NUMBER:
+      return { ...state, counter: state.counter - action.num };
+    default:
+      return state;
+  }
+}
+
+export default reducer;
+```
+
+3. **创建store/actionCreators.js**
+
+```js
+import {
+  ADD_NUMBER,
+  SUB_NUMBER
+} from './constants.js';
+
+export const addAction = num => ({
+  type: ADD_NUMBER,
+  num
+});
+
+export const subAction = num => ({
+  type: SUB_NUMBER,
+  num
+});
+```
+
+组件中使用redux：
+
+pages/about.js
+
+```js
+import React, { PureComponent } from 'react';
+
+import store from '../store';
+import { 
+  subAction
+} from "../store/actionCreators";
+
+export default class About extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+        // 获取store中的数据
+      counter: store.getState().counter
+    }
+  }
+
+  componentDidMount() {
+      //监听store
+    this.unsubscribue = store.subscribe(() => {
+      this.setState({
+        counter: store.getState().counter
+      })
+    })
+  }
+
+  componentWillUnmount() {
+      //取消监听
+    this.unsubscribue();
+  }
+
+  render() {
+    return (
+      <div>
+        <hr/>
+        <h1>About</h1>
+        <h2>当前计数: {this.state.counter}</h2>
+        <button onClick={e => this.decrement()}>-1</button>
+        <button onClick={e => this.subNumber(5)}>-5</button>
+      </div>
+    )
+  }
+
+  decrement() {
+      //触发subAction
+    store.dispatch(subAction(1));
+  }
+
+  subNumber(num) {
+      //触发subAction
+    store.dispatch(subAction(num));
+  }
+}
+```
+
+pages/home.js
+
+```js
+import React, { PureComponent } from 'react';
+
+import store from '../store';
+
+import { addAction } from '../store/actionCreators'
+
+export default class Home extends PureComponent {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+        // 获取store中的数据
+      counter: store.getState().counter
+    }
+  }
+
+  componentDidMount() {
+      //监听store
+    this.unsubscribue = store.subscribe(() => {
+      this.setState({
+        counter: store.getState().counter
+      })
+    })
+  }
+
+  componentWillUnmount() {
+      //取消监听
+    this.unsubscribue();
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>Home</h1>
+        <h2>当前计数: {this.state.counter}</h2>
+        <button onClick={e => this.increment()}>+1</button>
+        <button onClick={e => this.addNumber(5)}>+5</button>
+      </div>
+    )
+  }
+
+  increment() {
+      //触发subAction
+    store.dispatch(addAction(1));
+  }
+
+  addNumber(num) {
+      //触发subAction
+    store.dispatch(addAction(num));
+  }
+}
+```
+
+#### 11.8.3自定义的connect
+
+- 目录结构
+
+```
+src                                 
+├─ pages                            
+│  ├─ about.js                             
+│  └─ home.js         
+├─ store                            
+│  ├─ actionCreators.js             
+│  ├─ constants.js                  
+│  ├─ index.js                                       
+│  └─ reducer.js                       
+├─ utils                                               
+│  └─ connect.js                    
+├─ App.js                           
+└─ index.js 
+```
+
+1. 封装高阶组件
+
+utils/connect.js
+
+```js
+import React, { PureComponent } from "react";
+
+import store from '../store';
+
+/**
+ * @description: 将redux与组件进行链接
+ * @param {function} mapStateToProps 传入的函数返回state对象
+ * @param {function} mapDispachToProp 传入的函数返回action对象
+ * @return {*}
+ */
+export function connect(mapStateToProps, mapDispachToProp) {
+  return function enhanceHOC(WrappedComponent) {
+   return class extends PureComponent {
+      constructor(props) {
+        super(props);
+
+        this.state = {
+          storeState: mapStateToProps(store.getState())
+        }
+      }
+
+      componentDidMount() {
+        this.unsubscribe = store.subscribe(() => {
+          this.setState({
+            storeState: mapStateToProps(store.getState())
+          })
+        })
+      }
+
+      componentWillUnmount() {
+        this.unsubscribe();
+      }
+
+      render() {
+        return <WrappedComponent {...this.props}
+          {...mapStateToProps(store.getState())}
+          {...mapDispachToProp(store.dispatch)} />
+      }
+    }
+  }
+}
+```
+
+使用：
+
+pages/home.js
+
+```js
+import React, { PureComponent } from 'react';
+
+import {connect} from '../utils/connect';
+import {
+  incAction,
+  addAction
+} from '../store/actionCreators'
+
+class Home extends PureComponent {
+  render() {
+    return (
+      <div>
+        <h1>Home</h1>
+        <h2>当前计数: {this.props.counter}</h2>
+        <button onClick={e => this.props.increment()}>+1</button>
+        <button onClick={e => this.props.addNumber(5)}>+5</button>
+      </div>
+    )
+  }
+}
+
+const mapStateToProps = state => ({
+  counter: state.counter
+})
+
+const mapDispatchToProps = dispatch => ({
+  increment() {
+    dispatch(incAction());
+  },
+  addNumber(num) {
+    dispatch(addAction(num));
+  }
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
+```
+
+pages/about.js
+
+```js
+import React from 'react';
+import { connect } from '../utils/connect';
+
+import { 
+  decAction,
+  subAction
+} from "../store/actionCreators";
+
+function About(props) {
+  return (
+    <div>
+      <hr />
+      <h1>About</h1>
+      <h2>当前计数: {props.counter}</h2>
+      <button onClick={e => props.decrement()}>-1</button>
+      <button onClick={e => props.subNumber(5)}>-5</button>
+    </div>
+  )
+}
+
+const mapStateToProps = state => {
+  return {
+    counter: state.counter
+  }
+};
+const mapDispatchToProps = dispatch => {
+  return {
+    decrement: function() {
+      dispatch(decAction());
+    },
+    subNumber: function(num) {
+      dispatch(subAction(num))
+    }
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(About);
+```
+
+- 将connect中的store进行抽离
+
+新建utils/context.js
+
+```js
+import React from 'react';
+
+const StoreContext = React.createContext(); 
+
+export { StoreContext }
+```
+
+修改utils/connect.js
+
+```js
+import React, { PureComponent } from "react";
+
+import { StoreContext } from './context';
+
+/**
+ * @description: 将redux与组件进行链接
+ * @param {*} mapStateToProps 传入的state
+ * @param {*} mapDispachToProp 传入的action
+ * @return {*}
+ */
+export function connect(mapStateToProps, mapDispachToProp) {
+  return function enhanceHOC(WrappedComponent) {
+    class EnhanceComponent extends PureComponent {
+      constructor(props, context) {
+        super(props, context);
+
+        this.state = {
+          storeState: mapStateToProps(context.getState())
+        }
+      }
+
+      componentDidMount() {
+        this.unsubscribe = this.context.subscribe(() => {
+          this.setState({
+            storeState: mapStateToProps(this.context.getState())
+          })
+        })
+      }
+
+      componentWillUnmount() {
+        this.unsubscribe();
+      }
+
+      render() {
+        return <WrappedComponent {...this.props}
+          {...mapStateToProps(this.context.getState())}
+          {...mapDispachToProp(this.context.dispatch)} />
+      }
+    }
+
+    EnhanceComponent.contextType = StoreContext;
+
+    return EnhanceComponent;
+  }
+}
+```
+
+修改项目入口文件index.js
+
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import store from './store';
+import { StoreContext } from './utils/context';
+import App from './App';
+
+ReactDOM.render(
+  <StoreContext.Provider value={store}>
+    <App />
+  </StoreContext.Provider>,
+  document.getElementById('root')
+);
+```
+
+#### 11.8.4react-redux-connect
+
+使用react-redux实现以上功能。
+
+1. 修改项目入口文件index.js
+
+```js
+import React from 'react';
+import ReactDOM from 'react-dom';
+
+import store from './store';
+
+// import { StoreContext } from './utils/context';
+import { Provider } from 'react-redux';
+
+import App from './App';
+
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  document.getElementById('root')
+);
+```
+
+使用:
+
+pages/about.js
+
+```js
+import React from 'react';
+// import { connect } from '../utils/connect';
+import { connect } from 'react-redux';
+
+import {
+  decAction,
+  subAction
+} from "../store/actionCreators";
+
+function About(props) {
+  console.log("About页面重新渲染了");
+  return (
+    <div>
+      <hr />
+      <h1>About</h1>
+      {/* <h2>当前计数: {props.counter}</h2> */}
+      <button onClick={e => props.decrement()}>-1</button>
+      <button onClick={e => props.subNumber(5)}>-5</button>
+      <h1>Banner</h1>
+      <ul>
+        {
+          props.banners.map((item, index) => {
+            return <li key={item.acm}>{item.title}</li>
+          })
+        }
+      </ul>
+      <h1>Recommend</h1>
+      <ul>
+        {
+          props.recommends.map((item, index) => {
+            return <li key={item.acm}>{item.title}</li>
+          })
+        }
+      </ul>
+    </div>
+  )
+}
+
+const mapStateToProps = state => {
+  return {
+    banners: state.banners,
+    recommends: state.recommends
+  }
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    decrement: function () {
+      dispatch(decAction());
+    },
+    subNumber: function (num) {
+      dispatch(subAction(num))
+    }
+  }
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(About);
+```
+
+pages/home.js
+
+```js
+import React, { PureComponent } from 'react';
+
+// import {connect} from '../utils/connect';
+import { connect } from 'react-redux';
+
+import axios from 'axios';
+
+import {
+  incAction,
+  addAction,
+  changeBannersAction,
+  changeRecommendAction
+} from '../store/actionCreators'
+
+class Home extends PureComponent {
+  componentDidMount() {
+    axios({
+      url: "http://123.207.32.32:8000/home/multidata",
+    }).then(res => {
+      const data = res.data.data;
+      this.props.changeBanners(data.banner.list);
+      this.props.changeRecommends(data.recommend.list);
+    })
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>Home</h1>
+        <h2>当前计数: {this.props.counter}</h2>
+        <button onClick={e => this.props.increment()}>+1</button>
+        <button onClick={e => this.props.addNumber(5)}>+5</button>
+      </div>
+    )
+  }
+}
+
+const mapStateToProps = state => ({
+  counter: state.counter
+})
+
+const mapDispatchToProps = dispatch => ({
+  increment() {
+    dispatch(incAction());
+  },
+  addNumber(num) {
+    dispatch(addAction(num));
+  },
+  changeBanners(banners) {
+    dispatch(changeBannersAction(banners));
+  },
+  changeRecommends(recommends) {
+    dispatch(changeRecommendAction(recommends));
+  }
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
+```
+
+#### 11.8.5redux-thunk使用
+
+
+
+
+
+
+
+#### 11.8.6redux-saga使用
+
+
+
+
 
 ## 12.react-router
 
