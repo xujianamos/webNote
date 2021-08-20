@@ -1,6 +1,6 @@
-## 1.React基础知识
+# 1.React基础知识
 
-### 1.1React开发依赖
+## 1.1React开发依赖
 
 开发React必须依赖三个库：
 
@@ -8,7 +8,7 @@
 - react-dom：react渲染在不同平台所需要的核心代码
 - babel：将jsx转换成React代码的工具
 
-### 1.2React中的hello world
+## 1.2React中的hello world
 
 ```jsx
 <body>
@@ -46,11 +46,11 @@ ReactDOM.render(<App/>, document.getElementById("app"));
 </body>
 ```
 
-## 2.React中的jsx语法
+# 2.React中的jsx语法
 
 JSX是一种JavaScript的语法扩展（eXtension），也在很多地方称之为JavaScript XML，因为看起就是一段XML语法；它用于描述我们的UI界面，并且其完全可以和JavaScript融合在一起使用；
 
-### 2.1JSX的书写规范
+## 2.1JSX的书写规范
 
 1. JSX的顶层**只能有一个根元素**，所以我们很多时候会在外层包裹一个div原生（或者使用后面我们学习的Fragment）；
 
@@ -60,14 +60,14 @@ JSX是一种JavaScript的语法扩展（eXtension），也在很多地方称之�
 
 > **注意：如果是单标签，必须以/>结尾；**
 
-### 2.2JSX嵌入表达式
+## 2.2JSX嵌入表达式
 
 如果我们jsx中的内容是动态的，我们可以通过表达式来获取：
 
 - 书写规则：`{ 表达式 }`
 - 大括号内可以是变量、字符串、数组、函数调用等任意js表达式；
 
-#### 2.2.1jsx中的注释
+### 2.2.1jsx中的注释
 
 jsx是嵌入到JavaScript中的一种语法，所以在编写注释时，需要通过JSX的语法来编写：
 
@@ -78,13 +78,14 @@ jsx是嵌入到JavaScript中的一种语法，所以在编写注释时，需要�
 </div>
 ```
 
-#### 2.2.2JSX嵌入变量
+### 2.2.2JSX嵌入变量
 
 - 情况一：当变量是Number、String、Array类型时，可以直接显示
 
 - 情况二：当变量是null、undefined、Boolean类型时，内容为空；
 
-- - 如果希望可以显示null、undefined、Boolean，那么需要转成字符串；
+  - 如果希望可以显示null、undefined、Boolean，那么需要转成字符串；
+
   - 转换的方式有很多，比如toString方法、和空字符串拼接，String(变量)等方式；
 
 - 情况三：对象类型不能作为子元素（not valid as a React child）
@@ -172,7 +173,7 @@ class App extends React.Component {
 }
 ```
 
-#### 2.2.3JSX嵌入表达式
+### 2.2.3JSX嵌入表达式
 
 JSX中，也可以是一个表达式。
 
@@ -213,7 +214,7 @@ class App extends React.Component {
 }
 ```
 
-#### 2.2.4jsx绑定属性
+### 2.2.4jsx绑定属性
 
 很多时候，描述的HTML原生会有一些属性，而我们希望这些属性也是动态的：
 
@@ -225,13 +226,16 @@ class App extends React.Component {
 
 - 比如元素可能需要绑定class
 
-- - 注意：绑定class比较特殊，因为class在js中是一个关键字，所以jsx中不允许直接写class
+  - 注意：绑定class比较特殊，因为class在js中是一个关键字，所以jsx中不允许直接写class
+
   - 写法：使用`className`替代
 
 - 比如原生使用内联样式style
 
-- - style后面跟的是一个对象类型，对象中是样式的属性名和属性值；
+  - style后面跟的是一个对象类型，对象中是样式的属性名和属性值；
+
   - 注意：**这里会将属性名转成驼峰标识**，**而不是连接符**`-`；
+
 
 我们来演示一下属性的绑定：
 
@@ -264,7 +268,7 @@ class App extends React.Component {
 }
 ```
 
-### 2.3jsx事件监听
+## 2.3jsx事件监听
 
 **React 事件的命名采用小驼峰式（camelCase），而不是纯小写；**
 
@@ -286,13 +290,14 @@ class App extends React.Component {
 }
 ```
 
-#### 2.3.1this绑定问题
+### 2.3.1this绑定问题
 
 在事件执行后，我们可能需要获取当前类的对象中相关的属性：
 
 - 比如我们这里打印：`this.state.message`
 
-- - 但是这里会报错：`Cannot read property 'state' of undefined`
+  - 但是这里会报错：`Cannot read property 'state' of undefined`
+
   - **原因是`this`在这里是`undefined`**
 
 - 如果我们这里直接打印this，也会发现它是一个undefined
@@ -327,7 +332,7 @@ class App extends React.Component {
 - 原因是`btnClick`函数并不是我们主动调用的，而是当button发生改变时，React内部调用了`btnClick`函数；
 - 而它内部调用时，并不知道要如何绑定正确的this；
 
-#### 2.3.2解决this的问题
+### 2.3.2解决this的问题
 
 **方案一**:**bind给btnClick显示绑定this**
 
@@ -361,14 +366,14 @@ class App extends React.Component {
     this.state = {
       message: "你好啊,李银河"
     }
-	//绑定this
+	//在constructor中绑定this，解决在return函数中多次调用同一事件方法多次绑定this的情况
     this.btnClick = this.btnClick.bind(this);
   }
 
   render() {
     return (
       <div>
-        {/*可以直接绑定方法*/}
+        {/* 多次调用btnClick函数，而无需再次绑定this */}
         <button onClick={this.btnClick}>点我一下(React)</button>
         <button onClick={this.btnClick}>也点我一下(React)</button>
       </div>
@@ -450,7 +455,7 @@ class App extends React.Component {
 }
 ```
 
-#### 2.3.3事件参数传递
+### 2.3.3事件参数传递
 
 在执行事件函数时，有可能我们需要获取一些参数信息：比如event对象、其他参数
 
@@ -466,11 +471,13 @@ class App extends React.Component {
   render() {
     return (
       <div>
+            {/*btnClick方法中没有使用this，因此无需绑定this*/}
         <a href="http://www.baidu.com" onClick={this.btnClick}>点我一下</a>
       </div>
     )
   }
-
+	
+  // e为原生的事件对象
   btnClick(e) {
     e.preventDefault();
     console.log(e);
@@ -500,6 +507,8 @@ class App extends React.Component {
         {
           this.state.names.map((item, index) => {
             return (
+                {/* 传入aClick函数的第一个参数为事件对象*/}
+                {/* 给事件传递多个参数时，需要主动将事件对象当作第一个参数进行传递*/}
               <a href="#" onClick={e => this.aClick(e, item, index)}>{item}</a>
             )
           })
@@ -516,9 +525,9 @@ class App extends React.Component {
 }
 ```
 
-### 2.4jsx条件渲染
+## 2.4jsx条件渲染
 
-#### 2.4.1条件判断语句
+### 2.4.1条件判断语句
 
 一种方式是当逻辑较多时，通过条件判断：
 
@@ -564,12 +573,13 @@ class App extends React.Component {
   render() {
     return (
       <div>
-        {/*调用函数*/}
+        {/*调用函数：无需绑定this*/}
         {this.getTitleJsx()}
       </div>
     )
   }
 
+    //直接调用函数就无需绑定this
   getTitleJsx() {
     let titleJsx = null;
     if (this.state.isLogin) {
@@ -582,7 +592,7 @@ class App extends React.Component {
 }
 ```
 
-#### 2.4.2三元运算符
+### 2.4.2三元运算符
 
 另外一种实现条件渲染的方法就是三元运算符：`condition ? true : false;`
 
@@ -607,6 +617,7 @@ class App extends React.Component {
     )
   }
 
+   // 通过事件调用时需要绑定this
   loginBtnClick() {
     this.setState({
       isLogin: !this.state.isLogin
@@ -615,7 +626,7 @@ class App extends React.Component {
 }
 ```
 
-#### 2.4.3与运算符&&
+### 2.4.3与运算符&&
 
 在某些情况下，我们会遇到这样的场景：
 
@@ -634,7 +645,7 @@ class App extends React.Component {
 {this.state.isLogin && <h2>{this.state.username}</h2>}
 ```
 
-#### 2.4.5v-show效果
+### 2.4.4v-show效果
 
 针对一个HTML原生，渲染和不渲染之间，如果切换的非常频繁，那么会相对比较损耗性能：
 
@@ -658,7 +669,7 @@ class App extends React.Component {
   }
 ```
 
-### 2.5jsx列表渲染
+## 2.5jsx列表渲染
 
 在React中并没有像Vue模块语法中的v-for指令，而且需要我们通过JavaScript代码的方式组织数据，转成JSX。
 
@@ -695,9 +706,9 @@ class App extends React.Component {
 ReactDOM.render(<App/>, document.getElementById("app"));
 ```
 
-### 2.6JSX原理解析
+## 2.6JSX原理解析
 
-#### 2.6.1JSX转换本质
+### 2.6.1JSX转换本质
 
 实际上，jsx 仅仅只是 `React.createElement(component, props, ...children)` 函数的语法糖。
 
@@ -707,18 +718,21 @@ createElement需要传递三个参数：
 
 - 参数一：`type`
 
-- - 当前ReactElement的类型；
+  - 当前ReactElement的类型；
+
   - 如果是标签元素，那么就使用字符串表示 “div”；
   - 如果是组件元素，那么就直接使用组件的名称；
 
 - 参数二：`config`
 
-- - 所有jsx中的属性都在config中以对象的属性和值的形式存储
+  - 所有jsx中的属性都在config中以对象的属性和值的形式存储
 
 - 参数三：`children`
 
-- - 存放在标签中的内容，以children数组的方式进行存储；
+  - 存放在标签中的内容，以children数组的方式进行存储；
+
   - 当然，如果是多个元素呢？React内部有对它们进行处理，处理的源码在下方
+
 
 对children进行的处理：
 
@@ -742,7 +756,7 @@ if (childrenLength === 1) {
 }
 ```
 
-#### 2.6.2编写createElement
+### 2.6.2编写createElement
 
 ```jsx
 <div className="app">
@@ -796,15 +810,15 @@ ReactDOM.render(React.createElement(App, null) , document.getElementById("app"))
 - 所以，`type="text/babel"`可以被我们删除掉了；
 - 所以，`<script src="../react/babel.min.js"></script>`可以被我们删除掉了；
 
-#### 2.6.2虚拟DOM
+### 2.6.2虚拟DOM
 
 
 
-## 3.React脚手架
+# 3.React脚手架
 
 React的脚手架：`create-react-app`
 
-### 3.1包管理工具
+## 3.1包管理工具
 
 **什么是npm？**
 
@@ -853,7 +867,7 @@ sudo npm install -g yarn
 npm install -g cnpm --registry=https://registry.npm.taobao.org
 ```
 
-### 3.2安装脚手架
+## 3.2安装脚手架
 
 最后一个需要安装的是创建React项目的脚手架：
 
@@ -867,9 +881,9 @@ npm install -g create-react-app
 create-react-app --version
 ```
 
-### 3.3创建React项目
+## 3.3创建React项目
 
-#### 3.3.1创建React项目
+### 3.3.1创建React项目
 
 现在，我们就可以通过脚手架来创建React项目了。
 
@@ -891,7 +905,7 @@ cd 项目名称
 yarn start
 ```
 
-#### 3.3.2目录结构分析
+### 3.3.2目录结构分析
 
 目录结构分析：
 
@@ -931,7 +945,7 @@ PWA解决了哪些问题呢？
 - 实现了消息推送；
 - 等等一系列类似于Native App相关的功能；
 
-#### 3.3.3webpack配置
+### 3.3.3webpack配置
 
 我们说过React的脚手架是基于Webpack来配置的：
 
@@ -953,7 +967,7 @@ yarn eject
 
 <img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20210108214453944.png" alt="image-20210108214453944" style="zoom: 67%;" />
 
-## 4.组件化开发
+# 4.组件化开发
 
 组件化提供了一种抽象，让我们可以开发出一个个独立可复用的小组件来构造我们的应用。
 
@@ -970,9 +984,9 @@ React的组件相对于Vue更加的灵活和多样，按照不同的方式可以
 - 函数组件、无状态组件、展示型组件主要关注UI的展示；
 - 类组件、有状态组件、容器型组件主要关注数据逻辑；
 
-### 4.1创建React组件
+## 4.1创建React组件
 
-#### 4.1.1创建类组件
+### 4.1.1创建类组件
 
 类组件的定义有如下要求：
 
@@ -1022,7 +1036,7 @@ export default class App extends Component {
 
 **注意**：在jsx中只要首字母大写的元素都会当为组件，例如：`<DIV></DIV>`就会渲染为组件，而不是元素`<div</div>`。
 
-#### 4.1.2创建函数组件
+### 4.1.2创建函数组件
 
 函数组件是使用function来进行定义的函数，只是这个函数会返回和类组件中render函数返回一样的内容。
 
@@ -1042,7 +1056,7 @@ export default function App() {
 }
 ```
 
-### 4.2组件的生命周期
+## 4.2组件的生命周期
 
 ![v2-09f698c70d89d72b146653ce67f79c0c_1440w](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/v2-09f698c70d89d72b146653ce67f79c0c_1440w.jpeg)
 
@@ -1062,7 +1076,7 @@ export default function App() {
 - 当我们的组件不再使用，会被从DOM中移除掉（卸载）；
 - 这个时候会回调`componentWillUnmount`生命周期函数；
 
-#### 4.2.1生命周期函数
+### 4.2.1生命周期函数
 
 > **constructor**
 
@@ -1179,19 +1193,21 @@ export default class App extends Component {
 }
 ```
 
-### 4.3父子组件通信
+## 4.3父子组件通信
 
-#### 4.3.1认识组件的嵌套
+### 4.3.1认识组件的嵌套
 
 我们来分析一下下面代码的嵌套逻辑：
 
 ```jsx
 import React, { Component } from 'react';
 
+// Header组件
 function Header() {
   return <h2>Header</h2>
 }
 
+// Main组件，其中调用Banner组件和ProductList组件
 function Main() {
   return (
     <div>
@@ -1200,11 +1216,11 @@ function Main() {
     </div>
   )
 }
-
+// Banner组件
 function Banner() {
   return <div>Banner</div>
 }
-
+// ProductList组件
 function ProductList() {
   return (
     <ul>
@@ -1217,6 +1233,7 @@ function ProductList() {
   )
 }
 
+// Footer组件
 function Footer() {
   return <h2>Footer</h2>
 }
@@ -1244,7 +1261,7 @@ export default class App extends Component {
 - 父组件通过 **属性=值** 的形式来传递给子组件数据；
 - 子组件通过 **props** 参数获取父组件传递过来的数据；
 
-#### 4.3.2父组件传递数据到子组件
+### 4.3.2父组件传递数据到子组件
 
 1. 子组件是class组件
 
@@ -1357,7 +1374,7 @@ export default class App extends Component {
 
 function组件相对来说比较简单，因为不需要有构造方法，也不需要有this的问题。
 
-#### 4.3.3参数验证propTypes
+### 4.3.3参数验证propTypes
 
 对于传递给子组件的数据，有时候我们可能希望进行验证，特别是对于大型项目来说：
 
@@ -1418,7 +1435,7 @@ ChildCpn1.defaultProps = {
 }
 ```
 
-#### 4.3.4子组件传递父组件
+### 4.3.4子组件传递数据到父组件
 
 某些情况，我们也需要子组件向父组件传递消息：
 
@@ -1467,7 +1484,7 @@ export default class App extends Component {
 }
 ```
 
-#### 4.3.5组件通信案例练习
+### 4.3.5组件通信案例练习
 
 index.js代码：
 
@@ -1588,7 +1605,7 @@ style.css
 }
 ```
 
-#### 4.3.6为什么constructor中不是必须传入props也能使用
+### 4.3.6为什么constructor中不是必须传入props也能使用
 
 在进行React开发中，有一个很奇怪的现象：
 
@@ -1618,7 +1635,7 @@ class ChildCpn extends Component {
 
 **结论：你无论是否手动的将props保存到组件的实例上，React内部都会帮你保存的，**
 
-### 4.4React插槽实现
+## 4.4React插槽实现
 
 在开发中，我们抽取了一个组件，但是为了让这个组件具备更强的通用性，我们不能将组件中的内容限制为固定的div、span等等这些元素。
 
@@ -1657,7 +1674,7 @@ class ChildCpn extends Component {
 }
 ```
 
-#### 4.4.1children实现
+### 4.4.1children实现
 
 每个组件都可以获取到 `props.children`：它包含组件的开始标签和结束标签之间的内容。
 
@@ -1715,7 +1732,7 @@ export default class App extends Component {
 }
 ```
 
-#### 4.4.2props实现
+### 4.4.2props实现
 
 通过children实现的方案虽然可行，但是有一个弊端：通过索引值获取传入的元素很容易出错，不能精准的获取传入的原生；
 
@@ -1756,7 +1773,7 @@ export default class App extends Component {
 }
 ```
 
-### 4.5非父子组件通信
+## 4.5非父子组件通信
 
 非父子组件数据的共享：
 
@@ -1849,7 +1866,7 @@ function App2() {
 - Context 提供了一种在组件之间共享此类值的方式，而不必显式地通过组件树的逐层传递 props；
 - **Context 设计目的是为了共享那些对于一个组件树而言是“全局”的数据**，例如当前认证的用户、主题或首选语言；
 
-#### 4.5.1Context相关的API
+### 4.5.1Context相关的API
 
 **React.createContext**
 
@@ -1916,10 +1933,10 @@ MyClass.contextType = MyContext;
 
 这里，React 组件也可以订阅到 context 变更。这能让你在 `函数式组件` 中完成订阅 context。
 
-- 这里需要 函数作为子元素（function as child）这种做法；
+- 这里需要函数作为子元素（function as child）这种做法；
 - 这个函数接收当前的 context 值，返回一个 React 节点；
 
-#### 4.5.2Context使用过程
+### 4.5.2Context使用过程
 
 我们先按照前面三个步骤来使用一个Context：
 
@@ -1936,7 +1953,6 @@ class ProfileHeader extends Component {
     return (
       <div>
         {/*每个类组件都有一个context属性，函数式组件没有context属性*/}
-        {/*每个类组件都有一个context属性*/}
         <h2>用户昵称: {this.context.nickname}</h2>
         <h2>用户等级: {this.context.level}</h2>
       </div>
@@ -1997,8 +2013,9 @@ const UserContext = React.createContext({ nickname: "默认值", level: -1 })
 
 **什么时候使用Context.Consumer呢？**
 
-- 1.当使用value的组件是一个函数式组件时；
-- 2.当组件中需要使用多个Context时；
+1. 当使用value的组件是一个函数式组件时；
+
+2. 当组件中需要使用多个Context时；
 
 演练一：当使用value的组件是一个函数式组件时
 
@@ -2012,7 +2029,7 @@ const UserContext = React.createContext({ nickname: "默认值", level: -1 })
 function ProfileHeader(props) {
   return (
     <div>
-      //Consumer为消费者
+          {/*Consumer为消费者*/}
       <UserContext.Consumer>
         {value => {
          {/*value为传递过来的共享的值*/}
@@ -2063,13 +2080,13 @@ export default class App extends Component {
 
 演练二：多次共享context时
 
-1.创建一个新的Context
+1. 创建一个新的Context
 
 ```jsx
 const ThemeContext = React.createContext({ color: "black" });
 ```
 
-2.Provider的嵌套
+2. Provider的嵌套
 
 ```jsx
 <UserContext.Provider value={{ nickname: "why", level: 99 }}>
@@ -2079,7 +2096,7 @@ const ThemeContext = React.createContext({ color: "black" });
 </UserContext.Provider>
 ```
 
-3.使用Consumer的嵌套
+3. 使用Consumer的嵌套
 
 ```jsx
 <UserContext.Consumer>
@@ -2113,7 +2130,7 @@ const ThemeContext = React.createContext({ color: "black" });
 function ProfileHeader(props) {
   return (
     <div>
-      //Consumer为消费者
+      {/*Consumer为消费者*/}
      <UserContext.Consumer>
   		{value => {
   		  return (
@@ -2172,9 +2189,9 @@ export default class App extends Component {
 }
 ```
 
-### 4.6事件总线
+## 4.6事件总线
 
-#### 4.6.1事件总线的概述
+### 4.6.1事件总线的概述
 
 前面通过Context主要实现的是数据的共享，但是在开发中如果有跨组件之间的事件传递，应该如何操作呢？
 
@@ -2194,7 +2211,7 @@ events常用的API：
 - 监听事件：`eventBus.addListener("事件名称", 监听函数)`；
 - 移除事件：`eventBus.removeListener("事件名称", 监听函数)`；
 
-#### 4.6.2案例演练
+### 4.6.2案例演练
 
 ```jsx
 import React, { Component } from 'react';
@@ -2267,9 +2284,9 @@ export default class App extends Component {
 }
 ```
 
-## 5.setState的使用
+# 5.setState的使用
 
-### 5.1为什么使用setState
+## 5.1为什么使用setState
 
 ```jsx
 import React, { Component } from 'react'

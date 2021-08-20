@@ -803,6 +803,7 @@ import { connect } from '../utils/connect';
 // 导入action
 import { incAction, addAction } from '../store/actionCreators'
 
+// 定义类组件
 class Home extends PureComponent {
   render() {
     return (
@@ -832,17 +833,15 @@ const mapDispatchToProps = dispatch => ({
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
 ```
 
-pages/about.js
+修改about组件：
 
 ```js
+// pages/about.js
 import React from 'react';
 import { connect } from '../utils/connect';
+import { decAction,subAction } from "../store/actionCreators";
 
-import { 
-  decAction,
-  subAction
-} from "../store/actionCreators";
-
+// 定义函数式组件
 function About(props) {
   return (
     <div>
@@ -874,39 +873,39 @@ const mapDispatchToProps = dispatch => {
 export default connect(mapStateToProps, mapDispatchToProps)(About);
 ```
 
-- 将connect中的store进行抽离
+### 8.3.4将connect中的store进行抽离
 
-但是上面的connect函数有一个很大的缺陷：依赖导入的store
+但是上面的connect函数有一个很大的缺陷：依赖项目创建的store，并导入。
 
 - 如果我们将其封装成一个独立的库，需要依赖用于创建的store，我们应该如何去获取呢？
 - 难道让用户来修改我们的源码吗？不太现实；
 
 正确的做法是我们提供一个Provider，Provider来自于我们创建的Context，让用户将store传入到value中即可；
 
-新建utils/context.js
+1. 新建context文件
 
 ```js
+// utils/context.js
 import React from 'react';
-
 const StoreContext = React.createContext(); 
-
 export { StoreContext }
 ```
 
 修改connect函数中class组件部分的代码：
 
 - 注意下面我们将class组件的名称明确的定义出来，并且给它的`contextType`进行了赋值；
-- 在组件内部用到store的地方，统一使用this.context代替（注意：constructor中直接使用第二个参数即可）
+- 在组件内部用到`store`的地方，统一使用`this.context`代替（注意：constructor中直接使用第二个参数即可）
 
-utils/connect.js
+2. 修改高阶函数connect
 
 ```js
+// utils/connect.js
 import React, { PureComponent } from "react";
-
+// 导入创建的context
 import { StoreContext } from './context';
 
 /**
- * @description: 将redux与组件进行链接
+ * @description: 将redux与组件进行连接
  * @param {*} mapStateToProps 传入的state
  * @param {*} mapDispachToProp 传入的action
  * @return {*}
@@ -948,7 +947,7 @@ export function connect(mapStateToProps, mapDispachToProp) {
 }
 ```
 
-修改项目入口文件index.js
+3. 修改项目入口文件index.js
 
 ```js
 import React from 'react';
@@ -971,34 +970,37 @@ ReactDOM.render(
 
 尽管这样说，redux依然是和React或者Deku的库结合的更好，因为他们是通过state函数来描述界面的状态，Redux可以发射状态的更新，让他们作出相应。
 
-虽然我们之前已经实现了connect、Provider这些帮助我们完成连接redux、react的辅助工具，但是实际上redux官方帮助我们提供了 react-redux 的库，可以直接在项目中使用，并且实现的逻辑会更加的严谨和高效。
+虽然我们之前已经实现了connect、Provider这些帮助我们完成连接redux、react的辅助工具，但是实际上redux官方帮助我们提供了 `react-redux`的库，可以直接在项目中使用，并且实现的逻辑会更加的严谨和高效。
 
-安装react-redux：
+## 9.1安装react-redux
 
 ```
 yarn add react-redux
 ```
 
-使用connect函数：
+## 9.2使用connect函数
 
-- 将之前使用的connect函数，换成react-redux的connect函数；
+将之前使用的connect函数，换成react-redux的connect函数:
 
 ```js
 import React, { PureComponent } from 'react';
+// 从react-redux库导入高阶函数connect
 import { connect } from "react-redux";
 
 // import connect from '../utils/connect2';
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
 ```
 
-使用Provider：
+## 9.3使用Provider
 
-- 将之前自己创建的Context的Provider，换成react-redux的Provider组件：
-- 注意：这里传入的是store属性，而不是value属性（待会儿可以在源码中查看）；
+将之前自己创建的Context的Provider，换成react-redux的Provider组件；
+
+**注意**：这里传入的是store属性，而不是value属性（待会儿可以在源码中查看）;
 
 ```js
+// 从react-redux库导入Provider
 import { Provider } from 'react-redux';
-
+// 导入store
 import store from './store';
 
 ReactDOM.render(
@@ -1009,7 +1011,7 @@ ReactDOM.render(
 );
 ```
 
-示例：
+## 9.4示例
 
 1. 修改项目入口文件index.js
 
@@ -1032,19 +1034,16 @@ ReactDOM.render(
 );
 ```
 
-使用:
-
-pages/about.js
+2. 修改about组件：
 
 ```js
+// pages/about.js
 import React from 'react';
 // import { connect } from '../utils/connect';
+// 从react-redux库导入高阶函数connect
 import { connect } from 'react-redux';
 
-import {
-  decAction,
-  subAction
-} from "../store/actionCreators";
+import { decAction,subAction } from "../store/actionCreators";
 
 function About(props) {
   console.log("About页面重新渲染了");
@@ -1096,9 +1095,10 @@ const mapDispatchToProps = dispatch => {
 export default connect(mapStateToProps, mapDispatchToProps)(About);
 ```
 
-pages/home.js
+3. 修改home组件
 
 ```js
+// pages/home.js
 import React, { PureComponent } from 'react';
 
 // import {connect} from '../utils/connect';
@@ -1160,7 +1160,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(Home);
 
 # 10.Redux中间件
 
-#### 11.1.1组件中异步请求
+## 10.1组件中异步请求
 
 在之前简单的案例中，redux中保存的counter是一个本地定义的数据，我们可以直接通过同步的操作来dispatch action，state就会被立即更新。
 
@@ -1175,9 +1175,9 @@ export default connect(mapStateToProps, mapDispatchToProps)(Home);
 - 在Home组件中请求banners和recommends的数据；
 - 在Profile组件中展示banners和recommends的数据；
 
-**redux代码进行如下修改：**
+### 10.1.1redux代码进行如下修改
 
-在reducer.js中添加state初始化数据和reducer函数中处理代码：
+1. 在reducer.js中添加state初始化数据和reducer函数中处理代码：
 
 ```js
 const initialState = {
@@ -1202,14 +1202,14 @@ function reducer(state = initialState, action) {
 }
 ```
 
-constants中增加常量：
+2. constants中增加常量：
 
 ```js
 const CHANGE_BANNER = "CHANGE_BANNER";
 const CHANGE_RECOMMEND = "CHANGE_RECOMMEND";
 ```
 
-actionCreators.js中添加actions：
+3. actionCreators.js中添加actions：
 
 ```js
 const changeBannersAction = (banners) => ({
@@ -1223,9 +1223,9 @@ const changeRecommendsAction = (recommends) => ({
 })
 ```
 
-**组件中代码代码修改：**
+### 10.1.2组件中代码代码修改
 
-Home组件：
+1. Home组件：
 
 ```js
 import React, { PureComponent } from 'react';
@@ -1248,7 +1248,6 @@ class Home extends PureComponent {
     })
   }
 
-  ...其他业务代码
 }
 
 const mapStateToProps = state => {
@@ -1274,7 +1273,7 @@ const mapDispatchToProps = dispatch => {
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
 ```
 
-Profile组件：
+2. Profile组件：
 
 ```js
 import React, { PureComponent } from 'react';
@@ -1314,7 +1313,6 @@ class Profile extends PureComponent {
     )
   }
 
-  ...其他逻辑代码
 }
 
 const mapStateToProps = state => {
@@ -1336,7 +1334,7 @@ const mapDispatchToProps = dispatch => {
 export default connect(mapStateToProps, mapDispatchToProps)(Profile);
 ```
 
-#### 11.10.2redux中异步请求
+## 10.2redux中异步请求
 
 上面的代码有一个缺陷：
 
@@ -1368,18 +1366,18 @@ redux-thunk是如何做到让我们可以发送异步的请求呢？
 
 - 该函数会被调用，并且会传给这个函数一个dispatch函数和getState函数；
 
-- - dispatch函数用于我们之后再次派发action；
+  - dispatch函数用于我们之后再次派发action；
+
   - getState函数考虑到我们之后的一些操作需要依赖原来的状态，用于让我们可以获取之前的一些状态；
 
-**如何使用redux-thunk呢？**
 
-1.安装redux-thunk
+### 10.2.1安装redux-thunk
 
 ```
 yarn add redux-thunk
 ```
 
-2.在创建store时传入应用了middleware的enhance函数
+### 10.2.2在创建store时传入应用了middleware的enhance函数
 
 - 通过applyMiddleware来结合多个Middleware, 返回一个enhancer；
 - 将enhancer作为第二个参数传入到createStore中；
@@ -1394,7 +1392,7 @@ const enhancer = applyMiddleware(thunkMiddleware);
 const store = createStore(reducer, enhancer);
 ```
 
-3.定义返回一个函数的action：
+3. 定义返回一个函数的action
 
 - 注意：这里不是返回一个对象了，而是一个函数；
 - 该函数在dispatch之后会被执行；
@@ -1411,7 +1409,7 @@ const getHomeMultidataAction = () => {
 }
 ```
 
-4.修改home.js中的代码：
+4. 修改home.js中的代码：
 
 ```js
 import React, { PureComponent } from 'react';
@@ -1428,7 +1426,6 @@ class Home extends PureComponent {
     this.props.getHomeMultidata();
   }
 
-  ...其他逻辑代码
 }
 
 ...mapStatetoProps
@@ -1447,7 +1444,7 @@ const mapDispatchToProps = dispatch => {
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
 ```
 
-#### 11.10.3redux-devtools
+## 10.3redux-devtools
 
 我们之前讲过，redux可以方便的让我们对状态进行跟踪和调试，那么如何做到呢？
 
@@ -1483,9 +1480,9 @@ const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({trace: tru
 
 ![图片](https://mmbiz.qpic.cn/mmbiz_jpg/O8xWXzAqXuvIZjYO8f7o0s12OGsibvQjFDo8S03T5Rrvb66ugTE0iaib6OaKlzfRD0XOvskBAnFTzFUP8dbNCh7Kg/640?wx_fmt=jpeg&tp=webp&wxfrom=5&wx_lazy=1&wx_co=1)
 
-#### 11.10.4redux-saga
+## 10.4redux-saga
 
-1. #### ES6的generator
+### 10.4.1ES6的generator
 
 saga中间件使用了ES6的generator语法，所以我们有必须简单讲解一下：
 
@@ -1561,7 +1558,7 @@ bIterator.next().value.then(res => {
 });
 ```
 
-##### redux-saga的使用
+### 10.4.2redux-saga的使用
 
 1. 安装redux-saga
 
@@ -1629,9 +1626,9 @@ function* mySaga() {
 export default mySaga;
 ```
 
-#### 11.10.5中间件的原理
+## 10.5中间件的原理
 
-##### a.打印日志需求
+### 10.5.1打印日志需求
 
 前面我们已经提过，中间件的目的是在redux中插入一些自己的操作：
 
@@ -1678,7 +1675,7 @@ dispatchAndLog(addAction(10));
 
 我们来进一步对代码进行优化；
 
-##### b.修改dispatch
+### 10.5.2修改dispatch
 
 事实上，我们可以利用一个hack一点的技术：Monkey Patching，利用它可以修改原有的程序逻辑；
 
@@ -1715,7 +1712,7 @@ function patchLogging(store) {
 }
 ```
 
-##### c.thunk需求
+### 10.5.3thunk需求
 
 redux-thunk的作用：
 
@@ -1759,7 +1756,7 @@ function getData(dispatch) {
 store.dispatch(getData);
 ```
 
-##### d.合并中间件
+### 10.5.4合并中间件
 
 单个调用某个函数来合并中间件并不是特别的方便，我们可以封装一个函数来实现所有的中间件合并：
 
@@ -1781,7 +1778,7 @@ applyMiddleware(store, [patchLogging, patchThunk]);
 
 # 11.Redux中state如何管理
 
-#### 11.11.1reducer代码拆分
+## 11.1reducer代码拆分
 
 我们来看一下目前我们的reducer：
 
@@ -1865,7 +1862,7 @@ function reducer(state = initialState, action) {
 }
 ```
 
-#### 11.11.2reducer文件拆分
+## 11.2reducer文件拆分
 
 目前我们已经将不同的状态处理拆分到不同的reducer中，我们来思考：
 
@@ -1898,7 +1895,7 @@ function reducer(state = initialState, action) {
 - home/reducer.js：存放分离的reducer代码；
 - index.js：统一对外暴露的内容；
 
-#### 11.11.3combineReducers
+## 11.3combineReducers
 
 目前我们合并的方式是通过每次调用reducer函数自己来返回一个新的对象：
 
@@ -2010,9 +2007,9 @@ export default function combineReducers(reducers) {
 }
 ```
 
-#### 11.11.4ImmutableJS
+## 11.4ImmutableJS
 
-##### a.数据可变性的问题
+### 11.4.1数据可变性的问题
 
 在React开发中，我们总是会强调数据的不可变性：
 
@@ -2052,7 +2049,7 @@ console.log(obj); // {name: "kobe", age: 18}
 - 从代码的角度来说，没有问题，也解决了我们实际开发中一些潜在风险；
 - 从性能的角度来说，有问题，如果对象过于庞大，这种拷贝的方式会带来性能问题以及内存浪费；
 
-##### b.认识ImmutableJS
+### 11.4.2认识ImmutableJS
 
 为了解决上面的问题，出现了Immutable对象的概念：
 
@@ -2071,7 +2068,7 @@ console.log(obj); // {name: "kobe", age: 18}
 
 ![图片](https://mmbiz.qpic.cn/mmbiz_gif/O8xWXzAqXuuPtxc2VNSb80zpYnIGMuvn6vRJMGliaqLp8wWNEgKOVutM4vjiaiaGD0iba6tYMQ8DFV8MsYzC7via0bg/640?wx_fmt=gif&tp=webp&wxfrom=5&wx_lazy=1)
 
-##### c.ImutableJS常见API
+### 11.4.3ImutableJS常见API
 
 我们来学习一下ImmutableJS常用的API：
 
@@ -2136,7 +2133,7 @@ console.log(array);
 console.log(obj);
 ```
 
-#### 11.11.5Redux FAQ
+## 11.5Redux FAQ
 
 ### 是否将所有的状态应用到redux
 
