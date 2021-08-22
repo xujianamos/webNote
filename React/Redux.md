@@ -1661,10 +1661,10 @@ console.log("new state:", store.getState());
 ```js
 function dispatchAndLog(action) {
   console.log("dispatching:", action);
-  store.dispatch(addAction(5));
+  store.dispatch(action);
   console.log("新的state:", store.getState());
 }
-
+//调用
 dispatchAndLog(addAction(10));
 ```
 
@@ -1689,11 +1689,13 @@ let next = store.dispatch;
 
 function dispatchAndLog(action) {
   console.log("dispatching:", addAction(10));
-  next(addAction(5));
+  next(action);
   console.log("新的state:", store.getState());
 }
 
 store.dispatch = dispatchAndLog;
+// 调用
+store.dispatch(addAction(10))
 ```
 
 当然，我们可以将它封装到一个模块中，只要调用这个模块中的函数，就可以对store进行这样的处理：
