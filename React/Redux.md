@@ -1712,6 +1712,12 @@ function patchLogging(store) {
 
   store.dispatch = dispatchAndLog;
 }
+
+// 使用
+patchLogging(store)// 必须调用这个函数才能生效
+
+// 调用
+store.dispatch(addAction(10))
 ```
 
 ### 10.5.3thunk需求
