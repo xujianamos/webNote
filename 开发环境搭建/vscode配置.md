@@ -125,3 +125,46 @@ resolve: {
 }
 ```
 
+# 4.vscode加入右键菜单
+
+1. 随便找个地方新建个XXX.reg的注册表脚本文件，文件名叫啥都可以，但后缀名必须为.reg。
+
+vscode.reg：
+
+```bash
+Windows Registry Editor Version 5.00
+
+# 右击文件时弹出的菜单
+[HKEY_CLASSES_ROOT\*\shell\VSCode]
+@="Open with Code" #显示的文字
+"Icon"="D:\\Program Files\\Microsoft VS Code\\Code.exe" # 显示的图标,修改为自己安装的vscode路径
+
+# 要执行的命令
+[HKEY_CLASSES_ROOT\*\shell\VSCode\command]
+# 具体的命令代码，%1代表第一个参数，即右击选中的那个文件的路径,修改为自己安装的vscode路径
+@="\"D:\\Program Files\\Microsoft VS Code\\Code.exe\" \"%1\""
+
+Windows Registry Editor Version 5.00
+
+# 右击文件夹时弹出的菜单
+[HKEY_CLASSES_ROOT\Directory\shell\VSCode]
+@="Open with Code"
+"Icon"="D:\\Program Files\\Microsoft VS Code\\Code.exe"# 修改为自己安装的vscode路径
+
+[HKEY_CLASSES_ROOT\Directory\shell\VSCode\command]
+@="\"D:\\Program Files\\Microsoft VS Code\\Code.exe\" \"%V\""#修改为自己安装的vscode路径
+
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\VSCode]
+@="Open with Code"
+"Icon"="D:\\Program Files\\Microsoft VS Code\\Code.exe" #修改为自己安装的vscode路径
+
+[HKEY_CLASSES_ROOT\Directory\Background\shell\VSCode\command]
+@="\"D:\\Program Files\\Microsoft VS Code\\Code.exe\" \"%V\"" # 修改为自己安装的vscode路径
+```
+
+2. **Ctrl+H**将`D:\\Program Files\\Microsoft VS Code\\Code.exe`替换你电脑上**VSCode**的安装路径
+
+3. 双击运行并选择**是**
+
