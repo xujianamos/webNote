@@ -90,38 +90,57 @@ resolve: {
 
 ```json
 {
-  "print to vue template": {
-    "prefix": "vue template",
-    "body": [
-      "<template>",
-      "  <div class=\"$1\">",
-      "  </div>",
-      "</template>",
-      "",
-      "<script>",
-      "export default {",
-      "  name: '$TM_FILENAME_BASE',",
-      "  components: {},",
-      "  props: {},",
-      "  data() {",
-      "    return {",
-      "",
-      "    }",
-      "  },",
-      "  created() { },",
-      "  mounted() { },",
-      "  methods: { },",
-      "  computed: { },",
-      "  watch: { }",
-      "}",
-      "</script>",
-      "",
-      "<style lang=\"less\" scoped>",
-      "</style>",
-      ""
-    ],
-    "description": "文件.vue 模板指令"
-  }
+    "vue-template": {//模板名称
+        "prefix": "vue",//触发条件
+        "body": [//内容
+            "<!--",
+            "* @description  ${1:参数1}",
+            "* @fileName  ${TM_FILENAME_BASE}",
+            "* @author userName",
+            "* @date ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE} ${CURRENT_HOUR}:${CURRENT_MINUTE}:${CURRENT_SECOND}",
+            "* @version V1.0.0",
+            "!-->",
+            "<template>",
+            "  <div id='${TM_FILENAME_BASE}'",
+            "\t\t\t class='${TM_FILENAME_BASE}'>",
+            "  </div>",
+            "</template>",
+            "",
+            "<script>",
+            "export default {",
+            "  props: { // 父辈向子辈传参",
+            "  },",
+            "  name: '${TM_FILENAME_BASE}',",
+            "  data () {",
+            "    return {",
+            "",
+            "    }",
+            "  },",
+            "  created () { // 实例被创建之后执行代码",
+            "",
+            "\t},",
+            "  computed: { // 计算属性",
+            "",
+            "\t},",
+            "  components: { // 组件的引用",
+            "",
+            "\t},",
+            "  methods: { // 方法",
+            "",
+            "\t},",
+            "  mounted () { // 页面进入时加载内容",
+            "",
+            "\t},",
+            "  watch: { // 监测变化",
+            "",
+            "\t}",
+            "}",
+            "</script>",
+            "<style scoped lang='less'>",
+            "</style>"
+        ],
+        "description": "vue代码片段" //描述
+    }
 }
 ```
 
@@ -167,4 +186,65 @@ Windows Registry Editor Version 5.00
 2. **Ctrl+H**将`D:\\Program Files\\Microsoft VS Code\\Code.exe`替换你电脑上**VSCode**的安装路径
 
 3. 双击运行并选择**是**
+
+# 5.vscode个人json配置
+
+```json
+{
+  "workbench.iconTheme": "vscode-icons-mac",
+  "editor.fontSize": 18,
+  "editor.minimap.enabled": false,
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "terminal.integrated.shell.osx": "/bin/bash",
+  "path-intellisense.showHiddenFiles": false,
+  "path-intellisense.extensionOnImport": false,
+  "path-intellisense.autoSlashAfterDirectory": false,
+  "path-intellisense.mappings": {
+    // "@": "${workspaceFolder}/src",
+    "@": "${workspaceRoot}/src",
+    "lib": "${workspaceFolder}/lib",
+    "global": "/Users/dummy/globalLibs"
+  },
+
+  "breadcrumbs.enabled": false,
+
+  "files.autoSave": "off",
+  // "eslint.validate": [
+  //    "javascript",
+  //    "javascriptreact",
+  //    "html",
+  //    "js"
+  //    { "language": "vue", "autoFix": true }
+  //  ],
+  "eslint.options": {
+    "plugins": ["html"]
+  },
+  "editor.suggestSelection": "first",
+  "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[vue]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "fileheader.customMade": {
+    "Author": "xujian",
+    "Date": "Do not edit",
+    "LastEditors": "xujian",
+    "LastEditTime": "Do not edit",
+    "Description": "",
+    "FilePath": "Do not edit"
+  },
+  "workbench.colorTheme": "escook dark",
+  "window.menuBarVisibility": "toggle",
+  "window.dialogStyle": "custom",
+  "window.titleBarStyle": "native",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.tabSize": 2
+}
+```
 
