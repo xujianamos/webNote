@@ -18,8 +18,19 @@ setTimeout(() => xhr.abort(), 300);
 而对于 Axios 来说，我们可以通过 Axios 内部提供的 `CancelToken` 来取消请求：
 
 ```js
+// 用CancelToken.source工厂方法创建 cancel token
 const CancelToken = axios.CancelToken;
 const source = CancelToken.source();
+
+axios.get('/user/12345', {
+  cancelToken: source.token
+}).catch(function(thrown) {
+  if (axios.isCancel(thrown)) {
+    console.log('Request canceled', thrown.message);
+  } else {
+     // 处理错误
+  }
+});
 
 axios.post('/user/12345', {
   name: 'semlinker'
@@ -33,11 +44,13 @@ source.cancel('Operation canceled by the user.'); // 取消请求，参数是可
 此外，你也可以通过调用 `CancelToken` 的构造函数来创建 `CancelToken`，具体如下所示：
 
 ```js
+// 通过传递一个 executor 函数到 CancelToken 的构造函数来创建 cancel token
 const CancelToken = axios.CancelToken;
 let cancel;
 
 axios.get('/user/12345', {
   cancelToken: new CancelToken(function executor(c) {
+    // executor 函数接收一个 cancel 函数作为参数
     cancel = c;
   })
 });
@@ -57,6 +70,7 @@ const pendingRequest = new Map();
 const requestKey = [method, url, qs.stringify(params), qs.stringify(data)].join('&'); 
 const cancelToken = new CancelToken(function executor(cancel) {
   if(!pendingRequest.has(requestKey)){
+    // 设置cancelToken
     pendingRequest.set(requestKey, cancel);
   }
 })
@@ -79,8 +93,10 @@ const cancelToken = new CancelToken(function executor(cancel) {
 
 ```js
 function generateReqKey(config) {
+  // 请求方式、请求地址、请求参数生成的字符串来作为是否重复请求的依据
   const { method, url, params, data } = config;
-  return [method, url, Qs.stringify(params), Qs.stringify(data)].join("&");
+  const requestKey =  [ method, url, Qs.stringify(params), Qs.stringify(data)].join('&');
+  return requestKey
 }
 ```
 
@@ -105,7 +121,9 @@ function removePendingRequest(config) {
   const requestKey = generateReqKey(config);
   if (pendingRequest.has(requestKey)) {
      const cancelToken = pendingRequest.get(requestKey);
+    // 取消之前发送的请求
      cancelToken(requestKey);
+    // 请求对象中删除requestKey
      pendingRequest.delete(requestKey);
   }
 }
@@ -208,4 +226,86 @@ if (config.cancelToken) {
 ![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/55c3847567ff4dcf974c4e0462220aff~tplv-k3u1fbpfcp-zoom-1.image)
 
 > **需要注意的是已取消的请求可能已经达到服务端，针对这种情形，服务端的对应接口需要进行幂等控制**。
+
+其他代码：
+
+```js
+import axios from 'axios'
+import baseURL from './config'
+import qs from 'qs'
+
+const pendingRequest = new Map(); // 请求对象
+const CancelToken = axios.CancelToken;
+
+axios.defaults.timeout = 30000
+axios.defaults.baseURL = baseURL.target
+
+// 添加请求拦截器
+axios.interceptors.request.use(function(config) {
+  // 在发送请求之前做些什么
+  config.headers = {
+      'content-type': 'application/json',
+      'token': getToken()
+  }
+  // 获取请求key
+  let requestKey = getReqKey(config);
+
+  // 判断是否是重复请求
+  if (pendingRequest.has(requestKey)) { // 是重复请求
+    removeReqKey(requestKey); // 取消
+  }else{
+    // 设置cancelToken
+    config.cancelToken = new CancelToken(function executor(cancel) {
+      pendingRequest.set(requestKey, cancel); // 设置
+    })
+  }
+
+  return config;
+}, function (error) {
+  // 请求错误
+  return Promise.reject(error);
+});
+
+// 添加响应拦截器
+axios.interceptors.response.use(function (response) {
+  // 请求对象中删除requestKey
+  let requestKey = getReqKey(response.config);
+  removeReqKey(requestKey);
+
+  // 对返回数据做点啥 比如状态进行拦截
+  if (response.data.status !== 200) {
+      Toast({
+        message: response.data.message,
+        type: 'warning',
+        duration: 1000
+      })
+      return
+    }
+    
+  // 没问题 返回服务器数据
+  return response.data;
+}, function (error) {
+  let requestKey = getReqKey(error.config);
+  removeReqKey(requestKey);
+  
+  // 响应错误
+  return Promise.reject(error);
+});
+
+// 获取请求key
+function getReqKey(config) {
+  // 请求方式、请求地址、请求参数生成的字符串来作为是否重复请求的依据
+  const { method, url, params, data } = config; // 解构出来这些参数
+  // GET ---> params  POST ---> data
+  const requestKey =  [ method, url, qs.stringify(params), qs.stringify(data)].join('&');
+  return requestKey;
+}
+
+// 取消重复请求
+function removeReqKey(key) {
+  const cancelToken = pendingRequest.get(key);
+  cancelToken(key); // 取消之前发送的请求
+  pendingRequest.delete(key); // 请求对象中删除requestKey
+}
+```
 
