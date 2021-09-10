@@ -335,7 +335,7 @@ module.exports = {
 Hash: e8f77d56163515053f38
 Version: webpack 4.44.1
 Time: 363ms
-Built at: 2020-08-13 11:22:16
+Built at: 2020-08-13 11:22:16	
    Asset      Size  Chunks             Chunk Names
 index.js  3.79 KiB   index  [emitted]  index
  main.js   554 KiB    main  [emitted]  main
