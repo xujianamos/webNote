@@ -50,7 +50,6 @@ const Bar = { template: '<div>bar</div>' }
 // 每个路由应该映射一个组件。 其中"component" 可以是
 // 通过 Vue.extend() 创建的组件构造器，
 // 或者，只是一个组件配置对象。
-// 我们晚点再讨论嵌套路由。
 const routes = [
   { path: '/foo', component: Foo },
   { path: '/bar', component: Bar }
@@ -72,7 +71,7 @@ const app = new Vue({
 // 现在，应用已经启动了！
 ```
 
-通过注入路由器，我们可以在任何组件内通过 `this.$router` 访问==路由器==，也可以通过 `this.$route` 访问==当前路由==：
+通过注入路由器，我们可以在任何组件内通过 `this.$router` 访问路由器，也可以通过 `this.$route` 访问当前路由：
 
 ```js
 // Home.vue
@@ -93,11 +92,11 @@ export default {
 
 该文档通篇都常使用 `router` 实例。留意一下 `this.$router` 和 `router` 使用起来完全一样。我们使用 `this.$router` 的原因是我们并不想在每个独立需要封装路由的组件中都导入路由。
 
-要注意，当 对应的==路由匹配成功==，将==自动设置== class 属性值 `.router-link-active`。
+要注意，当 对应的路由匹配成功，将自动设置 class 属性值 `.router-link-active`。
 
 ## 2.动态路由匹配
 
-我们经常需要把某种模式==匹配到的所有路由==，==全都映射到同个组件==。例如，我们有一个 `User` 组件，对于所有 ID 各不相同的用户，都要使用这个组件来渲染。那么，我们可以在 `vue-router` 的路由路径中使用==动态路径参数==(dynamic segment) 来达到这个效果：
+我们经常需要把某种模式匹配到的所有路由，全都映射到同个组件。例如，我们有一个 `User` 组件，对于所有 ID 各不相同的用户，都要使用这个组件来渲染。那么，我们可以在 `vue-router` 的路由路径中使用**动态路径参数**(dynamic segment) 来达到这个效果：
 
 ```js
 const User = {
@@ -114,7 +113,7 @@ const router = new VueRouter({
 
 现在呢，像 `/user/foo` 和 `/user/bar` 都将映射到相同的路由。
 
-一个==路径参数==使用冒号 `:` 标记。当匹配到一个路由时，参数值会被设置到 `this.$route.params`，可以在每个组件内使用。于是，我们可以更新 `User` 的模板，输出当前用户的 ID：
+一个路径参数使用冒号 `:` 标记。当匹配到一个路由时，参数值会被设置到 `this.$route.params`，可以在每个组件内使用。于是，我们可以更新 `User` 的模板，输出当前用户的 ID：
 
 ```js
 const User = {
@@ -123,7 +122,7 @@ const User = {
 }
 ```
 
-你可以在一个路由中==设置多段路径参数==，对应的值都会设置到 `$route.params` 中。例如：
+你可以在一个路由中设置多段路径参数，对应的值都会设置到 `$route.params` 中。例如：
 
 | 模式                          | 匹配路径            | $route.params                          |
 | ----------------------------- | ------------------- | -------------------------------------- |
@@ -190,7 +189,7 @@ this.$route.params.pathMatch // '/non-existing'
 
 ### 2.3高级匹配模式
 
-`vue-router` 使用 [path-to-regexp](https://github.com/pillarjs/path-to-regexp/tree/v1.7.0) 作为路径匹配引擎，所以支持很多高级的匹配模式，例如：可选的动态路径参数、匹配零个或多个、一个或多个，甚至是自定义正则匹配。
+`vue-router` 使用 path-to-regexp 作为路径匹配引擎，所以支持很多高级的匹配模式，例如：可选的动态路径参数、匹配零个或多个、一个或多个，甚至是自定义正则匹配。
 
 ### 2.4匹配优先级
 
@@ -299,7 +298,7 @@ const router = new VueRouter({
 
 ### 4.1`router.push(location, onComplete?, onAbort?)`
 
-**注意：在 Vue 实例内部，你可以通过 `$router` 访问路由实例。因此你可以调用 `this.$router.push`。**
+> 注意：在 Vue 实例内部，你可以通过 `$router` 访问路由实例。因此你可以调用 `this.$router.push`。
 
 想要导航到不同的 URL，则使用 `router.push` 方法。**这个方法会向 history 栈添加一个新的记录**，所以，当用户点击浏览器后退按钮时，则回到之前的 URL。
 
@@ -325,7 +324,7 @@ router.push({ name: 'user', params: { userId: '123' }})
 router.push({ path: 'register', query: { plan: 'private' }})
 ```
 
-**注意：如果提供了 `path`，`params` 会被忽略，上述例子中的 `query` 并不属于这种情况。取而代之的是下面例子的做法，你需要提供路由的 `name` 或手写完整的带有参数的 `path`：**
+> 注意：如果提供了 `path`，`params` 会被忽略，上述例子中的 `query` 并不属于这种情况。取而代之的是下面例子的做法，你需要提供路由的 `name` 或手写完整的带有参数的 `path`：
 
 ```js
 const userId = '123'
@@ -351,7 +350,7 @@ router.push({ path: '/user', params: { userId }}) // -> /user
 
 ### 4.3`router.go(n)`
 
-这个方法的参数是一个==整数==，意思是在 history 记录中向前或者后退多少步，类似 `window.history.go(n)`
+这个方法的参数是一个整数，意思是在 history 记录中向前或者后退多少步，类似 `window.history.go(n)`
 
 ```js
 // 在浏览器记录中前进一步，等同于 history.forward()
@@ -408,7 +407,7 @@ router.push({ name: 'user', params: { userId: 123 }})
 <router-view class="view three" name="b"></router-view>
 ```
 
-==一个视图使用一个组件渲染==，因此对于同个路由，多个视图就需要多个组件。确保正确使用 `components` 配置 (**带上 s**)：
+一个视图使用一个组件渲染，因此对于同个路由，多个视图就需要多个组件。确保正确使用 `components` 配置 (**带上 s**)：
 
 ```js
 const router = new VueRouter({
@@ -445,7 +444,7 @@ const router = new VueRouter({
 * `UserSettings` 是一个视图组件。
 * `UserEmailsSubscriptions`、`UserProfile`、`UserProfilePreview` 是嵌套的视图组件。
 
-**注意**：*我们先忘记 HTML/CSS 具体的布局的样子，只专注在用到的组件上。*
+> **注意**：我们先忘记 HTML/CSS 具体的布局的样子，只专注在用到的组件上。
 
 `UserSettings` 组件的部分应该是类似下面的这段代码：
 
@@ -516,7 +515,7 @@ const router = new VueRouter({
 })
 ```
 
-注意导航守卫并没有应用在跳转路由上，而仅仅应用在其目标上。在下面这个例子中，为 `/a` 路由添加一个 `beforeEach` 或 `beforeLeave` 守卫并不会有任何效果。
+> 注意:导航守卫并没有应用在跳转路由上，而仅仅应用在其目标上。在下面这个例子中，为 `/a` 路由添加一个 `beforeEach` 或 `beforeLeave` 守卫并不会有任何效果。
 
 ### 7.2别名
 
@@ -589,7 +588,11 @@ const router = new VueRouter({
 ```js
 const router = new VueRouter({
   routes: [
-    { path: '/promotion/from-newsletter', component: Promotion, props: { newsletterPopup: false } }
+    { 
+      path: '/promotion/from-newsletter', 
+      component: Promotion, 
+      props: { newsletterPopup: false } 
+    }
   ]
 })
 ```
@@ -601,7 +604,11 @@ const router = new VueRouter({
 ```js
 const router = new VueRouter({
   routes: [
-    { path: '/search', component: SearchUser, props: (route) => ({ query: route.query.q }) }
+    { 
+      path: '/search', 
+      component: SearchUser, 
+      props: (route) => ({ query: route.query.q }) 
+    }
   ]
 })
 ```
@@ -719,7 +726,7 @@ beforeRouteEnter (to, from, next) {
 }
 ```
 
-注意 `beforeRouteEnter` 是支持给 `next` 传递回调的唯一守卫。对于 `beforeRouteUpdate` 和 `beforeRouteLeave` 来说，`this` 已经可用了，所以**不支持**传递回调，因为没有必要了。
+> 注意： `beforeRouteEnter` 是支持给 `next` 传递回调的唯一守卫。对于 `beforeRouteUpdate` 和 `beforeRouteLeave` 来说，`this` 已经可用了，所以**不支持**传递回调，因为没有必要了。
 
 ```js
 beforeRouteUpdate (to, from, next) {
@@ -978,7 +985,7 @@ export default {
 
 使用前端路由，当切换到新路由时，想要页面滚到顶部，或者是保持原先的滚动位置，就像重新加载页面那样。 `vue-router` 能做到，而且更好，它让你可以自定义路由切换时页面如何滚动。
 
-**注意: 这个功能只在支持 `history.pushState` 的浏览器中可用。**
+> 注意: 这个功能只在支持 `history.pushState` 的浏览器中可用。
 
 当创建一个 Router 实例，你可以提供一个 `scrollBehavior` 方法：
 
