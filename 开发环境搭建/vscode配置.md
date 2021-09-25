@@ -84,6 +84,21 @@ resolve: {
   }
 ```
 
+### 2.3project-manager
+
+开发项目时，用于快速切换项目。
+
+1. 配置文件
+
+- windows或linux使用control+shift+p打开命令行窗口，输入Project Mangager: Edit Projects；
+- 若是mac os系统则使用command+shift+p打开命令行窗口，输入Project Mangager: Edit Projects；
+
+2. 添加本地项目
+
+
+
+
+
 ## 3.代码片段
 
 ### 3.1vue代码片段
