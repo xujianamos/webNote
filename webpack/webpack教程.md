@@ -596,9 +596,7 @@ module.exports = config;
 </html>
 ```
 
-**注意：**
-
-- 在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。 
+> **注意：**在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。 
 
 ## 3.5chunkFilename
 
@@ -620,9 +618,7 @@ webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，cs
 
 文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack 的打包能力，对它们进行处理。
 
-> **注意:**
->
-> - webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
+> **注意:**webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
 
 ## 4.1loader基本配置
 
@@ -790,11 +786,7 @@ npm install --save-dev url-loader file-loader
 
 推荐：如果图片过大，建议使用`file-loader`,加载js文件就会很快。如果图片很小，建议使用`url-loader`,减少http请求。
 
-**注意：**
-
-- url-loader只能处理背景引入的图片，不能处理html标签(img标签)中引入的图片。
-
-- **处理html中的图片需要使用html-loader**
+> **注意：**url-loader只能处理背景引入的图片，不能处理html标签(img标签)中引入的图片。**处理html中的图片需要使用html-loader**
 
 ## 4.4html-loader
 
@@ -1129,7 +1121,7 @@ module.exports=config
 </html>
 ```
 
-**注：**如果你有任何CSS assets 在webpack的输出中（例如， 利用`ExtractTextPlugin`提取CSS）， 那么这些将被包含在HTML head中的`<link>`标签内。
+> **注：**如果你有任何CSS assets 在webpack的输出中（例如， 利用`ExtractTextPlugin`提取CSS）， 那么这些将被包含在HTML head中的`<link>`标签内。
 
 ### 5.1.1配置html模版
 
@@ -1409,19 +1401,19 @@ module.exports = {
 
 ### 5.1.6其他配置项
 
-- `inject`
+> 1. `inject`
 
 向`template`或者`templateContent`中注入所有静态资源，不同的配置值注入的位置不相同。
 
-1、**true或者body**：所有**JavaScript**资源插入到body元素的底部
-2、**head**: 所有**JavaScript**资源插入到head元素中
-3、**false**： 所有静态资源css和JavaScript都不会注入到模板文件中
+- `true`或者`body`：所有JavaScript资源插入到body元素的底部。
+- `head`: 所有JavaScript资源插入到head元素中。
+- `false`： 所有静态资源css和JavaScript都不会注入到模板文件中。
 
-- **`favicon`**
+> 2. **`favicon`**
 
 添加特定favicon路径到输出的html文档中，这个同`title`配置项，需要在模板中动态获取其路径值
 
-- **`hash`**
+> 3. `hash`
 
 值为：true|false。是否为所有注入的静态资源添加webpack每次编译产生的唯一hash值。
 
@@ -1444,7 +1436,7 @@ module.exports = {
 </html>
 ```
 
-- **`excludeChunks`**
+> 4. `excludeChunks`
 
 这个与`chunks`配置项正好相反，用来配置不允许注入的chunk。
 
@@ -1462,12 +1454,12 @@ const loginhtmlWebpackPlugin = new HtmlWebpackPlugin({
 });
 ```
 
-- `chunksSortMode`
+> 5. `chunksSortMode`
 
 none | auto| function，默认auto； 允许指定的chunk在插入到html文档前进行排序。
 **function**值可以指定具体排序规则；**auto**基于chunk的id进行排序； **none**就是不排序
 
-- **`showErrors`**
+> 6. `showErrors`
 
 true|false，默认true；是否将错误信息输出到html页面中。这个很有用，在生成html文件的过程中有错误信息，输出到页面就能看到错误相关信息便于调试。
 
@@ -1596,6 +1588,88 @@ module.exports = {
 | CSS 请求并行                                                 | 没有运行时(runtime)的公共路径修改 |
 | CSS 单独缓存                                                 | 没有热替换                        |
 | 更快的浏览器运行时(runtime) (更少代码和 DOM 操作)            |                                   |
+
+## 5.4copy-webpack-plugin
+
+用于静态资源拷贝。有些时候，我们需要使用已有的JS文件、CSS文件（本地文件），但是不需要 `webpack` 编译。例如，我们在 `public/index.html` 中引入了 `public` 目录下的 `js` 或 `css` 文件。这个时候，如果直接打包，那么在构建出来之后，肯定是找不到对应的 `js` / `css` 了。
+
+`public` 目录结构：
+
+```
+├── public
+│   ├── config.js
+│   ├── index.html
+│   ├── js
+│   │   ├── base.js
+│   │   └── other.js
+│   └── login.html
+```
+
+现在，我们在 `index.html` 中引入了 `./js/base.js`。
+
+```js
+<!-- index.html -->
+<script src="./js/base.js"></script>
+```
+
+这时候，我们 `npm run dev`，会发现有找不到该资源文件的报错信息。
+
+对于这个问题，我们可以手动将其拷贝至构建目录，然后在配置 `CleanWebpackPlugin` 时，注意不要清空对应的文件或文件夹即可，但是如若这个静态文件时不时的还会修改下，那么依赖于手动拷贝，是很容易出问题的。
+
+首先安装一下依赖：
+
+```js
+npm install copy-webpack-plugin -D
+```
+
+修改配置(当前，需要做的是将 `public/js` 目录拷贝至 `dist/js` 目录)：
+
+```js
+//webpack.config.js
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+module.exports = {
+    //...
+    plugins: [
+        new CopyWebpackPlugin([
+            {
+                from: 'public/js/*.js',
+                to: path.resolve(__dirname, 'dist', 'js'),
+                flatten: true,
+            },
+            //还可以继续配置其它要拷贝的文件
+        ])
+    ]
+}
+```
+
+此时，重新执行 `npm run dev`，报错信息已经消失。
+
+这里说一下 `flatten` 这个参数，设置为 `true`，那么它只会拷贝文件，而不会把文件夹路径都拷贝上，大家可以不设置 `flatten` 时，看下构建结果。
+
+另外，如果我们要拷贝一个目录下的很多文件，但是想过滤掉某个或某些文件，那么 `CopyWebpackPlugin` 还为我们提供了 `ignore` 参数。
+
+```js
+//webpack.config.js
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+module.exports = {
+    //...
+    plugins: [
+        new CopyWebpackPlugin([
+            {
+                from: 'public/js/*.js',
+                to: path.resolve(__dirname, 'dist', 'js'),
+                flatten: true,
+            }
+        ], {
+            ignore: ['other.js']
+        })
+    ]
+}
+```
+
+例如，这里我们忽略掉 `js` 目录下的 `other.js` 文件，使用 `npm run build` 构建，可以看到 `dist/js` 下不会出现 `other.js` 文件。 `CopyWebpackPlugin` 还提供了很多其它的参数，如果当前的配置不能满足你，可以查阅文档进一步修改配置。
+
+
 
 # 六.sourceMap
 
@@ -1948,7 +2022,7 @@ app.listen(3000, function () {
 
 模块热替换(Hot Module Replacement 或 HMR)是 webpack 提供的最有用的功能之一。它允许在运行时更新各种模块，而无需进行完全刷新。
 
-注：**HMR** *不适用于生产环境，这意味着它应当只在开发环境使用。*
+> 注：HMR 不适用于生产环境，这意味着它应当只在开发环境使用。
 
 - 启用 HMR
 
@@ -2152,7 +2226,7 @@ require("@babel/polyfill");
 //如果配置了useBuiltIns，则不需要引入上面的
 ```
 
-**注意：**这个插件会将所有语法都打包，导致打包后的文件过大。但是我们只使用promise，map方法。因此只需要将这两个高级语法实现下就可以了
+> **注意：**这个插件会将所有语法都打包，导致打包后的文件过大。但是我们只使用promise，map方法。因此只需要将这两个高级语法实现下就可以了
 
 - 配置：实现按需加载
 
@@ -2580,17 +2654,9 @@ HMR: hot module replacement 热模块替换 / 模块热替换
       },
 ```
 
-对于js文件默认不能使用HMR功能 --> 需要修改js代码，添加支持HMR功能的代码
+对于js文件默认不能使用HMR功能，需要修改js代码，添加支持HMR功能的代码。
 
-> 注意：HMR功能对js的处理，只能处理非入口js文件的其他文件。因为入口文件变化，又回重新加载其他文件
-
-
-
-
-
-
-
-
+> 注意：HMR功能对js的处理，只能处理非入口js文件的其他文件。因为入口文件变化，又会重新加载其他文件
 
 html文件: 默认不能使用HMR功能.同时会导致问题：html文件不能热更新了~ （不用做HMR功能）
 
@@ -2716,7 +2782,7 @@ add();
 
 ![image-20200817135208039](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200817135208039.png)
 
-注意，上面的 `exports provided` 注释。如果你看下面的代码，你会注意到 `sub` 没有被导入，但是，它仍然被包含在 bundle 中。
+> 注意：上面的 `exports provided` 注释。如果你看下面的代码，你会注意到 `sub` 没有被导入，但是，它仍然被包含在 bundle 中。
 
 ### 3.1.2开发环境开启tree shaking
 
@@ -2748,7 +2814,7 @@ add();
 
 数组方式支持相关文件的相对路径、绝对路径和 glob 模式。
 
-> 注意，任何导入的文件都会受到 tree shaking 的影响。这意味着，如果在项目中使用类似 `css-loader` 并导入 CSS 文件，则需要将其添加到 side effect 列表中，以免在生产模式中无意中将它删除：
+> 注意：任何导入的文件都会受到 tree shaking 的影响。这意味着，如果在项目中使用类似 `css-loader` 并导入 CSS 文件，则需要将其添加到 side effect 列表中，以免在生产模式中无意中将它删除：
 
 ```json
 {
@@ -2761,9 +2827,11 @@ add();
 
 ```
 
-tree shaking会去查看每个文件是否有导出，如果没有导出就不打包，有导出才去打包。但是我们写的css文件没有导出，因此需要将所有css文件添加到`sideEffects`数组中进行排除。
+tree shaking会去查看每个文件是否有导出，如果没有导出就不打包，有导出才去打包。但是我们写的css文件没有导出，
 
-> 注;在开发环境下，还必须在`webpack`中配置`optimization`：
+因此需要将所有css文件添加到`sideEffects`数组中进行排除。
+
+> 注：在开发环境下，还必须在`webpack`中配置`optimization`：
 
 ```js
 //webpack.dev.js
@@ -2815,7 +2883,13 @@ module.exports={
 
 ## 3.2打包模式区分
 
-开发环境(`development`)和生产环境(`production`)的构建目标差异很大。在**开发环境**中，我们需要具有强大的、具有实时重新加载(live reloading)或热模块替换(hot module replacement)能力的 `source map` 和 `localhost server`。而在**生产环境**中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
+开发环境(`development`)和生产环境(`production`)的构建目标差异很大。在开发环境中，我们需要具有强大的、具有实
+
+时重新加载(live reloading)或热模块替换(hot module replacement)能力的 `source map` 和 `localhost server`。而在
+
+生产环境中，我们的目标则转向于关注更小的 bundle，更轻量的 source map，以及更优化的资源，以改善加载时间。由于
+
+要遵循逻辑分离，我们通常建议为每个环境编写**彼此独立的 webpack 配置**。
 
 开发环境和生产环境打包的配置是不同的，因此我们将开发环境与生产环境的配置区分开。而不用每次手动去改。
 
@@ -3205,7 +3279,9 @@ output: {
 
 ## 3.3代码分离
 
-此特性能够把代码分离到不同的 bundle 中，然后可以按需加载或并行加载这些文件。代码分离可以用于获取更小的 bundle，以及控制资源加载优先级，如果使用合理，会极大影响加载时间。
+此特性能够把代码分离到不同的 bundle 中，然后可以按需加载或并行加载这些文件。代码分离可以用于获取更小的 
+
+bundle，以及控制资源加载优先级，如果使用合理，会极大影响加载时间。
 
 有三种常用的代码分离方法：
 
