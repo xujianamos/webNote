@@ -6003,3 +6003,92 @@ plugin是一个类。
 
 
 ## 5.3Bundler源码编写
+
+# 十五resolve配置
+
+这些选项能设置模块如何被解析。webpack 提供合理的默认值，但是还是可能会修改一些解析的细节。
+
+`resolve` 配置 `webpack` 如何寻找模块所对应的文件。`webpack` 内置 `JavaScript` 模块化语法解析功能，默认会采
+
+用模块化标准里约定好的规则去寻找，但你可以根据自己的需要修改默认的规则。
+
+## 15.1modules
+
+`resolve.modules` 配置 `webpack` 去哪些目录下寻找第三方模块，默认情况下，只会去 `node_modules` 下寻找，如果
+
+你我们项目中某个文件夹下的模块经常被导入，不希望写很长的路径，那么就可以通过配置 `resolve.modules` 来简化。
+
+```js
+//webpack.config.js
+module.exports = {
+    //....
+    resolve: {
+        modules: ['./src/components', 'node_modules'] //从左到右依次查找
+    }
+}
+```
+
+这样配置之后，我们 `import Dialog from 'dialog'`，会去寻找 `./src/components/dialog`，不再需要使用相对路
+
+径导入。如果在 `./src/components` 下找不到的话，就会到 `node_modules` 下寻找。
+
+## 15.2alias
+
+`resolve.alias` 配置项通过别名把原导入路径映射成一个新的导入路径，例如：
+
+```js
+//webpack.config.js
+module.exports = {
+    //....
+    resolve: {
+        alias: {
+            'react-native': '@my/react-native-web' //这个包名是我随便写的哈
+        }
+    }
+}
+```
+
+例如，我们有一个依赖 `@my/react-native-web` 可以实现 `react-native` 转 `web`。我们代码一般下面这样:
+
+```js
+import { View, ListView, StyleSheet, Animated } from 'react-native';
+```
+
+配置了别名之后，在转 web 时，会从 `@my/react-native-web` 寻找对应的依赖。
+
+当然啦，如果某个依赖的名字太长了，你也可以给它配置一个短一点的别名，这样用起来比较爽，尤其是带有 `scope` 的包。
+
+## 15.3extensions
+
+适配多端的项目中，可能会出现 `.web.js`, `.wx.js`，例如在转web的项目中，我们希望首先找 `.web.js`，如果没有，
+
+再找 `.js`。我们可以这样配置:
+
+```js
+//webpack.config.js
+module.exports = {
+    //....
+    resolve: {
+        extensions: ['web.js', '.js'] // 当然，你还可以配置 .json, .css
+    }
+}
+```
+
+首先寻找 `../dialog.web.js` ，如果不存在的话，再寻找 `../dialog.js`。这在适配多端的代码中非常有用，否则，你
+
+就需要根据不同的平台去引入文件(以牺牲了速度为代价)。
+
+```js
+import dialog from '../dialog';
+```
+
+当然，配置 `extensions`，我们就可以缺省文件后缀，在导入语句没带文件后缀时，会自动带上`extensions` 中配置的
+
+后缀后，去尝试访问文件是否存在，因此要将高频的后缀放在前面，并且数组不要太长，减少尝试次数。如果没有配置 
+
+`extensions`，默认只会找对对应的js文件。
+
+
+
+
+
