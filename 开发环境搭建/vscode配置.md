@@ -1,6 +1,8 @@
-## 1.基础配置
+# 1.基础配置
 
-## 2.插件
+
+
+# 2.插件
 
 ### 2.1注释插件
 
@@ -26,16 +28,16 @@
 自定义模板：
 
 ```json
-// 头部注释
+#头部注释
   "fileheader.customMade": {
-      "Author": "xujian",
+    "Author": "xujian",
     "Date": "Do not edit",// 文件创建时间(不变)
     "LastEditors": "xujian", // 文件最后编辑者
     "LastEditTime": "Do not edit",// 文件最后编辑时间
     "Description": "",
     "FilePath": "Do not edit"// 文件在项目中的相对路径 自动更新
   },
-//这个配置必须放在后面
+#这个配置必须放在后面
   "fileheader.configObj": {
     "wideSame": true, // 设置为true开启
     "wideNum": 13 // 字段长度 默认为13
@@ -95,77 +97,77 @@ resolve: {
 
 2. 添加本地项目
 
-## 2.4Chinese(Simplified) Language Pack for Visual Stidio Code 中文汉化包
+### 2.4Chinese(Simplified) Language Pack for Visual Stidio Code 中文汉化包
 
 对于一些英文不太好的小伙伴，上来第一件事肯定是要切换成中文语言环境，安装汉化包插件之后，按快捷键Ctrl+Shift+P调出命令面板，输入Configure Display Language，选择zh-ch，然后重启vs code即可。
 
-## 2.5open-in-browser 在浏览器中查看
+### 2.5open-in-browser 在浏览器中查看
 
 VS Code没有提供直接在浏览器中运行程序的内置功能，所以我们需要安装此插件，在浏览器中查看我们的程序运行效果。
 
-## 2.6Live Server 实时预览
+### 2.6Live Server 实时预览
 
 安装这个插件之后，我们在编辑器中修改代码，按Ctrl+S保存，修改效果就会实时同步，显示在浏览器中，再不用手动刷新。
 
-## 2.7Auto Close Tag 自动闭合标签
+### 2.7Auto Close Tag 自动闭合标签
 
 输入标签名称的时候自动生成闭合标签，特别方便。
 
-## 2.8Auto Rename Tag 尾部闭合标签同步修改
+### 2.8Auto Rename Tag 尾部闭合标签同步修改
 
 自动检测配对标签，同步修改。
 
-## 2.9Bracket Pair Colorizer 用不同颜色高亮显示匹配的括号
+### 2.9Bracket Pair Colorizer 用不同颜色高亮显示匹配的括号
 
 对配对的括号进行着色，方便区分，未安装该插件之前括号统一都是白色的。
 
-## 2.10Highlight Matching Tag 高亮显示匹配标签
+### 2.10Highlight Matching Tag 高亮显示匹配标签
 
 这个插件自动帮我们将选中的匹配标签高亮显示，再也不用费劲查找了。
 
-## 2.11Vscode-icons VSCode 文件图标
+### 2.11Vscode-icons VSCode 文件图标
 
 此插件可以帮助我们根据不同的文件类型生成对应的图标，这样我们在侧边栏查看文件列表的时候直接通过图标就可以区分文件类型。
 
 使用mac的小伙伴可以选择下载Vscode-icons-mac，基本图标与Vscode-icons类似，就是文件夹采用的是mac风格。
 
-## 2.12TODO Highlight 高亮
+### 2.12TODO Highlight 高亮
 
 如果我们在编写代码时想在某个地方做一个标记，后续再来完善或者修改里面的内容，可以利用此插件高亮显示，之后可以帮助我们快速定位到需要修改的代码行。
 
-## 2.13Code Spell Checker 单词拼写检查
+### 2.13Code Spell Checker 单词拼写检查
 
 我们在编写代码的时候经常会不小心拼写错误造成软件运行失败，安装这个插件后会自动帮我们识别单词拼写错误并且给出修改建议，大大帮我们减轻了排除bug的压力。
 
-## 2.14Code Runner 运行选中代码段
+### 2.14Code Runner 运行选中代码段
 
 如果你需要学习或者接触各种各样的开发语言，那么 Code Runner 插件可以让你不用搭建各种语言的开发环境，直接通过此插件就可以直接运行对应语言的代码，非常适合学习或测试各种开发语言，使用方式直接右键选择Run Code，支持大量语言，包括Node。
 
-## 2.15Improt Cost 成本提示
+### 2.15Improt Cost 成本提示
 
 这个插件可以在你导入工具包的时候提示这个包的体积，如果体积过大就需要考虑压缩包，为后期上线优化做准备。
 
-## 2.16GitLens 查看Git信息
+### 2.16GitLens 查看Git信息
 
 将光标移到代码行上，即可显示当前行最近的commit信息和作者，多人开发的时候十分有用，责任到人，防止甩锅。
 
-## 2.17Bookmarks 书签
+### 2.17Bookmarks 书签
 
 对代码进行书签标记，通过快捷键实现快速跳转到书签位置。
 
-## 2.18Vscode-element-helper
+### 2.18Vscode-element-helper
 
 使用element-ui库的可以安装这个插件，编写标签时自动提示element标签名称。
 
-## 2.19Version Lens 工具包版本信息
+### 2.19Version Lens 工具包版本信息
 
 在package.json中显示你下载安装的npm工具包的版本信息，同时会告诉你当前包的最新版本。
 
-## 2.20Vetur VUE语言包
+### 2.20Vetur VUE语言包
 
 VUE是时下最流行的js框架之一，很多公司都会选择基于VUE来构建产品，Vetur对VUE提供了很好的语言支持。
 
-## 2.21WakaTime 计算代码工作量
+### 2.21WakaTime 计算代码工作量
 
 这是一款时间记录工具，它可以帮助你在vs code中记录有效的编程的时间。
 
@@ -173,7 +175,7 @@ VUE是时下最流行的js框架之一，很多公司都会选择基于VUE来构
 
 同时在他的官网中，也会显示用扇形图的形式显示你编写各个语言所占用的时间比例，以及你在各个项目中所用的时间占比，是一个非常好的数据报告，项目结束的时候你可以在它的Dashboard中清晰地看出自己的时间都是如何分配的。
 
-## 2.22Settings  Sync VSCode设置同步到Gist
+### 2.22Settings  Sync VSCode设置同步到Gist
 
 有时候我们到了新公司或者换了新电脑需要配置新的开发环境，这时候一个一个下载插件，再重新配置vs code就非常麻烦而且你还不一定记得那么全面，通过这个插件我们可以将当前vs code中的配置上传到Gist，之后再通过Gist下载，就可以将所有配置同步到新环境中了。
 
@@ -189,7 +191,7 @@ VUE是时下最流行的js框架之一，很多公司都会选择基于VUE来构
 
 ## 3.代码片段
 
-### 3.1vue代码片段
+### 3.1vue2代码片段
 
 ```json
 {
@@ -246,6 +248,15 @@ VUE是时下最流行的js框架之一，很多公司都会选择基于VUE来构
     }
 }
 ```
+
+### 3.2vue3代码片段
+
+```json
+```
+
+
+
+
 
 # 4.vscode加入右键菜单
 
@@ -350,4 +361,52 @@ Windows Registry Editor Version 5.00
   "editor.tabSize": 2
 }
 ```
+
+# 6.共享配置和团队协作配置
+
+vscode共享配置是微软推出的一个功能，为了解决每个人的代码风格习惯不一样的问题，能够让开发者尽量避免因代码风格等等问题，统一代码风格，让开发者更专注于开发。
+
+### 6.1settings.json
+
+项目创始人只需要在自己项目的根目录创建一个`.vscode`文件夹，并且新建一个`settings.json`文件，然后把自己本地的vscode配置复制到里面。当团队成员下载这个项目的时候，vscode的加载规则是先到项目的根目录查看有没有这个`settings.json`文件，有的话，则优先使用这个文件的配置。如果没有，才加载本地的配置。这样这个`settings.json`文件就会覆盖别人的本地配置，然后进行加载vscode。
+
+![image-20220122235618485](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20220122235618485.png)
+
+## 6.2extensions.json
+
+同样的道理，项目创始人在创建项目的时候新建一个`extensions.json`，并把自己觉得需要推荐的插件写到里面，这样当团队成员下载这个项目的时候，就可以去查看需要下载的插件。比如之前一直推荐的`vetur`现在对`vue3`的支持不是很友好，官方现在推荐用`volar`，所以就可以写在里面`extensions.json`
+
+![image-20220122235832329](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20220122235832329.png)
+
+`extensions.json`:
+
+```json
+{
+  "recommendations": ["johnsoncodehk.volar"]
+}
+```
+
+> 数组是插件的id，可在插件详情页中查看。`johnsoncodehk.volar`为插件id
+
+插件id位置：
+
+![image-20220123000127091](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20220123000127091.png)
+
+使用插件的时候则需要团队成员手动下载，先到插件下载页面，上面有个筛选功能，选中推荐：
+
+![image-20220123000525008](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20220123000525008.png)
+
+
+
+选择推荐后则会展示工作区推荐的插件：
+
+![image-20220123000633962](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20220123000633962.png)
+
+点击安装，即可安装全部推荐的插件：
+
+![image-20220123000731170](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20220123000731170.png)
+
+
+
+# 7.同步配置
 
