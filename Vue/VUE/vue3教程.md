@@ -2656,6 +2656,706 @@ app.component('my-component', {
 })
 ```
 
+## 10.5插槽
+
+### 10.5.1插槽内容
+
+Vue 实现了一套内容分发的 API，将 `<slot>` 元素作为承载分发内容的出口。
+
+它允许你像这样合成组件：
+
+```html
+<todo-button>
+  Add todo
+</todo-button>
+```
+
+然后在 `<todo-button>` 的模板中，你可能有：
+
+```html
+<!-- todo-button 组件模板 -->
+<button class="btn-primary">
+  <slot></slot>
+</button>
+```
+
+当组件渲染的时候，`<slot></slot>` 将会被替换为“Add todo”。
+
+```html
+<!-- 渲染 HTML -->
+<button class="btn-primary">
+  Add todo
+</button>
+```
+
+不过，字符串只是开始！插槽还可以包含任何模板代码，包括 HTML：
+
+```html
+<todo-button>
+  <!-- 添加一个 Font Awesome 图标 -->
+  <i class="fas fa-plus"></i>
+  Add todo
+</todo-button>
+```
+
+或其他组件：
+
+```html
+<todo-button>
+  <!-- 添加一个图标的组件 -->
+  <font-awesome-icon name="plus"></font-awesome-icon>
+  Add todo
+</todo-button>
+```
+
+如果 `<todo-button>` 的 template 中**没有**包含一个 `<slot>` 元素，则该组件起始标签和结束标签之间的任何内容都会被抛弃。
+
+```html
+<!-- todo-button 组件模板 -->
+
+<button class="btn-primary">
+  Create a new item
+</button>
+```
+
+
+
+```html
+<todo-button>
+  <!-- 以下文本不会渲染 -->
+  Add todo
+</todo-button>
+```
+
+### 10.5.2渲染作用域
+
+当你想在一个插槽中使用数据时，例如：
+
+```html
+<todo-button>
+  Delete a {{ item.name }}
+</todo-button>
+```
+
+该插槽可以访问与模板其余部分相同的实例 property (即相同的“作用域”)。
+
+插槽**不能**访问 `<todo-button>` 的作用域。例如，尝试访问 `action` 将不起作用：
+
+```html
+<todo-button action="delete">
+  Clicking here will {{ action }} an item
+  <!--
+  `action` 将会是 undefined，因为这个内容是
+  传递到 <todo-button>，
+  而不是在 <todo-button> 中定义的。
+  -->
+</todo-button>
+```
+
+请记住这条规则：
+
+> 父级模板里的所有内容都是在父级作用域中编译的；子模板里的所有内容都是在子作用域中编译的。
+
+### 10.5.3备用内容
+
+有时为一个插槽指定备用 (也就是默认的) 内容是很有用的，它只会在没有提供内容的时候被渲染。例如在一个 `<submit-button>` 组件中：
+
+```html
+<button type="submit">
+  <slot></slot>
+</button>
+```
+
+我们可能希望这个 `<button>` 内绝大多数情况下都渲染“Submit”文本。为了将“Submit”作为备用内容，我们可以将它放在 `<slot>` 标签内：
+
+```html
+<button type="submit">
+  <slot>Submit</slot>
+</button>
+```
+
+现在当我们在一个父级组件中使用 `<submit-button>` 并且不提供任何插槽内容时：
+
+```html
+<submit-button></submit-button>
+```
+
+备用内容“Submit”将会被渲染：
+
+```html
+<button type="submit">
+  Submit
+</button>
+```
+
+但是如果我们提供内容：
+
+```html
+<submit-button>
+  Save
+</submit-button>
+```
+
+则这个提供的内容将会被渲染从而取代备用内容：
+
+```html
+<button type="submit">
+  Save
+</button>
+```
+
+### 10.5.4具名插槽
+
+有时我们需要多个插槽。例如对于一个带有如下模板的 `<base-layout>` 组件：
+
+```html
+<div class="container">
+  <header>
+    <!-- 我们希望把页头放这里 -->
+  </header>
+  <main>
+    <!-- 我们希望把主要内容放这里 -->
+  </main>
+  <footer>
+    <!-- 我们希望把页脚放这里 -->
+  </footer>
+</div>
+```
+
+对于这样的情况，`<slot>` 元素有一个特殊的 attribute：`name`。通过它可以为不同的插槽分配独立的 ID，也就能够以此来决定内容应该渲染到什么地方：
+
+```html
+<div class="container">
+  <header>
+    <slot name="header"></slot>
+  </header>
+  <main>
+    <slot></slot>
+  </main>
+  <footer>
+    <slot name="footer"></slot>
+  </footer>
+</div>
+```
+
+一个不带 `name` 的 `<slot>` 出口会带有隐含的名字“default”。
+
+在向具名插槽提供内容的时候，我们可以在一个 `<template>` 元素上使用 `v-slot` 指令，并以 `v-slot` 的参数的形式提供其名称：
+
+```html
+<base-layout>
+  <template v-slot:header>
+    <h1>Here might be a page title</h1>
+  </template>
+
+  <template v-slot:default>
+    <p>A paragraph for the main content.</p>
+    <p>And another one.</p>
+  </template>
+
+  <template v-slot:footer>
+    <p>Here's some contact info</p>
+  </template>
+</base-layout>
+```
+
+现在 `<template>` 元素中的所有内容都将会被传入相应的插槽。
+
+渲染的 HTML 将会是：
+
+```html
+<div class="container">
+  <header>
+    <h1>Here might be a page title</h1>
+  </header>
+  <main>
+    <p>A paragraph for the main content.</p>
+    <p>And another one.</p>
+  </main>
+  <footer>
+    <p>Here's some contact info</p>
+  </footer>
+</div>
+```
+
+注意，**`v-slot` 只能添加在 `<template>` 上** ([只有一种例外情况](https://v3.cn.vuejs.org/guide/component-slots.html#独占默认插槽的缩写语法))。
+
+### 10.5.5作用域插槽
+
+有时让插槽内容能够访问子组件中才有的数据是很有用的。当一个组件被用来渲染一个项目数组时，这是一个常见的情况，我们希望能够自定义每个项目的渲染方式。
+
+例如，我们有一个组件，包含一个待办项目列表。
+
+```js
+app.component('todo-list', {
+  data() {
+    return {
+      items: ['Feed a cat', 'Buy milk']
+    }
+  },
+  template: `
+    <ul>
+      <li v-for="(item, index) in items">
+        {{ item }}
+      </li>
+    </ul>
+  `
+})
+```
+
+我们可能会想把 `{{ item }}` 替换为 `<slot>`，以便在父组件上对其自定义。
+
+```html
+<todo-list>
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+但是，这是行不通的，因为只有在 `<todo-list>` 组件中可以访问 `item`，且插槽内容是在它的父组件上提供的。
+
+要使 `item` 在父级提供的插槽内容上可用，我们可以添加一个 `<slot>` 元素并将其作为一个 attribute 绑定：
+
+```html
+<ul>
+  <li v-for="( item, index ) in items">
+    <slot :item="item"></slot>
+  </li>
+</ul>
+```
+
+可以根据自己的需要将任意数量的 attribute 绑定到 `slot` 上：
+
+```html
+<ul>
+  <li v-for="( item, index ) in items">
+    <slot :item="item" :index="index" :another-attribute="anotherAttribute"></slot>
+  </li>
+</ul>
+```
+
+绑定在 `<slot>` 元素上的 attribute 被称为**插槽 prop**。现在，在父级作用域中，我们可以使用带值的 `v-slot` 来定义我们提供的插槽 prop 的名字：
+
+```html
+<todo-list>
+  <template v-slot:default="slotProps">
+    <i class="fas fa-check"></i>
+    <span class="green">{{ slotProps.item }}</span>
+  </template>
+</todo-list>
+```
+
+在这个例子中，我们选择将包含所有插槽 prop 的对象命名为 `slotProps`，但你也可以使用任意你喜欢的名字。
+
+1. 独占默认插槽的缩写语法
+
+在上述情况下，当被提供的内容*只有*默认插槽时，组件的标签才可以被当作插槽的模板来使用。这样我们就可以把 `v-slot` 直接用在组件上：
+
+```html
+<todo-list v-slot:default="slotProps">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ slotProps.item }}</span>
+</todo-list>
+```
+
+这种写法还可以更简单。就像假定未指明的内容对应默认插槽一样，不带参数的 `v-slot` 被假定对应默认插槽：
+
+```html
+<todo-list v-slot="slotProps">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ slotProps.item }}</span>
+</todo-list>
+```
+
+注意默认插槽的缩写语法**不能**和具名插槽混用，因为它会导致作用域不明确：
+
+```html
+<!-- 无效，会导致警告 -->
+<todo-list v-slot="slotProps">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ slotProps.item }}</span>
+  
+  <template v-slot:other="otherSlotProps">
+    slotProps 在此处不可用
+  </template>
+</todo-list>
+```
+
+只要出现多个插槽，请始终为*所有的*插槽使用完整的基于 `<template>` 的语法：
+
+```html
+<todo-list>
+  <template v-slot:default="slotProps">
+    <i class="fas fa-check"></i>
+    <span class="green">{{ slotProps.item }}</span>
+  </template>
+
+  <template v-slot:other="otherSlotProps">
+    ...
+  </template>
+</todo-list>
+```
+
+2. 解构插槽 Prop
+
+作用域插槽的内部工作原理是将你的插槽内容包括在一个传入单个参数的函数里：
+
+```js
+function (slotProps) {
+  // ... 插槽内容 ...
+}
+```
+
+这意味着 `v-slot` 的值实际上可以是任何能够作为函数定义中的参数的 JavaScript 表达式。因此你也可以使用 [ES2015 解构](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment#Object_destructuring) 来传入具体的插槽 prop，如下：
+
+```html
+<todo-list v-slot="{ item }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+这样可以使模板更简洁，尤其是在该插槽提供了多个 prop 的时候。它同样开启了 prop 重命名等其它可能，例如将 `item` 重命名为 `todo`：
+
+```html
+<todo-list v-slot="{ item: todo }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ todo }}</span>
+</todo-list>
+```
+
+你甚至可以定义备用内容，用于插槽 prop 是 undefined 的情形：
+
+```html
+<todo-list v-slot="{ item = 'Placeholder' }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+### 10.5.6具名插槽的缩写
+
+跟 `v-on` 和 `v-bind` 一样，`v-slot` 也有缩写，即把参数之前的所有内容 (`v-slot:`) 替换为字符 `#`。例如 `v-slot:header` 可以被重写为 `#header`：
+
+```html
+<base-layout>
+  <template #header>
+    <h1>Here might be a page title</h1>
+  </template>
+
+  <template #default>
+    <p>A paragraph for the main content.</p>
+    <p>And another one.</p>
+  </template>
+
+  <template #footer>
+    <p>Here's some contact info</p>
+  </template>
+</base-layout>
+```
+
+然而，和其它指令一样，该缩写只在其有参数的时候才可用。这意味着以下语法是无效的：
+
+```html
+<!-- 这将触发一个警告 -->
+
+<todo-list #="{ item }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+如果希望使用缩写的话，你必须始终以明确的插槽名取而代之：
+
+```html
+<todo-list #default="{ item }">
+  <i class="fas fa-check"></i>
+  <span class="green">{{ item }}</span>
+</todo-list>
+```
+
+## 10.6Provide / Inject
+
+通常，当我们需要从父组件向子组件传递数据时，我们使用 [props](https://v3.cn.vuejs.org/guide/component-props.html)。想象一下这样的结构：有一些深度嵌套的组件，而深层的子组件只需要父组件的部分内容。在这种情况下，如果仍然将 prop 沿着组件链逐级传递下去，可能会很麻烦。
+
+对于这种情况，我们可以使用一对 `provide` 和 `inject`。无论组件层次结构有多深，父组件都可以作为其所有子组件的依赖提供者。这个特性有两个部分：父组件有一个 `provide` 选项来提供数据，子组件有一个 `inject` 选项来开始使用这些数据。
+
+例如，我们有这样的层次结构：
+
+```text
+Root
+└─ TodoList
+   ├─ TodoItem
+   └─ TodoListFooter
+      ├─ ClearTodosButton
+      └─ TodoListStatistics
+```
+
+如果要将 todo-items 的长度直接传递给 `TodoListStatistics`，我们要将 prop 逐级传递下去：`TodoList` -> `TodoListFooter` -> `TodoListStatistics`。通过 provide/inject 的方式，我们可以直接执行以下操作：
+
+```js
+const app = Vue.createApp({})
+
+app.component('todo-list', {
+  data() {
+    return {
+      todos: ['Feed a cat', 'Buy tickets']
+    }
+  },
+  provide: {
+    user: 'John Doe'
+  },
+  template: `
+    <div>
+      {{ todos.length }}
+      <!-- 模板的其余部分 -->
+    </div>
+  `
+})
+
+app.component('todo-list-statistics', {
+  inject: ['user'],
+  created() {
+    console.log(`Injected property: ${this.user}`) // > 注入的 property: John Doe
+  }
+})
+```
+
+但是，如果我们尝试在此处 provide 一些组件的实例 property，这将是不起作用的：
+
+```js
+app.component('todo-list', {
+  data() {
+    return {
+      todos: ['Feed a cat', 'Buy tickets']
+    }
+  },
+  provide: {
+    todoLength: this.todos.length // 将会导致错误 `Cannot read property 'length' of undefined`
+  },
+  template: `
+    ...
+  `
+})
+```
+
+要访问组件实例 property，我们需要将 `provide` 转换为返回对象的函数：
+
+```js
+app.component('todo-list', {
+  data() {
+    return {
+      todos: ['Feed a cat', 'Buy tickets']
+    }
+  },
+  provide() {
+    return {
+      todoLength: this.todos.length
+    }
+  },
+  template: `
+    ...
+  `
+})
+```
+
+这使我们能够更安全地继续开发该组件，而不必担心可能会更改/删除子组件所依赖的某些内容。这些组件之间的接口仍然是明确定义的，就像 prop 一样。
+
+实际上，你可以将依赖注入看作是“长距离的 prop”，除了：
+
+- 父组件不需要知道哪些子组件使用了它 provide 的 property
+- 子组件不需要知道 inject 的 property 来自哪里
+
+### 10.6.1处理响应性
+
+在上面的例子中，如果我们更改了 `todos` 的列表，这个变化并不会反映在 inject 的 `todoLength` property 中。这是因为默认情况下，`provide/inject` 绑定*并不是*响应式的。我们可以通过传递一个 `ref` property 或 `reactive` 对象给 `provide` 来改变这种行为。在我们的例子中，如果我们想对祖先组件中的更改做出响应，我们需要为 provide 的 `todoLength` 分配一个组合式 API `computed` property：
+
+```js
+app.component('todo-list', {
+  // ...
+  provide() {
+    return {
+      todoLength: Vue.computed(() => this.todos.length)
+    }
+  }
+})
+
+app.component('todo-list-statistics', {
+  inject: ['todoLength'],
+  created() {
+    console.log(`Injected property: ${this.todoLength.value}`) // > 注入的 property: 5
+  }
+})
+```
+
+在这种情况下，任何对 `todos.length` 的改变都会被正确地反映在注入 `todoLength` 的组件中。
+
+## 10.7动态组件 & 异步组件
+
+### 10.7.1在动态组件上使用 `keep-alive`
+
+我们之前曾经在一个多标签的界面中使用 `is` attribute 来切换不同的组件：
+
+```vue-html
+<component :is="currentTabComponent"></component>
+```
+
+当在这些组件之间切换的时候，你有时会想保持这些组件的状态，以避免反复渲染导致的性能问题。例如我们来展开说一说这个多标签界面：
+
+你会注意到，如果你选择了一篇文章，切换到 *Archive* 标签，然后再切换回 *Posts*，是不会继续展示你之前选择的文章的。这是因为你每次切换新标签的时候，Vue 都创建了一个新的 `currentTabComponent` 实例。
+
+重新创建动态组件的行为通常是非常有用的，但是在这个案例中，我们更希望那些标签的组件实例能够被在它们第一次被创建的时候缓存下来。为了解决这个问题，我们可以用一个 `<keep-alive>` 元素将其动态组件包裹起来。
+
+```vue-html
+<!-- 失活的组件将会被缓存！-->
+<keep-alive>
+  <component :is="currentTabComponent"></component>
+</keep-alive>
+```
+
+### 10.7.2异步组件
+
+在大型应用中，我们可能需要将应用分割成小一些的代码块，并且只在需要的时候才从服务器加载一个模块。为了实现这个效果，Vue 有一个 `defineAsyncComponent` 方法：
+
+```js
+const { createApp, defineAsyncComponent } = Vue
+
+const app = createApp({})
+
+const AsyncComp = defineAsyncComponent(
+  () =>
+    new Promise((resolve, reject) => {
+      resolve({
+        template: '<div>I am async!</div>'
+      })
+    })
+)
+
+app.component('async-example', AsyncComp)
+```
+
+如你所见，此方法接受一个返回 `Promise` 的工厂函数。从服务器检索组件定义后，应调用 Promise 的 `resolve` 回调。你也可以调用 `reject(reason)`，来表示加载失败。
+
+你也可以在工厂函数中返回一个 `Promise`，把 webpack 2 及以上版本和 ES2015 语法相结合后，我们就可以这样使用动态地导入：
+
+```js
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComp = defineAsyncComponent(() =>
+  import('./components/AsyncComponent.vue')
+)
+
+app.component('async-component', AsyncComp)
+```
+
+当[在局部注册组件](https://v3.cn.vuejs.org/guide/component-registration.html#局部注册)时，你也可以使用 `defineAsyncComponent`：
+
+```js
+import { createApp, defineAsyncComponent } from 'vue'
+
+createApp({
+  // ...
+  components: {
+    AsyncComponent: defineAsyncComponent(() =>
+      import('./components/AsyncComponent.vue')
+    )
+  }
+})
+```
+
+1. 与 Suspense 一起使用
+
+异步组件在默认情况下是*可挂起*的。这意味着如果它在父链中有一个 `<Suspense>`，它将被视为该 `<Suspense>` 的异步依赖。在这种情况下，加载状态将由 `<Suspense>` 控制，组件自身的加载、错误、延迟和超时选项都将被忽略。
+
+通过在其选项中指定 `suspensible: false`，异步组件可以退出 `Suspense` 控制，并始终控制自己的加载状态。
+
+## 10.8模板引用
+
+尽管存在 prop 和事件，但有时你可能仍然需要在 JavaScript 中直接访问子组件。为此，可以使用 `ref` attribute 为子组件或 HTML 元素指定引用 ID。例如：
+
+```html
+<input ref="input" />
+```
+
+例如，你希望在组件挂载时，以编程的方式 focus 到这个 input 上，这可能有用：
+
+```js
+const app = Vue.createApp({})
+
+app.component('base-input', {
+  template: `
+    <input ref="input" />
+  `,
+  methods: {
+    focusInput() {
+      this.$refs.input.focus()
+    }
+  },
+  mounted() {
+    this.focusInput()
+  }
+})
+```
+
+此外，还可以向组件本身添加另一个 `ref`，并使用它从父组件触发 `focusInput` 事件：
+
+```html
+<base-input ref="usernameInput"></base-input>
+```
+
+
+
+```js
+this.$refs.usernameInput.focusInput()
+```
+
+# 11.过渡 & 动画
+
+## 11.1过渡 & 动画概述
+
+Vue 提供了一些抽象概念，可以帮助处理过渡和动画，特别是在响应某些变化时。这些抽象的概念包括：
+
+- 组件进入和离开 DOM 的钩子，在 CSS 和 JS 中均可用，使用内置的 `<transition>` 组件。
+- 过渡模式，以便你在过渡期间编排顺序。
+- 处理多个元素就地更新的钩子，使用 `<transition-group>` 组件，通过 FLIP 技术来提高性能。
+- 使用 `watchers` 来处理应用中不同状态的过渡。
+
+### 11.1.1基于 class 的动画和过渡
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
