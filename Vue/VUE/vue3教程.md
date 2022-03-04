@@ -3322,47 +3322,1152 @@ Vue 提供了一些抽象概念，可以帮助处理过渡和动画，特别是�
 
 ### 11.1.1基于 class 的动画和过渡
 
+尽管 `<transition>` 组件对于组件的进入和离开非常有用，但你也可以通过添加一个条件 class 来激活动画，而无需挂载组件。
+
+```html
+<div id="demo">
+  Push this button to do something you shouldn't be doing:<br />
+
+  <div :class="{ shake: noActivated }">
+    <button @click="noActivated = true">Click me</button>
+    <span v-if="noActivated">Oh no!</span>
+  </div>
+</div>
+```
 
 
 
+```css
+.shake {
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+@keyframes shake {
+  10%,
+  90% {
+    transform: translate3d(-1px, 0, 0);
+  }
+
+  20%,
+  80% {
+    transform: translate3d(2px, 0, 0);
+  }
+
+  30%,
+  50%,
+  70% {
+    transform: translate3d(-4px, 0, 0);
+  }
+
+  40%,
+  60% {
+    transform: translate3d(4px, 0, 0);
+  }
+}
+
+```
+
+```js
+const Demo = {
+  data() {
+    return {
+      noActivated: false
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
+
+### 11.1.2过渡与 Style 绑定
+
+一些过渡效果可以通过插值的方式来实现，例如在发生交互时将样式绑定到元素上。以这个例子为例：
+
+```html
+<div id="demo">
+  <div
+    @mousemove="xCoordinate"
+    :style="{ backgroundColor: `hsl(${x}, 80%, 50%)` }"
+    class="movearea"
+  >
+    <h3>Move your mouse across the screen...</h3>
+    <p>x: {{x}}</p>
+  </div>
+</div>
+```
 
 
 
+```css
+.movearea {
+  transition: 0.2s background-color ease;
+}
+```
 
 
 
+```js
+const Demo = {
+  data() {
+    return {
+      x: 0
+    }
+  },
+  methods: {
+    xCoordinate(e) {
+      this.x = e.clientX
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
+
+在这个例子中，我们是通过使用插值来创建动画，将触发条件添加到鼠标的移动过程上。同时将 CSS 过渡属性应用在元素上，让元素知道在更新时要使用什么过渡效果。
+
+### 11.1.3性能
+
+你可能注意到上面显示的动画使用了 `transforms` 之类的东西，并应用了诸如 `perspective` 之类的奇怪的 property——为什么它们是这样实现的，而不是仅仅使用 `margin` 和 `top` 等？
+
+通过关注性能表现，我们可以在 web 上创建极其流畅的动画。我们希望尽可能对元素动画进行硬件加速，并使用不触发重绘的 property。我们来介绍一下如何实现这个目标。
+
+1. Transform 和 Opacity
+
+非常好的是，更改 transform 不会触发任何几何形状变化或绘制。这意味着该操作可能是由合成器线程在 GPU 的帮助下执行。
+
+`opacity` 属性的行为也类似。因此，他们是在 web 上做元素移动的理想选择。
+
+2. 硬件加速
+
+诸如 `perspective`、`backface-visibility` 和 `transform:translateZ(x)` 等 property 将让浏览器知道你需要硬件加速。
+
+如果要对一个元素进行硬件加速，可以应用以下任何一个 property (并不是需要全部，任意一个就可以)：
+
+```css
+perspective: 1000px;
+backface-visibility: hidden;
+transform: translateZ(0);
+```
+
+许多像 GreenSock 这样的 JS 库都会默认你需要硬件加速，并在默认情况下应用，所以你不需要手动设置它们。
+
+### 11.1.4缓动效果
+
+缓动效果是在动画中表达深度的一个重要方式。动画新手最常犯的一个错误是在起始动画节点使用 `ease-in`，在结束动画节点使用 `ease-out`。实际上你需要的是反过来的。
+
+如果我们将这些状态应用于过渡，它应该像这样：
+
+```css
+.button {
+  background: #1b8f5a;
+  /* 应用于初始状态，因此此转换将应用于返回状态 */
+  transition: background 0.25s ease-in;
+}
+
+.button:hover {
+  background: #3eaf7c;
+  /* 应用于悬停状态，因此在触发悬停时将应用此过渡 */
+  transition: background 0.35s ease-out;
+}
+```
+
+## 11.2进入过渡 & 离开过渡
+
+### 11.2.1单元素/组件的过渡
+
+Vue 提供了 `transition` 的封装组件，在下列情形中，可以给任何元素和组件添加进入/离开过渡
+
+- 条件渲染 (使用 `v-if`)
+- 条件展示 (使用 `v-show`)
+- 动态组件
+- 组件根节点
+
+这里是一个典型的例子：
+
+```html
+<div id="demo">
+  <button @click="show = !show">
+    Toggle
+  </button>
+
+  <transition name="fade">
+    <p v-if="show">hello</p>
+  </transition>
+</div>
+```
 
 
 
+```js
+const Demo = {
+  data() {
+    return {
+      show: true
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
 
 
 
+```css
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+```
+
+当插入或删除包含在 `transition` 组件中的元素时，Vue 将会做以下处理：
+
+1. 自动嗅探目标元素是否应用了 CSS 过渡或动画，如果是，在恰当的时机添加/删除 CSS 类名。
+2. 如果过渡组件提供了 [JavaScript 钩子函数](https://v3.cn.vuejs.org/guide/transitions-enterleave.html#javascript-钩子) ，这些钩子函数将在恰当的时机被调用。
+3. 如果没有找到 JavaScript 钩子并且也没有检测到 CSS 过渡/动画，DOM 操作 (插入/删除) 在下一帧中立即执行。(注意：此处指浏览器逐帧动画机制，和 Vue 的 `nextTick` 概念不同)
+
+#### 1.过渡 class
+
+在进入/离开的过渡中，会有 6 个 class 切换。
+
+1. `v-enter-from`：定义进入过渡的开始状态。在元素被插入之前生效，在元素被插入之后的下一帧移除。
+2. `v-enter-active`：定义进入过渡生效时的状态。在整个进入过渡的阶段中应用，在元素被插入之前生效，在过渡/动画完成之后移除。这个类可以被用来定义进入过渡的过程时间，延迟和曲线函数。
+3. `v-enter-to`：定义进入过渡的结束状态。在元素被插入之后下一帧生效 (与此同时 `v-enter-from` 被移除)，在过渡/动画完成之后移除。
+4. `v-leave-from`：定义离开过渡的开始状态。在离开过渡被触发时立刻生效，下一帧被移除。
+5. `v-leave-active`：定义离开过渡生效时的状态。在整个离开过渡的阶段中应用，在离开过渡被触发时立刻生效，在过渡/动画完成之后移除。这个类可以被用来定义离开过渡的过程时间，延迟和曲线函数。
+6. `v-leave-to`：离开过渡的结束状态。在离开过渡被触发之后下一帧生效 (与此同时 `v-leave-from` 被移除)，在过渡/动画完成之后移除。
+
+![image-20220304225317820](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20220304225317820.png)
+
+这里的每个 class 都将以过渡的名字添加前缀。如果你使用了一个没有名字的 `<transition>`，则 `v-` 是这些 class 名的默认前缀。举例来说，如果你使用了 `<transition name="my-transition">`，那么 `v-enter-from` 会替换为 `my-transition-enter-from`。
+
+`v-enter-active` 和 `v-leave-active` 可以控制进入/离开过渡的不同的缓和曲线，在下面章节会有个示例说明。
+
+#### 2.CSS 过渡
+
+CSS 过渡是最常用的过渡类型之一。举例：
+
+```html
+<div id="demo">
+  <button @click="show = !show">
+    Toggle render
+  </button>
+
+  <transition name="slide-fade">
+    <p v-if="show">hello</p>
+  </transition>
+</div>
+```
 
 
 
+```js
+const Demo = {
+  data() {
+    return {
+      show: true
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
 
 
 
+```css
+/* 可以为进入和离开动画设置不同的持续时间和动画函数 */
+.slide-fade-enter-active {
+  transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+  transition: all 0.8s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateX(20px);
+  opacity: 0;
+}
+```
+
+#### 3.CSS 动画
+
+CSS 动画用法同 CSS 过渡，区别是在动画中 `v-enter-from` 类在节点插入 DOM 后不会立即移除，而是在 `animationend` 事件触发时移除。
+
+下面是一个例子，为了简洁起见，省略了带前缀的 CSS 规则：
+
+```html
+<div id="demo">
+  <button @click="show = !show">Toggle show</button>
+  <transition name="bounce">
+    <p v-if="show">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris facilisis
+      enim libero, at lacinia diam fermentum id. Pellentesque habitant morbi
+      tristique senectus et netus.
+    </p>
+  </transition>
+</div>
+```
 
 
 
+```js
+const Demo = {
+  data() {
+    return {
+      show: true
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
 
 
 
+```css
+.bounce-enter-active {
+  animation: bounce-in 0.5s;
+}
+.bounce-leave-active {
+  animation: bounce-in 0.5s reverse;
+}
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.25);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+```
+
+#### 4.自定义过渡 class 类名
+
+我们可以通过以下 attribute 来自定义过渡类名：
+
+- `enter-from-class`
+- `enter-active-class`
+- `enter-to-class`
+- `leave-from-class`
+- `leave-active-class`
+- `leave-to-class`
+
+它们的优先级高于普通的类名，当你希望将其它第三方 CSS 动画库与 Vue 的过度系统相结合时十分有用，比如 [Animate.css](https://daneden.github.io/animate.css/)。
+
+示例:
+
+```html
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.0/animate.min.css"
+  rel="stylesheet"
+  type="text/css"
+/>
+
+<div id="demo">
+  <button @click="show = !show">
+    Toggle render
+  </button>
+
+  <transition
+    name="custom-classes-transition"
+    enter-active-class="animate__animated animate__tada"
+    leave-active-class="animate__animated animate__bounceOutRight"
+  >
+    <p v-if="show">hello</p>
+  </transition>
+</div>
+```
 
 
 
+```js
+const Demo = {
+  data() {
+    return {
+      show: true
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
+
+#### 5.同时使用过渡和动画
+
+Vue 为了知道过渡何时完成，必须设置相应的事件监听器。它可以是 `transitionend` 或 `animationend`，这取决于给元素应用的 CSS 规则。如果你只使用了其中一种，Vue 能自动识别其正确类型。
+
+但是，在一些场景中，你需要给同一个元素同时设置两种过渡动效，比如有一个通过 Vue 触发的 CSS 动画，并且在悬停时结合一个 CSS 过渡。在这种情况中，你就需要使用 `type` attribute 并设置 `animation` 或 `transition` 来显式声明你需要 Vue 监听的类型。
+
+#### 6.显性的过渡持续时间
+
+在大多数情况下，Vue 可以自动得出过渡效果的完成时机。默认情况下，Vue 会等待其在过渡效果的根元素的第一个 `transitionend` 或 `animationend` 事件。然而，有时候这也许不是预期的行为——比如，我们也许拥有一个精心编排的一系列过渡效果，其中一些嵌套的内部元素相比于过渡效果的根元素具有延迟的或更长的过渡效果。
+
+在这种情况下你可以用 `<transition>` 组件上的 `duration` prop 显式指定过渡持续时间 (以毫秒计)：
+
+```html
+<transition :duration="1000">...</transition>
+```
+
+你也可以分别指定进入和离开的持续时间：
+
+```html
+<transition :duration="{ enter: 500, leave: 800 }">...</transition>
+```
+
+#### 7.JavaScript 钩子
+
+可以在 attribute 中声明 JavaScript 钩子：
+
+```html
+<transition
+  @before-enter="beforeEnter"
+  @enter="enter"
+  @after-enter="afterEnter"
+  @enter-cancelled="enterCancelled"
+  @before-leave="beforeLeave"
+  @leave="leave"
+  @after-leave="afterLeave"
+  @leave-cancelled="leaveCancelled"
+  :css="false"
+>
+  <!-- ... -->
+</transition>
+```
 
 
 
+```js
+// ...
+methods: {
+  // --------
+  // 进入时
+  // --------
+
+  beforeEnter(el) {
+    // ...
+  },
+  // 当与 CSS 结合使用时
+  // 回调函数 done 是可选的
+  enter(el, done) {
+    // ...
+    done()
+  },
+  afterEnter(el) {
+    // ...
+  },
+  enterCancelled(el) {
+    // ...
+  },
+
+  // --------
+  // 离开时
+  // --------
+
+  beforeLeave(el) {
+    // ...
+  },
+  // 当与 CSS 结合使用时
+  // 回调函数 done 是可选的
+  leave(el, done) {
+    // ...
+    done()
+  },
+  afterLeave(el) {
+    // ...
+  },
+  // leaveCancelled 只用于 v-show 中
+  leaveCancelled(el) {
+    // ...
+  }
+}
+```
+
+这些钩子函数可以结合 CSS transitions/animations 使用，也可以单独使用。
+
+当只用 JavaScript 过渡的时候，在 **`enter` 和 `leave` 钩子中必须使用 `done` 进行回调**。否则，它们将被同步调用，过渡会立即完成。添加 `:css="false"` 也会让 Vue 会跳过 CSS 的检测，除了性能略高之外，这也可以避免过渡过程中受到 CSS 规则的意外影响。
+
+现在让我们来看一个例子。下面是一个使用 [GreenSock](https://greensock.com/) 的 JavaScript 过渡:
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.3.4/gsap.min.js"></script>
+
+<div id="demo">
+  <button @click="show = !show">
+    Toggle
+  </button>
+
+  <transition
+    @before-enter="beforeEnter"
+    @enter="enter"
+    @leave="leave"
+    :css="false"
+  >
+    <p v-if="show">
+      Demo
+    </p>
+  </transition>
+</div>
+```
 
 
 
+```js
+const Demo = {
+  data() {
+    return {
+      show: false
+    }
+  },
+  methods: {
+    beforeEnter(el) {
+      gsap.set(el, {
+        scaleX: 0.8,
+        scaleY: 1.2
+      })
+    },
+    enter(el, done) {
+      gsap.to(el, {
+        duration: 1,
+        scaleX: 1.5,
+        scaleY: 0.7,
+        opacity: 1,
+        x: 150,
+        ease: 'elastic.inOut(2.5, 1)',
+        onComplete: done
+      })
+    },
+    leave(el, done) {
+      gsap.to(el, {
+        duration: 0.7,
+        scaleX: 1,
+        scaleY: 1,
+        x: 300,
+        ease: 'elastic.inOut(2.5, 1)'
+      })
+      gsap.to(el, {
+        duration: 0.2,
+        delay: 0.5,
+        opacity: 0,
+        onComplete: done
+      })
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
+
+### 11.2.2初始渲染的过渡
+
+可以通过 `appear` attribute 设置节点在初始渲染的过渡：
+
+```html
+<transition appear>
+  <!-- ... -->
+</transition>
+```
+
+### 11.2.3多个元素之间的过渡
+
+我们将在之后讨论[多个组件之间的过渡](https://v3.cn.vuejs.org/guide/transitions-enterleave.html#多个组件之间的过渡)，但是你也可以通过 `v-if`/`v-else` 来完成元素之间的过渡。最常见的多标签过渡是一个列表和描述这个列表为空消息的元素：
+
+```html
+<transition>
+  <table v-if="items.length > 0">
+    <!-- ... -->
+  </table>
+  <p v-else>Sorry, no items found.</p>
+</transition>
+```
+
+实际上，通过使用 `v-if`/`v-else-if`/`v-else` 或将单个元素绑定到一个动态 property，可以在任意数量的元素之间进行过渡。例如：
+
+```html
+<transition>
+  <button v-if="docState === 'saved'" key="saved">
+    Edit
+  </button>
+  <button v-else-if="docState === 'edited'" key="edited">
+    Save
+  </button>
+  <button v-else-if="docState === 'editing'" key="editing">
+    Cancel
+  </button>
+</transition>
+```
+
+也可以写为：
+
+```html
+<transition>
+  <button :key="docState">
+    {{ buttonMessage }}
+  </button>
+</transition>
+```
 
 
 
+```js
+// ...
+computed: {
+  buttonMessage() {
+    switch (this.docState) {
+      case 'saved': return 'Edit'
+      case 'edited': return 'Save'
+      case 'editing': return 'Cancel'
+    }
+  }
+}
+```
+
+#### 过渡模式
+
+在“on”按钮和“off”按钮的过渡过程中，两个按钮都被绘制了——其中一个离开过渡的时候另一个开始进入过渡。这是 `<transition>` 的默认行为——进入和离开同时发生。
+
+有时这很有效，例如当过渡项使用绝对定位到顶端时：
+
+有时候这并不是一个可行的选项，或者说我们正在处理更复杂的动作，需要协调进入和离开的状态，所以 Vue 提供了一个非常有用的工具，称之为**过渡模式**：
+
+- `in-out`: 新元素先进行进入过渡，完成之后当前元素过渡离开。
+- `out-in`: 当前元素先进行离开过渡，完成之后新元素过渡进入。
+
+现在让我们用 `out-in` 更新 on/off 按钮的转换：
+
+```html
+<transition name="fade" mode="out-in">
+  <!-- ... the buttons ... -->
+</transition>
+```
+
+### 11.2.4多个组件之间的过渡
+
+组件之间的过渡更简单——我们甚至不需要 `key` 属性。取而代之的是，我们包裹了一个[动态组件](https://v3.cn.vuejs.org/guide/component-basics.html#动态组件) ：
+
+```html
+<div id="demo">
+  <input v-model="view" type="radio" value="v-a" id="a"><label for="a">A</label>
+  <input v-model="view" type="radio" value="v-b" id="b"><label for="b">B</label>
+  <transition name="component-fade" mode="out-in">
+    <component :is="view"></component>
+  </transition>
+</div>
+```
 
 
 
+```js
+const Demo = {
+  data() {
+    return {
+      view: 'v-a'
+    }
+  },
+  components: {
+    'v-a': {
+      template: '<div>Component A</div>'
+    },
+    'v-b': {
+      template: '<div>Component B</div>'
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
 
 
+
+```css
+.component-fade-enter-active,
+.component-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.component-fade-enter-from,
+.component-fade-leave-to {
+  opacity: 0;
+}
+```
+
+## 11.3列表过渡
+
+目前为止，关于过渡我们已经讲到：
+
+- 单个节点
+- 多个节点，每次只渲染一个
+
+那么怎么同时渲染整个列表，比如使用 `v-for`？在这种场景下，我们会使用 `<transition-group>` 组件。在我们深入例子之前，先了解关于这个组件的几个特点：
+
+- 默认情况下，它不会渲染一个包裹元素，但是你可以通过 `tag` attribute 指定渲染一个元素。
+- [过渡模式](https://v3.cn.vuejs.org/guide/transitions-enterleave.html#过渡模式)不可用，因为我们不再相互切换特有的元素。
+- 内部元素**总是需要**提供唯一的 `key` attribute 值。
+- CSS 过渡的类将会应用在内部的元素中，而不是这个组/容器本身。
+
+### 11.3.1列表的进入/离开过渡
+
+现在让我们由一个简单的例子深入，进入和离开的过渡使用之前一样的 CSS 类名。
+
+```html
+<div id="list-demo">
+  <button @click="add">Add</button>
+  <button @click="remove">Remove</button>
+  <transition-group name="list" tag="p">
+    <span v-for="item in items" :key="item" class="list-item">
+      {{ item }}
+    </span>
+  </transition-group>
+</div>
+```
+
+
+
+```js
+const Demo = {
+  data() {
+    return {
+      items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      nextNum: 10
+    }
+  },
+  methods: {
+    randomIndex() {
+      return Math.floor(Math.random() * this.items.length)
+    },
+    add() {
+      this.items.splice(this.randomIndex(), 0, this.nextNum++)
+    },
+    remove() {
+      this.items.splice(this.randomIndex(), 1)
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#list-demo')
+```
+
+
+
+```css
+.list-item {
+  display: inline-block;
+  margin-right: 10px;
+}
+.list-enter-active,
+.list-leave-active {
+  transition: all 1s ease;
+}
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+```
+
+这个例子有一个问题，当添加和移除元素的时候，周围的元素会瞬间移动到它们的新布局的位置，而不是平滑的过渡，我们下面会解决这个问题。
+
+### 11.3.2列表的移动过渡
+
+`<transition-group>` 组件还有一个特殊之处。除了进入和离开，它还可以为定位的改变添加动画。只需了解新增的 **`v-move` 类**就可以使用这个新功能，它会应用在元素改变定位的过程中。像之前的类名一样，它的前缀可以通过 `name` attribute 来自定义，也可以通过 `move-class` attribute 手动设置。
+
+这个类主要用于指定过渡时长和缓动效果曲线，如下所示：
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.15/lodash.min.js"></script>
+
+<div id="flip-list-demo">
+  <button @click="shuffle">Shuffle</button>
+  <transition-group name="flip-list" tag="ul">
+    <li v-for="item in items" :key="item">
+      {{ item }}
+    </li>
+  </transition-group>
+</div>
+```
+
+
+
+```js
+const Demo = {
+  data() {
+    return {
+      items: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    }
+  },
+  methods: {
+    shuffle() {
+      this.items = _.shuffle(this.items)
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#flip-list-demo')
+```
+
+
+
+```css
+.flip-list-move {
+  transition: transform 0.8s ease;
+}
+```
+
+这个看起来很神奇，其实 Vue 内部使用了一个叫 [FLIP](https://aerotwist.com/blog/flip-your-animations/) 的动画技术，它使用 transform 将元素从之前的位置平滑过渡到新的位置。
+
+我们将之前实现的例子和这个技术结合，使我们列表的一切变动都会有动画过渡。
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.14.1/lodash.min.js"></script>
+
+<div id="list-complete-demo" class="demo">
+  <button @click="shuffle">Shuffle</button>
+  <button @click="add">Add</button>
+  <button @click="remove">Remove</button>
+  <transition-group name="list-complete" tag="p">
+    <span v-for="item in items" :key="item" class="list-complete-item">
+      {{ item }}
+    </span>
+  </transition-group>
+</div>
+```
+
+
+
+```js
+const Demo = {
+  data() {
+    return {
+      items: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      nextNum: 10
+    }
+  },
+  methods: {
+    randomIndex() {
+      return Math.floor(Math.random() * this.items.length)
+    },
+    add() {
+      this.items.splice(this.randomIndex(), 0, this.nextNum++)
+    },
+    remove() {
+      this.items.splice(this.randomIndex(), 1)
+    },
+    shuffle() {
+      this.items = _.shuffle(this.items)
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#list-complete-demo')
+```
+
+
+
+```css
+.list-complete-item {
+  transition: all 0.8s ease;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.list-complete-enter-from,
+.list-complete-leave-to {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.list-complete-leave-active {
+  position: absolute;
+}
+```
+
+> 需要注意的是使用 FLIP 过渡的元素不能设置为 `display: inline`。作为替代方案，可以设置为 `display: inline-block` 或者将元素放置于 flex 布局中。
+
+### 11.3.3列表的交错过渡
+
+通过 data attribute 与 JavaScript 通信，就可以实现列表的交错过渡：
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.3.4/gsap.min.js"></script>
+
+<div id="demo">
+  <input v-model="query" />
+  <transition-group
+    name="staggered-fade"
+    tag="ul"
+    :css="false"
+    @before-enter="beforeEnter"
+    @enter="enter"
+    @leave="leave"
+  >
+    <li
+      v-for="(item, index) in computedList"
+      :key="item.msg"
+      :data-index="index"
+    >
+      {{ item.msg }}
+    </li>
+  </transition-group>
+</div>
+```
+
+
+
+```js
+const Demo = {
+  data() {
+    return {
+      query: '',
+      list: [
+        { msg: 'Bruce Lee' },
+        { msg: 'Jackie Chan' },
+        { msg: 'Chuck Norris' },
+        { msg: 'Jet Li' },
+        { msg: 'Kung Fury' }
+      ]
+    }
+  },
+  computed: {
+    computedList() {
+      var vm = this
+      return this.list.filter(item => {
+        return item.msg.toLowerCase().indexOf(vm.query.toLowerCase()) !== -1
+      })
+    }
+  },
+  methods: {
+    beforeEnter(el) {
+      el.style.opacity = 0
+      el.style.height = 0
+    },
+    enter(el, done) {
+      gsap.to(el, {
+        opacity: 1,
+        height: '1.6em',
+        delay: el.dataset.index * 0.15,
+        onComplete: done
+      })
+    },
+    leave(el, done) {
+      gsap.to(el, {
+        opacity: 0,
+        height: 0,
+        delay: el.dataset.index * 0.15,
+        onComplete: done
+      })
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#demo')
+```
+
+### 11.3.4可复用的过渡
+
+过渡可以通过 Vue 的组件系统实现复用。要创建一个可复用的过渡组件，你需要做的就是将 `<transition>` 或者 `<transition-group>` 作为根组件，然后将任何子组件放置其中就可以了。
+
+使用 template 的简单例子：
+
+```js
+Vue.component('my-special-transition', {
+  template: '\
+    <transition\
+      name="very-special-transition"\
+      mode="out-in"\
+      @before-enter="beforeEnter"\
+      @after-enter="afterEnter"\
+    >\
+      <slot></slot>\
+    </transition>\
+  ',
+  methods: {
+    beforeEnter(el) {
+      // ...
+    },
+    afterEnter(el) {
+      // ...
+    }
+  }
+})
+```
+
+
+
+[函数式组件](https://v3.cn.vuejs.org/guide/render-function.html#函数式组件)更适合完成这个任务：
+
+```js
+Vue.component('my-special-transition', {
+  functional: true,
+  render: function(createElement, context) {
+    var data = {
+      props: {
+        name: 'very-special-transition',
+        mode: 'out-in'
+      },
+      on: {
+        beforeEnter(el) {
+          // ...
+        },
+        afterEnter(el) {
+          // ...
+        }
+      }
+    }
+    return createElement('transition', data, context.children)
+  }
+})
+```
+
+### 11.3.5动态过渡
+
+在 Vue 中即使是过渡也是数据驱动的！动态过渡最基础的例子是通过 `name` attribute 来绑定动态的值。
+
+```html
+<transition :name="transitionName">
+  <!-- ... -->
+</transition>
+```
+
+当你已经定义了 Vue 的过渡类约定，并希望可以快速切换它们的时候，这会非常有用。
+
+尽管所有过渡 attribute 都可以动态绑定，但我们可用的不只有 attribute。因为事件钩子是方法，它们可以访问任何上下文中的数据，这意味着根据组件状态的不同，你的 JavaScript 过渡可以有不同的表现。
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/velocity/1.2.3/velocity.min.js"></script>
+
+<div id="dynamic-fade-demo" class="demo">
+  Fade In:
+  <input type="range" v-model="fadeInDuration" min="0" :max="maxFadeDuration" />
+  Fade Out:
+  <input
+    type="range"
+    v-model="fadeOutDuration"
+    min="0"
+    :max="maxFadeDuration"
+  />
+  <transition
+    :css="false"
+    @before-enter="beforeEnter"
+    @enter="enter"
+    @leave="leave"
+  >
+    <p v-if="show">hello</p>
+  </transition>
+  <button v-if="stop" @click="stop = false; show = false">
+    Start animating
+  </button>
+  <button v-else @click="stop = true">Stop it!</button>
+</div>
+```
+
+
+
+```js
+const app = Vue.createApp({
+  data() {
+    return {
+      show: true,
+      fadeInDuration: 1000,
+      fadeOutDuration: 1000,
+      maxFadeDuration: 1500,
+      stop: true
+    }
+  },
+  mounted() {
+    this.show = false
+  },
+  methods: {
+    beforeEnter(el) {
+      el.style.opacity = 0
+    },
+    enter(el, done) {
+      var vm = this
+      Velocity(
+        el,
+        { opacity: 1 },
+        {
+          duration: this.fadeInDuration,
+          complete: function() {
+            done()
+            if (!vm.stop) vm.show = false
+          }
+        }
+      )
+    },
+    leave(el, done) {
+      var vm = this
+      Velocity(
+        el,
+        { opacity: 0 },
+        {
+          duration: this.fadeOutDuration,
+          complete: function() {
+            done()
+            vm.show = true
+          }
+        }
+      )
+    }
+  }
+})
+
+app.mount('#dynamic-fade-demo')
+```
+
+## 11.4状态过渡
+
+### 11.4.1状态动画与侦听器
+
+通过侦听器我们能监听到任何数值 property 的更新。可能听起来很抽象，所以让我们先来看看一个使用 [GreenSock](https://greensock.com/) 的例子：
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.2.4/gsap.min.js"></script>
+
+<div id="animated-number-demo">
+  <input v-model.number="number" type="number" step="20" />
+  <p>{{ animatedNumber }}</p>
+</div>
+```
+
+
+
+```js
+const Demo = {
+  data() {
+    return {
+      number: 0,
+      tweenedNumber: 0
+    }
+  },
+  computed: {
+    animatedNumber() {
+      return this.tweenedNumber.toFixed(0)
+    }
+  },
+  watch: {
+    number(newValue) {
+      gsap.to(this.$data, { duration: 0.5, tweenedNumber: newValue })
+    }
+  }
+}
+
+Vue.createApp(Demo).mount('#animated-number-demo')
+```
+
+更新数字时，输入框下方会对更改设置动画效果。
+
+# 12.**可复用 & 组合**
+
+## 12.1组合式 API
