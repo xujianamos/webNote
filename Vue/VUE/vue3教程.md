@@ -4471,3 +4471,1640 @@ Vue.createApp(Demo).mount('#animated-number-demo')
 # 12.**可复用 & 组合**
 
 ## 12.1组合式 API
+
+### 12.1.1组合式 API 基础
+
+为了开始使用组合式 API，我们首先需要一个可以实际使用它的地方。在 Vue 组件中，我们将此位置称为 `setup`。
+
+#### 1.`setup` 组件选项
+
+新的 `setup` 选项在组件创建**之前**执行，一旦 `props` 被解析，就将作为组合式 API 的入口。
+
+> 在 `setup` 中你应该避免使用 `this`，因为它不会找到组件实例。`setup` 的调用发生在 `data` property、`computed` property 或 `methods` 被解析之前，所以它们无法在 `setup` 中被获取。
+
+`setup` 选项是一个接收 `props` 和 `context` 的函数，我们将在[之后](https://v3.cn.vuejs.org/guide/composition-api-setup.html#参数)进行讨论。此外，我们将 `setup` 返回的所有内容都暴露给组件的其余部分 (计算属性、方法、生命周期钩子等等) 以及组件的模板。
+
+让我们把 `setup` 添加到组件中：
+
+```js
+// src/components/UserRepositories.vue
+
+export default {
+  components: { RepositoriesFilters, RepositoriesSortBy, RepositoriesList },
+  props: {
+    user: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    console.log(props) // { user: '' }
+
+    return {} // 这里返回的任何内容都可以用于组件的其余部分
+  }
+  // 组件的“其余部分”
+}
+```
+
+#### 2.带 `ref` 的响应式变量
+
+在 Vue 3.0 中，我们可以通过一个新的 `ref` 函数使任何响应式变量在任何地方起作用，如下所示：
+
+```js
+import { ref } from 'vue'
+
+const counter = ref(0)
+```
+
+`ref` 接收参数并将其包裹在一个带有 `value` property 的对象中返回，然后可以使用该 property 访问或更改响应式变量的值：
+
+```js
+import { ref } from 'vue'
+
+const counter = ref(0)
+
+console.log(counter) // { value: 0 }
+console.log(counter.value) // 0
+
+counter.value++
+console.log(counter.value) // 1
+```
+
+将值封装在一个对象中，看似没有必要，但为了保持 JavaScript 中不同数据类型的行为统一，这是必须的。这是因为在 JavaScript 中，`Number` 或 `String` 等基本类型是通过值而非引用传递的：
+
+在任何值周围都有一个封装对象，这样我们就可以在整个应用中安全地传递它，而不必担心在某个地方失去它的响应性。
+
+> 换句话说，`ref` 为我们的值创建了一个**响应式引用**。在整个组合式 API 中会经常使用**引用**的概念。
+
+回到我们的例子，让我们创建一个响应式的 `repositories` 变量：
+
+```js
+// src/components/UserRepositories.vue `setup` function
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref } from 'vue'
+
+// 在我们的组件中
+setup (props) {
+  const repositories = ref([])
+  const getUserRepositories = async () => {
+    repositories.value = await fetchUserRepositories(props.user)
+  }
+
+  return {
+    repositories,
+    getUserRepositories
+  }
+}
+```
+
+完成！现在，每当我们调用 `getUserRepositories` 时，`repositories` 都将发生变化，视图也会更新以反映变化。我们的组件现在应该如下所示：
+
+```js
+// src/components/UserRepositories.vue
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref } from 'vue'
+
+export default {
+  components: { RepositoriesFilters, RepositoriesSortBy, RepositoriesList },
+  props: {
+    user: {
+      type: String,
+      required: true
+    }
+  },
+  setup (props) {
+    const repositories = ref([])
+    const getUserRepositories = async () => {
+      repositories.value = await fetchUserRepositories(props.user)
+    }
+
+    return {
+      repositories,
+      getUserRepositories
+    }
+  },
+  data () {
+    return {
+      filters: { ... }, // 3
+      searchQuery: '' // 2
+    }
+  },
+  computed: {
+    filteredRepositories () { ... }, // 3
+    repositoriesMatchingSearchQuery () { ... }, // 2
+  },
+  watch: {
+    user: 'getUserRepositories' // 1
+  },
+  methods: {
+    updateFilters () { ... }, // 3
+  },
+  mounted () {
+    this.getUserRepositories() // 1
+  }
+}
+```
+
+我们已经将第一个逻辑关注点中的几个部分移到了 `setup` 方法中，它们彼此非常接近。剩下的就是在 `mounted` 钩子中调用 `getUserRepositories`，并设置一个监听器，以便在 `user` prop 发生变化时执行此操作。
+
+#### 3.在 `setup` 内注册生命周期钩子
+
+为了使组合式 API 的功能和选项式 API 一样完整，我们还需要一种在 `setup` 中注册生命周期钩子的方法。这要归功于 Vue 导出的几个新函数。组合式 API 上的生命周期钩子与选项式 API 的名称相同，但前缀为 `on`：即 `mounted` 看起来会像 `onMounted`。
+
+这些函数接受一个回调，当钩子被组件调用时，该回调将被执行。
+
+让我们将其添加到 `setup` 函数中：
+
+```js
+// src/components/UserRepositories.vue `setup` function
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref, onMounted } from 'vue'
+
+// 在我们的组件中
+setup (props) {
+  const repositories = ref([])
+  const getUserRepositories = async () => {
+    repositories.value = await fetchUserRepositories(props.user)
+  }
+
+  onMounted(getUserRepositories) // 在 `mounted` 时调用 `getUserRepositories`
+
+  return {
+    repositories,
+    getUserRepositories
+  }
+}
+```
+
+现在我们需要对 `user` prop 的变化做出反应。为此，我们将使用独立的 `watch` 函数。
+
+#### 4.`watch` 响应式更改
+
+就像我们在组件中使用 `watch` 选项并在 `user` property 上设置侦听器一样，我们也可以使用从 Vue 导入的 `watch` 函数执行相同的操作。它接受 3 个参数：
+
+- 一个想要侦听的**响应式引用**或 getter 函数
+- 一个回调
+- 可选的配置选项
+
+**下面让我们快速了解一下它是如何工作的**
+
+```js
+import { ref, watch } from 'vue'
+
+const counter = ref(0)
+watch(counter, (newValue, oldValue) => {
+  console.log('The new counter value is: ' + counter.value)
+})
+```
+
+每当 `counter` 被修改时，例如 `counter.value=5`，侦听将触发并执行回调 (第二个参数)，在本例中，它将把 `'The new counter value is:5'` 记录到控制台中。
+
+**以下是等效的选项式 API：**
+
+```js
+export default {
+  data() {
+    return {
+      counter: 0
+    }
+  },
+  watch: {
+    counter(newValue, oldValue) {
+      console.log('The new counter value is: ' + this.counter)
+    }
+  }
+}
+```
+
+**现在我们将其应用到我们的示例中：**
+
+```js
+// src/components/UserRepositories.vue `setup` function
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref, onMounted, watch, toRefs } from 'vue'
+
+// 在我们组件中
+setup (props) {
+  // 使用 `toRefs` 创建对 `props` 中的 `user` property 的响应式引用
+  const { user } = toRefs(props)
+
+  const repositories = ref([])
+  const getUserRepositories = async () => {
+    // 更新 `prop.user` 到 `user.value` 访问引用值
+    repositories.value = await fetchUserRepositories(user.value)
+  }
+
+  onMounted(getUserRepositories)
+
+  // 在 user prop 的响应式引用上设置一个侦听器
+  watch(user, getUserRepositories)
+
+  return {
+    repositories,
+    getUserRepositories
+  }
+}
+
+```
+
+你可能已经注意到在我们的 `setup` 的顶部使用了 `toRefs`。这是为了确保我们的侦听器能够根据 `user` prop 的变化做出反应。
+
+#### 5.独立的 `computed` 属性
+
+与 `ref` 和 `watch` 类似，也可以使用从 Vue 导入的 `computed` 函数在 Vue 组件外部创建计算属性。让我们回到 counter 的例子：
+
+```js
+import { ref, computed } from 'vue'
+
+const counter = ref(0)
+const twiceTheCounter = computed(() => counter.value * 2)
+
+counter.value++
+console.log(counter.value) // 1
+console.log(twiceTheCounter.value) // 2
+```
+
+这里我们给 `computed` 函数传递了第一个参数，它是一个类似 getter 的回调函数，输出的是一个*只读*的**响应式引用**。为了访问新创建的计算变量的 **value**，我们需要像 `ref` 一样使用 `.value` property。
+
+让我们将搜索功能移到 `setup` 中：
+
+```js
+// src/components/UserRepositories.vue `setup` function
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref, onMounted, watch, toRefs, computed } from 'vue'
+
+// 在我们的组件中
+setup (props) {
+  // 使用 `toRefs` 创建对 props 中的 `user` property 的响应式引用
+  const { user } = toRefs(props)
+
+  const repositories = ref([])
+  const getUserRepositories = async () => {
+    // 更新 `props.user ` 到 `user.value` 访问引用值
+    repositories.value = await fetchUserRepositories(user.value)
+  }
+
+  onMounted(getUserRepositories)
+
+  // 在 user prop 的响应式引用上设置一个侦听器
+  watch(user, getUserRepositories)
+
+  const searchQuery = ref('')
+  const repositoriesMatchingSearchQuery = computed(() => {
+    return repositories.value.filter(
+      repository => repository.name.includes(searchQuery.value)
+    )
+  })
+
+  return {
+    repositories,
+    getUserRepositories,
+    searchQuery,
+    repositoriesMatchingSearchQuery
+  }
+}
+```
+
+对于其他的**逻辑关注点**我们也可以这样做，但是你可能已经在问这个问题了——*这不就是把代码移到 `setup` 选项并使它变得非常大吗*？嗯，确实是这样的。这就是为什么我们要在继续其他任务之前，我们首先要将上述代码提取到一个独立的**组合式函数**中。让我们从创建 `useUserRepositories` 函数开始：
+
+```js
+// src/composables/useUserRepositories.js
+
+import { fetchUserRepositories } from '@/api/repositories'
+import { ref, onMounted, watch } from 'vue'
+
+export default function useUserRepositories(user) {
+  const repositories = ref([])
+  const getUserRepositories = async () => {
+    repositories.value = await fetchUserRepositories(user.value)
+  }
+
+  onMounted(getUserRepositories)
+  watch(user, getUserRepositories)
+
+  return {
+    repositories,
+    getUserRepositories
+  }
+}
+```
+
+然后是搜索功能：
+
+```js
+// src/composables/useRepositoryNameSearch.js
+
+import { ref, computed } from 'vue'
+
+export default function useRepositoryNameSearch(repositories) {
+  const searchQuery = ref('')
+  const repositoriesMatchingSearchQuery = computed(() => {
+    return repositories.value.filter(repository => {
+      return repository.name.includes(searchQuery.value)
+    })
+  })
+
+  return {
+    searchQuery,
+    repositoriesMatchingSearchQuery
+  }
+}
+```
+
+**现在我们有了两个单独的功能模块，接下来就可以开始在组件中使用它们了。以下是如何做到这一点：**
+
+```js
+// src/components/UserRepositories.vue
+import useUserRepositories from '@/composables/useUserRepositories'
+import useRepositoryNameSearch from '@/composables/useRepositoryNameSearch'
+import { toRefs } from 'vue'
+
+export default {
+  components: { RepositoriesFilters, RepositoriesSortBy, RepositoriesList },
+  props: {
+    user: {
+      type: String,
+      required: true
+    }
+  },
+  setup (props) {
+    const { user } = toRefs(props)
+
+    const { repositories, getUserRepositories } = useUserRepositories(user)
+
+    const {
+      searchQuery,
+      repositoriesMatchingSearchQuery
+    } = useRepositoryNameSearch(repositories)
+
+    return {
+      // 因为我们并不关心未经过滤的仓库
+      // 我们可以在 `repositories` 名称下暴露过滤后的结果
+      repositories: repositoriesMatchingSearchQuery,
+      getUserRepositories,
+      searchQuery,
+    }
+  },
+  data () {
+    return {
+      filters: { ... }, // 3
+    }
+  },
+  computed: {
+    filteredRepositories () { ... }, // 3
+  },
+  methods: {
+    updateFilters () { ... }, // 3
+  }
+}
+```
+
+此时，你可能已经知道了其中的奥妙，所以让我们跳到最后，迁移剩余的过滤功能。我们不需要深入了解实现细节，因为这并不是本指南的重点。
+
+```js
+// src/components/UserRepositories.vue
+import { toRefs } from 'vue'
+import useUserRepositories from '@/composables/useUserRepositories'
+import useRepositoryNameSearch from '@/composables/useRepositoryNameSearch'
+import useRepositoryFilters from '@/composables/useRepositoryFilters'
+
+export default {
+  components: { RepositoriesFilters, RepositoriesSortBy, RepositoriesList },
+  props: {
+    user: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
+    const { user } = toRefs(props)
+
+    const { repositories, getUserRepositories } = useUserRepositories(user)
+
+    const {
+      searchQuery,
+      repositoriesMatchingSearchQuery
+    } = useRepositoryNameSearch(repositories)
+
+    const {
+      filters,
+      updateFilters,
+      filteredRepositories
+    } = useRepositoryFilters(repositoriesMatchingSearchQuery)
+
+    return {
+      // 因为我们并不关心未经过滤的仓库
+      // 我们可以在 `repositories` 名称下暴露过滤后的结果
+      repositories: filteredRepositories,
+      getUserRepositories,
+      searchQuery,
+      filters,
+      updateFilters
+    }
+  }
+}
+```
+
+### 12.1.2Setup
+
+#### 1. 参数
+
+使用 `setup` 函数时，它将接收两个参数：
+
+1. `props`
+2. `context`
+
+> ### 1. Props
+
+`setup` 函数中的第一个参数是 `props`。正如在一个标准组件中所期望的那样，`setup` 函数中的 `props` 是响应式的，当传入新的 prop 时，它将被更新。
+
+```js
+// MyBook.vue
+
+export default {
+  props: {
+    title: String
+  },
+  setup(props) {
+    console.log(props.title)
+  }
+}
+```
+
+> 但是，因为 `props` 是响应式的，你**不能使用 ES6 解构**，它会消除 prop 的响应性。
+
+如果需要解构 prop，可以在 `setup` 函数中使用 [`toRefs`](https://v3.cn.vuejs.org/guide/reactivity-fundamentals.html#响应式状态解构) 函数来完成此操作：
+
+```js
+// MyBook.vue
+
+import { toRefs } from 'vue'
+
+setup(props) {
+  const { title } = toRefs(props)
+
+  console.log(title.value)
+}
+```
+
+如果 `title` 是可选的 prop，则传入的 `props` 中可能没有 `title` 。在这种情况下，`toRefs` 将不会为 `title` 创建一个 ref 。你需要使用 `toRef` 替代它：
+
+```js
+// MyBook.vue
+import { toRef } from 'vue'
+setup(props) {
+  const title = toRef(props, 'title')
+  console.log(title.value)
+}
+```
+
+> ### 2. Context
+
+传递给 `setup` 函数的第二个参数是 `context`。`context` 是一个普通 JavaScript 对象，暴露了其它可能在 `setup` 中有用的值：
+
+```js
+// MyBook.vue
+
+export default {
+  setup(props, context) {
+    // Attribute (非响应式对象，等同于 $attrs)
+    console.log(context.attrs)
+
+    // 插槽 (非响应式对象，等同于 $slots)
+    console.log(context.slots)
+
+    // 触发事件 (方法，等同于 $emit)
+    console.log(context.emit)
+
+    // 暴露公共 property (函数)
+    console.log(context.expose)
+  }
+}
+```
+
+`context` 是一个普通的 JavaScript 对象，也就是说，它不是响应式的，这意味着你可以安全地对 `context` 使用 ES6 解构。
+
+```js
+// MyBook.vue
+export default {
+  setup(props, { attrs, slots, emit, expose }) {
+    ...
+  }
+}
+```
+
+`attrs` 和 `slots` 是有状态的对象，它们总是会随组件本身的更新而更新。这意味着你应该避免对它们进行解构，并始终以 `attrs.x` 或 `slots.x` 的方式引用 property。请注意，与 `props` 不同，`attrs` 和 `slots` 的 property 是**非**响应式的。如果你打算根据 `attrs` 或 `slots` 的更改应用副作用，那么应该在 `onBeforeUpdate` 生命周期钩子中执行此操作。
+
+#### 2.访问组件的 property
+
+执行 `setup` 时，你只能访问以下 property：
+
+- `props`
+- `attrs`
+- `slots`
+- `emit`
+
+换句话说，你**将无法访问**以下组件选项：
+
+- `data`
+- `computed`
+- `methods`
+- `refs` (模板 ref)
+
+#### 3.结合模板使用
+
+如果 `setup` 返回一个对象，那么该对象的 property 以及传递给 `setup` 的 `props` 参数中的 property 就都可以在模板中访问到：
+
+```js
+<!-- MyBook.vue -->
+<template>
+  <div>{{ collectionName }}: {{ readersNumber }} {{ book.title }}</div>
+</template>
+
+<script>
+  import { ref, reactive } from 'vue'
+
+  export default {
+    props: {
+      collectionName: String
+    },
+    setup(props) {
+      const readersNumber = ref(0)
+      const book = reactive({ title: 'Vue 3 Guide' })
+
+      // 暴露给 template
+      return {
+        readersNumber,
+        book
+      }
+    }
+  }
+</script>
+```
+
+> 注意:从 `setup` 返回的 [refs](https://v3.cn.vuejs.org/api/refs-api.html#ref) 在模板中访问时是[被自动浅解包](https://v3.cn.vuejs.org/guide/reactivity-fundamentals.html#ref-解包)的，因此不应在模板中使用 `.value`。
+
+#### 4.使用渲染函数
+
+`setup` 还可以返回一个渲染函数，该函数可以直接使用在同一作用域中声明的响应式状态：
+
+```js
+// MyBook.vue
+
+import { h, ref, reactive } from 'vue'
+
+export default {
+  setup() {
+    const readersNumber = ref(0)
+    const book = reactive({ title: 'Vue 3 Guide' })
+    // 请注意这里我们需要显式使用 ref 的 value
+    return () => h('div', [readersNumber.value, book.title])
+  }
+}
+```
+
+返回一个渲染函数将阻止我们返回任何其它的东西。从内部来说这不应该成为一个问题，但当我们想要将这个组件的方法通过模板 ref 暴露给父组件时就不一样了。
+
+我们可以通过调用 `expose` 来解决这个问题，给它传递一个对象，其中定义的 property 将可以被外部组件实例访问：
+
+```js
+import { h, ref } from 'vue'
+export default {
+  setup(props, { expose }) {
+    const count = ref(0)
+    const increment = () => ++count.value
+
+    expose({
+      increment
+    })
+
+    return () => h('div', count.value)
+  }
+}
+```
+
+这个 `increment` 方法现在将可以通过父组件的模板 ref 访问。
+
+#### 5.使用 `this`
+
+**在 `setup()` 内部，`this` 不是该活跃实例的引用**，因为 `setup()` 是在解析其它组件选项之前被调用的，所以 `setup()` 内部的 `this` 的行为与其它选项中的 `this` 完全不同。这使得 `setup()` 在和其它选项式 API 一起使用时可能会导致混淆。
+
+### 12.1.3生命周期钩子
+
+你可以通过在生命周期钩子前面加上 “on” 来访问组件的生命周期钩子。
+
+下表包含如何在 [setup ()](https://v3.cn.vuejs.org/guide/composition-api-setup.html) 内部调用生命周期钩子：
+
+| 选项式 API        | Hook inside `setup` |
+| ----------------- | ------------------- |
+| `beforeCreate`    | Not needed*         |
+| `created`         | Not needed*         |
+| `beforeMount`     | `onBeforeMount`     |
+| `mounted`         | `onMounted`         |
+| `beforeUpdate`    | `onBeforeUpdate`    |
+| `updated`         | `onUpdated`         |
+| `beforeUnmount`   | `onBeforeUnmount`   |
+| `unmounted`       | `onUnmounted`       |
+| `errorCaptured`   | `onErrorCaptured`   |
+| `renderTracked`   | `onRenderTracked`   |
+| `renderTriggered` | `onRenderTriggered` |
+| `activated`       | `onActivated`       |
+| `deactivated`     | `onDeactivated`     |
+
+> 因为 `setup` 是围绕 `beforeCreate` 和 `created` 生命周期钩子运行的，所以不需要显式地定义它们。换句话说，在这些钩子中编写的任何代码都应该直接在 `setup` 函数中编写。
+
+这些函数接受一个回调函数，当钩子被组件调用时将会被执行:
+
+```js
+// MyBook.vue
+
+export default {
+  setup() {
+    // mounted
+    onMounted(() => {
+      console.log('Component is mounted!')
+    })
+  }
+}
+```
+
+### 12.1.4 Provide / Inject
+
+假设我们要重写以下代码，其中包含一个 `MyMap` 组件，该组件使用组合式 API 为 `MyMarker` 组件提供用户的位置。
+
+```vue
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  provide: {
+    location: 'North Pole',
+    geolocation: {
+      longitude: 90,
+      latitude: 135
+    }
+  }
+}
+</script>
+```
+
+```vue
+<!-- src/components/MyMarker.vue -->
+<script>
+export default {
+  inject: ['location', 'geolocation']
+}
+</script>
+```
+
+#### 1.使用 Provide
+
+在 `setup()` 中使用 `provide` 时，我们首先从 `vue` 显式导入 `provide` 方法。这使我们能够调用 `provide` 来定义每个 property。
+
+`provide` 函数允许你通过两个参数定义 property：
+
+1. name (`<String>` 类型)
+2. value
+
+使用 `MyMap` 组件后，provide 的值可以按如下方式重构：
+
+```js
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import { provide } from 'vue'
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  setup() {
+    provide('location', 'North Pole')
+    provide('geolocation', {
+      longitude: 90,
+      latitude: 135
+    })
+  }
+}
+</script>
+```
+
+#### 2.使用 inject
+
+在 `setup()` 中使用 `inject` 时，也需要从 `vue` 显式导入。导入以后，我们就可以调用它来定义暴露给我们的组件方式。
+
+`inject` 函数有两个参数：
+
+1. 要 inject 的 property 的 name
+2. 默认值 (**可选**)
+
+使用 `MyMarker` 组件，可以使用以下代码对其进行重构：
+
+```js
+<!-- src/components/MyMarker.vue -->
+<script>
+import { inject } from 'vue'
+
+export default {
+  setup() {
+    const userLocation = inject('location', 'The Universe')
+    const userGeolocation = inject('geolocation')
+
+    return {
+      userLocation,
+      userGeolocation
+    }
+  }
+}
+</script>
+```
+
+#### 3.响应性
+
+> ### 1.添加响应性
+
+为了增加 provide 值和 inject 值之间的响应性，我们可以在 provide 值时使用 [ref](https://v3.cn.vuejs.org/guide/reactivity-fundamentals.html#创建独立的响应式值作为-refs) 或 [reactive](https://v3.cn.vuejs.org/guide/reactivity-fundamentals.html#声明响应式状态)。
+
+使用 `MyMap` 组件，我们的代码可以更新如下：
+
+```js
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import { provide, reactive, ref } from 'vue'
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  setup() {
+    const location = ref('North Pole')
+    const geolocation = reactive({
+      longitude: 90,
+      latitude: 135
+    })
+
+    provide('location', location)
+    provide('geolocation', geolocation)
+  }
+}
+</script>
+```
+
+现在，如果这两个 property 中有任何更改，`MyMarker` 组件也将自动更新！
+
+> ### 2.修改响应式 property
+
+当使用响应式 provide / inject 值时，**建议尽可能将对响应式 property 的所有修改限制在\*定义 provide 的组件\*内部**。
+
+例如，在需要更改用户位置的情况下，我们最好在 `MyMap` 组件中执行此操作。
+
+```js
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import { provide, reactive, ref } from 'vue'
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  setup() {
+    const location = ref('North Pole')
+    const geolocation = reactive({
+      longitude: 90,
+      latitude: 135
+    })
+
+    provide('location', location)
+    provide('geolocation', geolocation)
+
+    return {
+      location
+    }
+  },
+  methods: {
+    updateLocation() {
+      this.location = 'South Pole'
+    }
+  }
+}
+</script>
+```
+
+然而，有时我们需要在注入数据的组件内部更新 inject 的数据。在这种情况下，我们建议 provide 一个方法来负责改变响应式 property。
+
+```js
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import { provide, reactive, ref } from 'vue'
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  setup() {
+    const location = ref('North Pole')
+    const geolocation = reactive({
+      longitude: 90,
+      latitude: 135
+    })
+
+    const updateLocation = () => {
+      location.value = 'South Pole'
+    }
+
+    provide('location', location)
+    provide('geolocation', geolocation)
+    provide('updateLocation', updateLocation)
+  }
+}
+</script>
+```
+
+
+
+```js
+<!-- src/components/MyMarker.vue -->
+<script>
+import { inject } from 'vue'
+
+export default {
+  setup() {
+    const userLocation = inject('location', 'The Universe')
+    const userGeolocation = inject('geolocation')
+    const updateUserLocation = inject('updateLocation')
+
+    return {
+      userLocation,
+      userGeolocation,
+      updateUserLocation
+    }
+  }
+}
+</script>
+```
+
+最后，如果要确保通过 `provide` 传递的数据不会被 inject 的组件更改，我们建议对提供者的 property 使用 `readonly`。
+
+```js
+<!-- src/components/MyMap.vue -->
+<template>
+  <MyMarker />
+</template>
+
+<script>
+import { provide, reactive, readonly, ref } from 'vue'
+import MyMarker from './MyMarker.vue'
+
+export default {
+  components: {
+    MyMarker
+  },
+  setup() {
+    const location = ref('North Pole')
+    const geolocation = reactive({
+      longitude: 90,
+      latitude: 135
+    })
+
+    const updateLocation = () => {
+      location.value = 'South Pole'
+    }
+
+    provide('location', readonly(location))
+    provide('geolocation', readonly(geolocation))
+    provide('updateLocation', updateLocation)
+  }
+}
+</script>
+```
+
+### 12.1.5模板引用
+
+在使用组合式 API 时，[响应式引用](https://v3.cn.vuejs.org/guide/reactivity-fundamentals.html#创建独立的响应式值作为-refs)和[模板引用](https://v3.cn.vuejs.org/guide/component-template-refs.html)的概念是统一的。为了获得对模板内元素或组件实例的引用，我们可以像往常一样声明 ref 并从 [setup()](https://v3.cn.vuejs.org/guide/composition-api-setup.html) 返回：
+
+```js
+<template> 
+  <div ref="root">This is a root element</div>
+</template>
+
+<script>
+  import { ref, onMounted } from 'vue'
+
+  export default {
+    setup() {
+      const root = ref(null)
+
+      onMounted(() => {
+        // DOM 元素将在初始渲染后分配给 ref
+        console.log(root.value) // <div>This is a root element</div>
+      })
+
+      return {
+        root
+      }
+    }
+  }
+</script>
+```
+
+这里我们在渲染上下文中暴露 `root`，并通过 `ref="root"`，将其绑定到 div 作为其 ref。在虚拟 DOM 补丁算法中，如果 VNode 的 `ref` 键对应于渲染上下文中的 ref，则 VNode 的相应元素或组件实例将被分配给该 ref 的值。这是在虚拟 DOM 挂载/打补丁过程中执行的，因此模板引用只会在初始渲染之后获得赋值。
+
+作为模板使用的 ref 的行为与任何其他 ref 一样：它们是响应式的，可以传递到 (或从中返回) 复合函数中。
+
+> ## 1.JSX 中的用法
+
+```js
+export default {
+  setup() {
+    const root = ref(null)
+
+    return () =>
+      h('div', {
+        ref: root
+      })
+
+    // with JSX
+    return () => <div ref={root} />
+  }
+}
+```
+
+> ## 2.`v-for` 中的用法
+
+```js
+<template>
+  <div v-for="(item, i) in list" :ref="el => { if (el) divs[i] = el }">
+    {{ item }}
+  </div>
+</template>
+
+<script>
+  import { ref, reactive, onBeforeUpdate } from 'vue'
+
+  export default {
+    setup() {
+      const list = reactive([1, 2, 3])
+      const divs = ref([])
+
+      // 确保在每次更新之前重置ref
+      onBeforeUpdate(() => {
+        divs.value = []
+      })
+
+      return {
+        list,
+        divs
+      }
+    }
+  }
+</script>
+```
+
+> ## 3.侦听模板引用
+
+侦听模板引用的变更可以替代前面例子中演示使用的生命周期钩子。
+
+但与生命周期钩子的一个关键区别是，`watch()` 和 `watchEffect()` 在 DOM 挂载或更新*之前*运行副作用，所以当侦听器运行时，模板引用还未被更新。
+
+```js
+<template>
+  <div ref="root">This is a root element</div>
+</template>
+
+<script>
+  import { ref, watchEffect } from 'vue'
+
+  export default {
+    setup() {
+      const root = ref(null)
+
+      watchEffect(() => {
+        // 这个副作用在 DOM 更新之前运行，因此，模板引用还没有持有对元素的引用。
+        console.log(root.value) // => null
+      })
+
+      return {
+        root
+      }
+    }
+  }
+</script>
+```
+
+因此，使用模板引用的侦听器应该用 `flush: 'post'` 选项来定义，这将在 DOM 更新*后*运行副作用，确保模板引用与 DOM 保持同步，并引用正确的元素。
+
+```js
+<template>
+  <div ref="root">This is a root element</div>
+</template>
+
+<script>
+  import { ref, watchEffect } from 'vue'
+
+  export default {
+    setup() {
+      const root = ref(null)
+
+      watchEffect(() => {
+        console.log(root.value) // => <div>This is a root element</div>
+      }, 
+      {
+        flush: 'post'
+      })
+
+      return {
+        root
+      }
+    }
+  }
+</script>
+```
+
+## 12.2Mixin
+
+### 12.2.1基础
+
+Mixin 提供了一种非常灵活的方式，来分发 Vue 组件中的可复用功能。一个 mixin 对象可以包含任意组件选项。当组件使用 mixin 对象时，所有 mixin 对象的选项将被“混合”进入该组件本身的选项。
+
+例子：
+
+```js
+// 定义一个 mixin 对象
+const myMixin = {
+  created() {
+    this.hello()
+  },
+  methods: {
+    hello() {
+      console.log('hello from mixin!')
+    }
+  }
+}
+
+// 定义一个使用此 mixin 对象的应用
+const app = Vue.createApp({
+  mixins: [myMixin]
+})
+
+app.mount('#mixins-basic') // => "hello from mixin!"
+```
+
+### 12.2.2选项合并
+
+当组件和 mixin 对象含有同名选项时，这些选项将以恰当的方式进行“合并”。
+
+比如，每个 mixin 可以拥有自己的 `data` 函数。每个 `data` 函数都会被调用，并将返回结果合并。在数据的 property 发生冲突时，会以组件自身的数据为优先。
+
+```js
+const myMixin = {
+  data() {
+    return {
+      message: 'hello',
+      foo: 'abc'
+    }
+  }
+}
+
+const app = Vue.createApp({
+  mixins: [myMixin],
+  data() {
+    return {
+      message: 'goodbye',
+      bar: 'def'
+    }
+  },
+  created() {
+    console.log(this.$data) // => { message: "goodbye", foo: "abc", bar: "def" }
+  }
+})
+```
+
+同名钩子函数将合并为一个数组，因此都将被调用。另外，mixin 对象的钩子将在组件自身钩子**之前**调用。
+
+```js
+const myMixin = {
+  created() {
+    console.log('mixin 对象的钩子被调用')
+  }
+}
+
+const app = Vue.createApp({
+  mixins: [myMixin],
+  created() {
+    console.log('组件钩子被调用')
+  }
+})
+
+// => "mixin 对象的钩子被调用"
+// => "组件钩子被调用"
+```
+
+值为对象的选项，例如 `methods`、`components` 和 `directives`，将被合并为同一个对象。两个对象键名冲突时，取组件对象的键值对。
+
+```js
+const myMixin = {
+  methods: {
+    foo() {
+      console.log('foo')
+    },
+    conflicting() {
+      console.log('from mixin')
+    }
+  }
+}
+
+const app = Vue.createApp({
+  mixins: [myMixin],
+  methods: {
+    bar() {
+      console.log('bar')
+    },
+    conflicting() {
+      console.log('from self')
+    }
+  }
+})
+
+const vm = app.mount('#mixins-basic')
+
+vm.foo() // => "foo"
+vm.bar() // => "bar"
+vm.conflicting() // => "from self"
+```
+
+### 12.2.3全局 mixin
+
+你还可以为 Vue 应用程序全局应用 mixin：
+
+```js
+const app = Vue.createApp({
+  myOption: 'hello!'
+})
+
+// 为自定义的选项 'myOption' 注入一个处理器。
+app.mixin({
+  created() {
+    const myOption = this.$options.myOption
+    if (myOption) {
+      console.log(myOption)
+    }
+  }
+})
+
+app.mount('#mixins-global') // => "hello!"
+```
+
+Mixin 也可以进行全局注册。使用时格外小心！一旦使用全局 mixin，它将影响**每一个**之后创建的组件 (例如，每个子组件)。
+
+```js
+const app = Vue.createApp({
+  myOption: 'hello!'
+})
+
+// 为自定义的选项 'myOption' 注入一个处理器。
+app.mixin({
+  created() {
+    const myOption = this.$options.myOption
+    if (myOption) {
+      console.log(myOption)
+    }
+  }
+})
+
+// 将myOption也添加到子组件
+app.component('test-component', {
+  myOption: 'hello from component!'
+})
+
+app.mount('#mixins-global')
+
+// => "hello!"
+// => "hello from component!"
+```
+
+大多数情况下，只应当应用于自定义选项，就像上面示例一样。推荐将其作为[插件](https://v3.cn.vuejs.org/guide/plugins.html)发布，以避免重复应用 mixin。
+
+### 12.2.4自定义选项合并策略
+
+自定义选项在合并时，默认策略为简单地覆盖已有值。如果想让某个自定义选项以自定义逻辑进行合并，可以在 `app.config.optionMergeStrategies` 中添加一个函数：
+
+```js
+const app = Vue.createApp({})
+
+app.config.optionMergeStrategies.customOption = (toVal, fromVal) => {
+  // return mergedVal
+}
+```
+
+合并策略接收在父实例和子实例上定义的该选项的值，分别作为第一个和第二个参数。让我们来检查一下使用 mixin 时，这些参数有哪些：
+
+```js
+const app = Vue.createApp({
+  custom: 'hello!'
+})
+
+app.config.optionMergeStrategies.custom = (toVal, fromVal) => {
+  console.log(fromVal, toVal)
+  // => "goodbye!", undefined
+  // => "hello", "goodbye!"
+  return fromVal || toVal
+}
+
+app.mixin({
+  custom: 'goodbye!',
+  created() {
+    console.log(this.$options.custom) // => "hello!"
+  }
+})
+```
+
+如你所见，在控制台中，我们先从 mixin 打印 `toVal` 和 `fromVal`，然后从 `app` 打印。如果存在，我们总是返回 `fromVal`，这就是为什么 `this.$options.custom` 设置为 `hello!` 最后。让我们尝试将策略更改为*始终*从子*实例*返回值：
+
+```js
+const app = Vue.createApp({
+  custom: 'hello!'
+})
+
+app.config.optionMergeStrategies.custom = (toVal, fromVal) => toVal || fromVal
+
+app.mixin({
+  custom: 'goodbye!',
+  created() {
+    console.log(this.$options.custom) // => "goodbye!"
+  }
+})
+```
+
+## 12.3自定义指令
+
+除了核心功能默认内置的指令 (例如 `v-model` 和 `v-show`)，Vue 也允许注册自定义指令。注意，在 Vue 中，代码复用和抽象的主要形式是组件。然而，有的情况下，你仍然需要对普通 DOM 元素进行底层操作，这时候就会用到自定义指令。举个聚焦输入框的例子，如下：
+
+当页面加载时，该元素将获得焦点 (注意：`autofocus` 在移动版 Safari 上不工作)。事实上，如果你在打开这个页面后还没有点击过任何内容，那么此时这个输入框就应当处于聚焦状态。此外，你可以单击 `Rerun` 按钮，输入框将被聚焦。
+
+现在让我们用指令来实现这个功能：
+
+```js
+const app = Vue.createApp({})
+// 注册一个全局自定义指令 `v-focus`
+app.directive('focus', {
+  // 当被绑定的元素挂载到 DOM 中时……
+  mounted(el) {
+    // 聚焦元素
+    el.focus()
+  }
+})
+```
+
+如果想注册局部指令，组件中也接受一个 `directives` 的选项：
+
+```js
+directives: {
+  focus: {
+    // 指令的定义
+    mounted(el) {
+      el.focus()
+    }
+  }
+}
+```
+
+然后你可以在模板中任何元素上使用新的 `v-focus` attribute，如下：
+
+```html
+<input v-focus />
+```
+
+### 12.3.1钩子函数
+
+一个指令定义对象可以提供如下几个钩子函数 (均为可选)：
+
+- `created`：在绑定元素的 attribute 或事件监听器被应用之前调用。在指令需要附加在普通的 `v-on` 事件监听器调用前的事件监听器中时，这很有用。
+- `beforeMount`：当指令第一次绑定到元素并且在挂载父组件之前调用。
+- `mounted`：在绑定元素的父组件被挂载前调用。
+- `beforeUpdate`：在更新包含组件的 VNode 之前调用。
+
+- `updated`：在包含组件的 VNode **及其子组件的 VNode** 更新后调用。
+- `beforeUnmount`：在卸载绑定元素的父组件之前调用
+- `unmounted`：当指令与元素解除绑定且父组件已卸载时，只调用一次。
+
+接下来我们来看一下在[自定义指令 API](https://v3.cn.vuejs.org/api/application-api.html#directive) 钩子函数的参数 (即 `el`、`binding`、`vnode` 和 `prevVnode`)
+
+> ### 1.动态指令参数
+
+指令的参数可以是动态的。例如，在 `v-mydirective:[argument]="value"` 中，`argument` 参数可以根据组件实例数据进行更新！这使得自定义指令可以在应用中被灵活使用。
+
+例如你想要创建一个自定义指令，用来通过固定布局将元素固定在页面上。我们可以创建一个自定义指令，它的值以像素为单位更新被固定元素的垂直位置，如下所示：
+
+```html
+<div id="dynamic-arguments-example" class="demo">
+  <p>Scroll down the page</p>
+  <p v-pin="200">Stick me 200px from the top of the page</p>
+</div>
+```
+
+```js
+const app = Vue.createApp({})
+
+app.directive('pin', {
+  mounted(el, binding) {
+    el.style.position = 'fixed'
+    // binding.value 是我们传递给指令的值——在这里是 200
+    el.style.top = binding.value + 'px'
+  }
+})
+
+app.mount('#dynamic-arguments-example')
+```
+
+这会把该元素固定在距离页面顶部 200 像素的位置。但如果场景是我们需要把元素固定在左侧而不是顶部又该怎么办呢？这时使用动态参数就可以非常方便地根据每个组件实例来进行更新。
+
+```js
+<div id="dynamicexample">
+  <h3>Scroll down inside this section ↓</h3>
+  <p v-pin:[direction]="200">I am pinned onto the page at 200px to the left.</p>
+</div>
+```
+
+```js
+const app = Vue.createApp({
+  data() {
+    return {
+      direction: 'right'
+    }
+  }
+})
+
+app.directive('pin', {
+  mounted(el, binding) {
+    el.style.position = 'fixed'
+    // binding.arg 是我们传递给指令的参数
+    const s = binding.arg || 'top'
+    el.style[s] = binding.value + 'px'
+  }
+})
+
+app.mount('#dynamic-arguments-example')
+```
+
+我们的自定义指令现在已经足够灵活，可以支持一些不同的用例。为了使其更具动态性，我们还可以允许修改绑定值。让我们创建一个附加属性 `pinPadding`，并将其绑定到 `<input type="range">`。
+
+```html
+<div id="dynamicexample">
+  <h2>Scroll down the page</h2>
+  <input type="range" min="0" max="500" v-model="pinPadding">
+  <p v-pin:[direction]="pinPadding">Stick me {{ pinPadding + 'px' }} from the {{ direction || 'top' }} of the page</p>
+</div>
+```
+
+```js
+const app = Vue.createApp({
+  data() {
+    return {
+      direction: 'right',
+      pinPadding: 200
+    }
+  }
+})
+```
+
+让我们扩展指令逻辑以在组件更新后重新计算固定的距离。
+
+```js
+app.directive('pin', {
+  mounted(el, binding) {
+    el.style.position = 'fixed'
+    const s = binding.arg || 'top'
+    el.style[s] = binding.value + 'px'
+  },
+  updated(el, binding) {
+    const s = binding.arg || 'top'
+    el.style[s] = binding.value + 'px'
+  }
+})
+```
+
+### 12.3.2函数简写
+
+在前面的例子中，你可能想在 `mounted` 和 `updated` 时触发相同行为，而不关心其他的钩子函数。那么你可以通过将这个回调函数传递给指令来实现：
+
+```js
+app.directive('pin', (el, binding) => {
+  el.style.position = 'fixed'
+  const s = binding.arg || 'top'
+  el.style[s] = binding.value + 'px'
+})
+```
+
+### 12.3.3对象字面量
+
+如果指令需要多个值，可以传入一个 JavaScript 对象字面量。记住，指令函数能够接受所有合法的 JavaScript 表达式。
+
+```html
+<div v-demo="{ color: 'white', text: 'hello!' }"></div>
+```
+
+
+
+```js
+app.directive('demo', (el, binding) => {
+  console.log(binding.value.color) // => "white"
+  console.log(binding.value.text) // => "hello!"
+})
+```
+
+### 12.3.4在组件中使用
+
+和[非 prop 的 attribute](https://v3.cn.vuejs.org/guide/component-attrs.html) 类似，当在组件中使用时，自定义指令总是会被应用在组件的根节点上。
+
+```vue-html
+<my-component v-demo="test"></my-component>
+```
+
+
+
+```js
+app.component('my-component', {
+  template: `
+    <div> // v-demo 指令将会被应用在这里
+      <span>My component content</span>
+    </div>
+  `
+})
+```
+
+和 attribute 不同，指令不会通过 `v-bind="$attrs"` 被传入另一个元素。
+
+有了[片段](https://v3.cn.vuejs.org/guide/migration/fragments.html#概览)支持以后，组件可能会有多个根节点。当被应用在一个多根节点的组件上时，指令会被忽略，并且会抛出一个警告。
+
+## 12.4Teleport
+
+一个常见的场景是创建一个包含全屏模式的组件。在大多数情况下，你希望模态框的逻辑存在于组件中，但是模态框的快速定位就很难通过 CSS 来解决，或者需要更改组件组合。
+
+考虑下面的 HTML 结构。
+
+```html
+<body>
+  <div style="position: relative;">
+    <h3>Tooltips with Vue 3 Teleport</h3>
+    <div>
+      <modal-button></modal-button>
+    </div>
+  </div>
+</body>
+```
+
+让我们来看看 `modal-button` 组件：
+
+该组件将有一个 `button` 元素来触发模态框的打开，以及一个带有 class `.modal` 的 `div` 元素，它将包含模态框的内容和一个用于自关闭的按钮。
+
+```js
+const app = Vue.createApp({});
+
+app.component('modal-button', {
+  template: `
+    <button @click="modalOpen = true">
+        Open full screen modal!
+    </button>
+
+    <div v-if="modalOpen" class="modal">
+      <div>
+        I'm a modal! 
+        <button @click="modalOpen = false">
+          Close
+        </button>
+      </div>
+    </div>
+  `,
+  data() {
+    return { 
+      modalOpen: false
+    }
+  }
+})
+```
+
+当在初始的 HTML 结构中使用这个组件时，我们可以看到一个问题——模态框是在深度嵌套的 `div` 中渲染的，而模态框的 `position:absolute` 以父级相对定位的 `div` 作为引用。
+
+Teleport 提供了一种干净的方法，允许我们控制在 DOM 中哪个父节点下渲染了 HTML，而不必求助于全局状态或将其拆分为两个组件。
+
+让我们修改 `modal-button` 以使用 `<teleport>`，并告诉 Vue “将这个 HTML **传送**到‘**body**’标签下”。
+
+```js
+app.component('modal-button', {
+  template: `
+    <button @click="modalOpen = true">
+        Open full screen modal! (With teleport!)
+    </button>
+
+    <teleport to="body">
+      <div v-if="modalOpen" class="modal">
+        <div>
+          I'm a teleported modal! 
+          (My parent is "body")
+          <button @click="modalOpen = false">
+            Close
+          </button>
+        </div>
+      </div>
+    </teleport>
+  `,
+  data() {
+    return { 
+      modalOpen: false
+    }
+  }
+})
+```
+
+因此，一旦我们单击按钮打开模态框，Vue 将正确地将模态框内容渲染为 `body` 标签的子级。
+
+### 12.4.1与 Vue components 一起使用
+
+如果 `<teleport>` 包含 Vue 组件，则它仍将是 `<teleport>` 父组件的逻辑子组件：
+
+```js
+const app = Vue.createApp({
+  template: `
+    <h1>Root instance</h1>
+    <parent-component />
+  `
+})
+
+app.component('parent-component', {
+  template: `
+    <h2>This is a parent component</h2>
+    <teleport to="#endofbody">
+      <child-component name="John" />
+    </teleport>
+  `
+})
+
+app.component('child-component', {
+  props: ['name'],
+  template: `
+    <div>Hello, {{ name }}</div>
+  `
+})
+```
+
+在这种情况下，即使在不同的地方渲染 `child-component`，它仍将是 `parent-component` 的子级，并将从中接收 `name` prop。
+
+这也意味着来自父组件的注入会正常工作，在 Vue Devtools 中你会看到子组件嵌套在父组件之下，而不是出现在他会被实际移动到的位置。
+
+### 12.4.2在同一目标上使用多个 teleport
+
+一个常见的用例场景是一个可重用的 `<Modal>` 组件，它可能同时有多个实例处于活动状态。对于这种情况，多个 `<teleport>` 组件可以将其内容挂载到同一个目标元素。顺序将是一个简单的追加——稍后挂载将位于目标元素中较早的挂载之后。
+
+```html
+<teleport to="#modals">
+  <div>A</div>
+</teleport>
+<teleport to="#modals">
+  <div>B</div>
+</teleport>
+
+<!-- result-->
+<div id="modals">
+  <div>A</div>
+  <div>B</div>
+</div>
+```
+
+## 12.5渲染函数
+
+
+
+
+
+
+
+
+
+## 12.6插件
