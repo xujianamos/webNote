@@ -12,6 +12,21 @@ https://github.com/coreybutler/nvm-windows
 
 ![image-20220329211703960](/Users/xujian/Library/Application%20Support/typora-user-images/image-20220329211703960.png)
 
+> 注意：默认安装时不会安装npm包。需要相关配置
+
+1. 命令行运行：`nvm root` 显示出nvm的安装目录
+2. 打开nvm文件夹下的settings.txt文件，在最后添加以下代码：
+
+```
+node_mirror: https://npm.taobao.org/mirrors/node/
+npm_mirror: https://npm.taobao.org/mirrors/npm/
+```
+
+将下载镜像源指向淘宝（这步也很重要，否则在安装node的时候会出现卡死，npm安装不成功的情况）
+
+3. 打开cmd，nvm install v版本号
+4. 打开nvm文件中对应版本号的node_modules文件夹，可以看到npm文件，则说明npm安装成功
+
 ### 1.1.2使用
 
 安装最新稳定版 `node`，当前是 `node v12.9.1 (npm v7.9.0)`
