@@ -1,6 +1,6 @@
 # 1.简介
 
-Pinia 是一个 Vue 的存储库, 它能让你跨组件/页面共享状态.如果你熟悉组合式 API, 你大概会想到你已经能通过这样一个简单的例子来全局共享状态： `export const state = reactive({})`. 对于一个单页面应用（SPA, single page applications）来说的确如此，但是如果这是一个服务端渲染（SSR, server side rendered）应用时，将使你的应用暴露在安全漏洞之中。
+Pinia 是一个 Vue 的存储库, 它能让你跨组件/页面共享状态。如果你熟悉组合式 API, 你大概会想到你已经能通过这样一个简单的例子来全局共享状态： `export const state = reactive({})`。 对于一个单页面应用（SPA）来说的确如此，但是如果这是一个服务端渲染（SSR）应用时，将使你的应用暴露在安全漏洞之中。
 
 ## 1.1基本示例
 
@@ -92,7 +92,7 @@ export default {
 
 ## 1.2一个更接近实际的例子
 
-这是一个你使用Pinia时使用类型将会用到的更加完整的实例，**即使实在JavaScript中**. 对于某些人来说，这可能足以在不进一步阅读的情况下开始，但我们仍然建议查看文档的其余部分，甚至跳过此示例，在您阅读完所有[**核心概念**](https://blog.csdn.net/qq_28550263/article/details/120721160#core)章节后再回来。
+这是一个你使用Pinia时使用类型将会用到的更加完整的实例：
 
 ```js
 import { defineStore } from 'pinia'
@@ -145,11 +145,10 @@ yarn add pinia
 npm install pinia
 ```
 
-> 提示
+> 提示：如果您的应用使用 Vue 2，您还需要安装组合api: `@vue/composition-api`。
 >
-> 如果您的应用使用 Vue 2，您还需要安装组合 api: `@vue/composition-api`。
 
-如果你使用的是 Vue CLI,需要安装插件:
+如果你使用的是Vue CLI,需要安装插件:
 
 ```sh
 vue add vue-cli-plugin-pinia
@@ -163,7 +162,7 @@ import { createPinia } from 'pinia'
 app.use(createPinia())
 ```
 
-如果您使用的是 Vue 2，您还需要安装一个插件并`pinia`在应用程序的根目录注入创建的插件：
+如果您使用的是 Vue 2，您还需要安装一个插件并在应用程序的根目录注入创建的插件：
 
 ```js
 import { createPinia, PiniaVuePlugin } from 'pinia'
@@ -181,7 +180,7 @@ new Vue({
 })
 ```
 
-这也将添加 devtools 支持。在 Vue 3 中，仍然不支持时间旅行和编辑等一些功能，因为 vue-devtools 尚未公开必要的 API，但 devtools 具有更多功能，并且整体开发人员体验要好得多。在 Vue 2 中，Pinia 使用 Vuex 的现有接口（因此不能与它一起使用）。
+这也将添加devtools支持。在Vue3中，仍然不支持时间和编辑等一些功能，因为vue-devtools尚未公开必要的API，但devtools具有更多功能，并且整体开发人员体验要好得多。在Vue2中，Pinia使用Vuex的现有接口（因此不能与它一起使用）。
 
 # 2.核心概念
 
@@ -199,7 +198,7 @@ export const useStore = defineStore('main', {
 })
 ```
 
-这个*名称*，也称为*id*，是必要的，Pania 使用它来将Store连接到 devtools。将返回的函数命名为*use...*是可组合项之间的约定，以使其使用习惯。
+这个名称，也称为id，是必要的，Pania使用它来将Store连接到devtools。将返回的函数命名为*use...*是可组合项之间的约定，以使其使用习惯。
 
 我们定义一个`store`因为直到在`setup()`内部调用`useStore()`之前， store并不会被创建:
 
@@ -220,11 +219,11 @@ export default {
 
 您可以根据需要定义任意数量的Store，并且应该在不同的文件中定义每个`store`以充分利用 pinia（例如自动允许您的包进行代码拆分和TypeScript推理）。
 
-如果您还没有使用`setup`组件，您仍然可以将 Pinia 与*map helpers*一起使用。
+如果您还没有使用`setup`组件，您仍然可以将Pinia与map helpers一起使用。
 
-实例化Store后，您可以直接在Store中访问定义在`state`、`getters`和中的任何属性。`actions`我们将在接下来的页面中详细介绍这些内容，但自动补全会对您有所帮助。
+实例化Store后，您可以直接在Store中访问定义在`state`、`getters`和`actions`中的任何属性。
 
-请注意，`store`是一个用`reactive`包装的对象，这意味着没有必要在`getters`之后写入`.value`，但是像`setup`中的`props`一样，**我们不能对其进行解构**：
+> 请注意:`store`是一个用`reactive`包装的对象，这意味着没有必要在`getters`之后写入`.value`，但是像`setup`中的`props`一样，**我们不能对其进行解构**：
 
 ```js
 export default defineComponent({
@@ -249,7 +248,7 @@ export default defineComponent({
 })
 ```
 
-为了从存储中提取属性同时保持其响应性，您需要使用`storeToRefs()`. 它将为每个响应属性创建引用。当您仅使用Store中的状态但不调用任何操作时，这很有用。请注意，您可以直接从Store中解构操作，因为它们也绑定到Store本身：
+为了从存储中提取属性同时保持其响应性，您需要使用`storeToRefs()`。 它将为每个响应属性创建引用。当您仅使用Store中的状态但不调用任何操作时，这很有用。请注意，您可以直接从Store中解构操作，因为它们也绑定到Store本身：
 
 ```js
 import { storeToRefs } from 'pinia'
@@ -275,7 +274,7 @@ export default defineComponent({
 
 ## 2.2State
 
-大多数时候，state是Store的中心部分。人们通常从定义代表他们的应用程序的状态开始。在 Pinia 中，状态被定义为返回初始状态的函数。这允许 Pinia 在服务器端和客户端工作。
+大多数时候，state是Store的中心部分。人们通常从定义代表他们的应用程序的状态开始。在Pinia中，状态被定义为返回初始状态的函数。这允许Pinia在服务器端和客户端工作。
 
 ```js
 import { defineStore } from 'pinia'
@@ -313,14 +312,12 @@ const store = useStore()
 store.$reset()
 ```
 
-1. 使用选项 API
+1. 定义store
 
 对于以下示例，您可以假设已创建以下Store：
 
 ```js
-// Example File Path:
 // ./src/stores/counterStore.js
-
 import { defineStore } from 'pinia',
 
 const useCounterStore = defineStore('counterStore', {
@@ -330,7 +327,7 @@ const useCounterStore = defineStore('counterStore', {
 })
 ```
 
-2. 和`setup()`
+2. 在`setup()`使用
 
 虽然 Composition API 并不适合所有人，但`setup()`钩子可以使在 Options API 中使用 Pinia 变得更容易。不需要额外的map功能！
 
@@ -351,7 +348,7 @@ export default {
 }
 ```
 
-3. 没有`setup()`
+3. 在`setup()`外部使用
 
 如果您没有使用 Composition API，而您正在使用`computed`, `methods`, ...，则可以使用`mapState()`帮助器将状态属性映射为只读计算属性：
 
@@ -364,8 +361,9 @@ export default {
     // 在组件内允许访问 this.counter 
     // 与从 store.counter 读取一样
     ...mapState(useCounterStore, ['counter'])
-    // 与上面一样但是将注册它为 this.myOwnName
+	// 通过对象进行映射
     ...mapState(useCounterStore, {
+      // 重命名，与上面一样但是将注册它为 this.myOwnName
       myOwnName: 'counter',
       // 你也可以写一个函数来访问 store
       double: store => store.counter * 2,
@@ -438,7 +436,7 @@ pinia.state.value = {}
 
 ### 2.2.5订阅状态
 
-你可以通过`$subscribe()`store的方法观察状态及其变化，类似于 Vuex 的 [subscribe 方法](https://vuex.vuejs.org/api/#subscribe)。`$subscribe()` 与常规相比使用的优点`watch()`是*订阅*只会在 `patch` 后触发一次（例如，使用上面的函数版本时）。
+你可以通过`$subscribe()`store的方法观察状态及其变化，类似于Vuex的subscribe方法。`$subscribe()` 与常规相比使用的优点：`watch()`是订阅只会在 `patch` 后触发一次（例如，使用上面的函数版本时）。
 
 ```js
 cartStore.$subscribe((mutation, state) => {
@@ -463,7 +461,6 @@ export default {
 
     // 该 subscription 将在组件卸载后保留
     someStore.$subscribe(callback, { detached: true })
-
     // ...
   },
 }
@@ -484,7 +481,7 @@ watch(
 
 ## 2.3Getters
 
-Getter完全等同于Store状态的[计算值](https://v3.vuejs.org/guide/reactivity-computed-watchers.html#computed-values)。它们可以用 `defineStore()` 中的`getters`属性定义。其接收 `state` 作为第一个参数来鼓励使用箭头函数如：
+Getter完全等同于Store状态的计算值。它们可以用 `defineStore()` 中的`getters`属性定义。其接收 `state` 作为第一个参数来使用箭头函数如：
 
 ```js
 export const useStore = defineStore('main', {
@@ -497,7 +494,7 @@ export const useStore = defineStore('main', {
 })
 ```
 
-大多数时候，getter 只会依赖状态，但是，他们可能需要使用其他 getter。因此，我们可以在定义常规函数时访问整个store实例，**但在 TypeScript 中需要定义返回类型的类型**。这是由于TypeScript中的一个已知限制，不影响用箭头函数定义的getter，也不影响不使用 This 的getter：
+大多数时候，getter只会依赖状态，但是，他们可能需要使用其他getter。因此，我们可以在定义常规函数时访问整个store实例，**但在 TypeScript 中需要定义返回类型的类型**。这是由于TypeScript中的一个已知限制，不影响用箭头函数定义的getter，也不影响不使用This的getter：
 
 ```js
 export const useStore = defineStore('main', {
@@ -518,9 +515,9 @@ export const useStore = defineStore('main', {
 })
 ```
 
-然后你可以直接在 store 实例上访问 getter：
+然后你可以直接在store实例上访问getter：
 
-```js
+```vue
 <template>
   <p>Double count is {{ store.doubleCount }}</p>
 </template>
@@ -548,7 +545,7 @@ export const useStore = defineStore('main', {
   getters: {
     //  因为我们没有使用 `this`，故类型将被自动推断
     doubleCount: (state) => state.counter * 2,
-    // 这里我们需要自己添加类型 (在 JS 中使用JSDoc)。 我们也可以用它来制作 getter文档。
+    // 这里我们需要自己添加类型 (在 JS 中使用JSDoc)。 我们也可以用它来制作getter文档。
     /**
      * 返回计数器值乘以二加一。
      *
@@ -564,7 +561,7 @@ export const useStore = defineStore('main', {
 
 ### 2.3.2将参数传递给 getter
 
-*Getter*只是在幕后计算的属性，因此不可能将任何参数传递给它们。但是，您可以从*getter*返回一个函数以接受任何参数：
+`getter`只是在幕后计算的属性，因此不可能将任何参数传递给它们。但是，您可以从getter返回一个函数以接受任何参数：
 
 ```js
 export const useStore = defineStore('main', {
@@ -578,7 +575,7 @@ export const useStore = defineStore('main', {
 
 并在组件中使用：
 
-```js
+```vue
 <script>
 export default {
   setup() {
@@ -593,7 +590,7 @@ export default {
 </template>
 ```
 
-请注意，执行此操作时，**getter 不再缓存**，它们只是您调用的函数。但是，您可以在 getter 本身内部缓存一些结果，这并不常见，但应该证明性能更高：
+> 请注意:执行此操作时，**getter 不再缓存**，它们只是您调用的函数。但是，您可以在 getter 本身内部缓存一些结果，这并不常见，但应该证明性能更高：
 
 ```js
 export const useStore = defineStore('main', {
@@ -608,7 +605,7 @@ export const useStore = defineStore('main', {
 
 ### 2.3.3访问其他store的getters
 
-要使用其他store getter，可以直接在`getters`内部使用：
+要使用其他store的getter，可以直接在`getters`内部使用：
 
 ```js
 import { useOtherStore } from './other-store'
@@ -628,7 +625,7 @@ export const useStore = defineStore('main', {
 
 ### 2.3.4与`setup()`一起使用
 
-您可以直接访问任何 getter 作为 store 的属性（与 state 属性完全一样）：
+您可以直接访问任何getter作为store的属性（与state属性完全一样）：
 
 ```js
 export default {
@@ -646,10 +643,9 @@ export default {
 对于以下示例，您可以假设已创建以下store：
 
 ```js
-// Example File Path:
 // ./src/stores/counterStore.js
 
-import { defineStore } from 'pinia',
+import { defineStore } from 'pinia'
 
 const useCounterStore = defineStore('counterStore', {
   state: () => ({
@@ -663,9 +659,9 @@ const useCounterStore = defineStore('counterStore', {
 })
 ```
 
-1. 有`setup()`
+1. 在`setup()`中使用
 
-虽然 Composition API 并不适合所有人，但`setup()`钩子可以使在 Options API 中使用 Pinia 变得更容易。不需要额外的地图辅助功能！
+虽然 Composition API 并不适合所有人，但`setup()`钩子可以使在 Options API 中使用 Pinia 变得更容易。不需要额外的map辅助功能！
 
 ```js
 import { useCounterStore } from '../stores/counterStore'
@@ -684,9 +680,9 @@ export default {
 }
 ```
 
-2. 没有`setup()`
+2. 在`setup()`外部使用
 
-[您可以使用上一部分状态](https://pinia.vuejs.org/core-concepts/state.html#options-api)中使用的相同`mapState()`函数来映射到 getter：
+使用`mapState()`函数来映射 getter：
 
 ```js
 import { mapState } from 'pinia'
@@ -709,7 +705,7 @@ export default {
 
 ## 2.4Actions
 
-actions相当于组件中的[方法](https://v3.vuejs.org/guide/data-methods.html#methods)。它们可以使用`actions`in 属性进行定义，`defineStore()`并且**非常适合定义业务逻辑**：
+actions相当于组件中的方法。它们可以使用`actions`in 属性进行定义，`defineStore()`并且**非常适合定义业务逻辑**：
 
 ```js
 export const useStore = defineStore('main', {
@@ -727,7 +723,7 @@ export const useStore = defineStore('main', {
 })
 ```
 
-像[getter](https://pinia.vuejs.org/core-concepts/getters.html)一样，actions通过**完全输入（和自动完成✨）支持**访问*整个store实例*。**与它们不同的是，它可以是异步**的，您可以在它们内部进行任何 API 调用甚至其他操作！这是一个使用[Mande](https://github.com/posva/mande)的示例。请注意，您使用的库并不重要，只要您获得，您甚至可以使用本机函数（仅限浏览器）：
+像getter一样，actions通过**完全输入（和自动完成✨）支持**访问整个store实例。**与它们不同的是，它可以是异步**的，您可以在它们内部进行任何 API 调用甚至其他操作！这是一个使用[Mande](https://github.com/posva/mande)的示例。请注意，您使用的库并不重要，只要您获得，您甚至可以使用本机函数（仅限浏览器）：
 
 ```js
 import { mande } from 'mande'
@@ -773,7 +769,7 @@ export default defineComponent({
 
 ### 2.4.1访问其他store的actions
 
-要使用另一个store，您可以直接在*action*内部*使用它*：
+要使用另一个store，您可以直接在*action*内部使用它：
 
 ```js
 import { useAuthStore } from './auth-store'
@@ -815,7 +811,6 @@ export default {
 对于以下示例，您可以假设已创建以下store：
 
 ```js
-// Example File Path:
 // ./src/stores/counterStore.js
 
 import { defineStore } from 'pinia',
@@ -832,7 +827,7 @@ const useCounterStore = defineStore('counterStore', {
 })
 ```
 
-1. 有`setup()`
+1. 在`setup()`中使用
 
 虽然 Composition API 并不适合所有人，但`setup()`钩子可以使在 Options API 中使用 Pinia 变得更容易。不需要额外的map 辅助功能！
 
@@ -854,7 +849,7 @@ export default {
 }
 ```
 
-2. 没有`setup()`
+2. 在`setup()`外部使用
 
 如果您根本不想使用 Composition API，可以使用`mapActions()`帮助器将操作属性映射为组件中的方法：
 
@@ -943,7 +938,7 @@ export default {
 - [实现像本地存储](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)这样的副作用
 - **仅适用**于特定存储
 
-插件将使用 添加到 `pinia 实例` 中。最简单的示例是通过返回对象向所有存储添加静态属性：`pinia.use()`
+插件将添加到`pinia 实例`中。最简单的示例是通过返回对象向所有存储添加静态属性：`pinia.use()`
 
 ```js
 import { createPinia } from 'pinia'
@@ -979,13 +974,13 @@ export function myPiniaPlugin(context) {
 }
 ```
 
-然后，此函数传递`pinia.use()`的结果 给 `pinia` ：
+然后，此函数传递`pinia.use()`的结果给 `pinia` ：
 
 ```ts
 pinia.use(myPiniaPlugin)
 ```
 
-插件只适用于 **`pinia`传递到应用程序后创建的** 存储（store）中，否则它们将不会被应用。
+插件只适用于**`pinia`传递到应用程序后创建的** 存储（store）中，否则它们将不会被应用。
 
 ### 2.5.2存储（store）拓展
 
@@ -1003,7 +998,7 @@ pinia.use(({ store }) => {
 })
 ```
 
-插件*返回*的任何属性都会被 devtools 自动跟踪，因此为了在 devtools 中可见，请确保**仅在要在 devtools 中**调试它时才将其添加到 dev 模式下：`hello``store._customProperties`
+插件返回的任何属性都会被 devtools 自动跟踪，因此为了在 devtools 中可见，请确保**仅在要在 devtools 中**调试它时才将其添加到 dev 模式下：`hello``store._customProperties`
 
 ```ts
 // 从上面的例子
