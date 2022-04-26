@@ -32,11 +32,11 @@ import { useCounterStore } from '@/stores/counter'
 export default {
   setup() {
     const counter = useCounterStore()
-
+		// 修改count的值
     counter.count++
-    // 自动完成  ✨
+    // 批量修改
     counter.$patch({ count: counter.count + 1 })
-    // 或者使用 action 来代替
+    // 或者使用 action 来修改
     counter.increment()
   },
 }
