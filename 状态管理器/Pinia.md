@@ -481,7 +481,7 @@ watch(
 
 ## 2.3Getters
 
-Getter完全等同于Store状态的计算值。它们可以用 `defineStore()` 中的`getters`属性定义。其接收 `state` 作为第一个参数来使用箭头函数如：
+Getter完全等同于Store状态的计算值。它们可以用 `defineStore()` 中的`getters`属性定义。其接收 `state` 作为第一个参数来使用箭头函数，如：
 
 ```js
 export const useStore = defineStore('main', {
