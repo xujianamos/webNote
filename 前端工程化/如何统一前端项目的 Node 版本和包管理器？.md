@@ -37,14 +37,38 @@ engine-strict = true
 
 步骤一：在项目中 `npm install -D only-allow`
 
-步骤二：在 package.json 文件中进行配置 `scripts.preinstall` ， 允许输入的值 only-allow npm、only-allow pnpm、only-allow yarn
+步骤二：在 package.json 文件中进行配置 `scripts.preinstall`
 
 ```json
 // package.json
 "scripts": {
-    "preinstall": "only-allow npm",
+    "preinstall": "npx only-allow npm",
     ...
 }
 ```
 
-以上配置完成后，可以再乱用 （yarn、npm、pnpm） 试试
+允许输入的值：
+
+```js
+// vite使用pnpm
+"preinstall": "npx only-allow pnpm"
+// npm🌰
+"preinstall": "npx only-allow npm"
+// yarn🌰
+"preinstall": "npx only-allow yarn"
+```
+
+
+
+> `preinstall` 是包安装工具的 **钩子函数**，在上例中作为 install 之前的拦截判断
+>
+> - preinstall:*install 之前触发*
+> - postinstall:*install 之后触发*
+
+# 5.使用钩子函数问题
+
+经过验证，还存在一些问题：npm 和 yarn 对待 preinstall 的调用时机不一致。npm 仅会在当前项目执行安装（即 npm install）时会触发该钩子调用，单独安装某个模块（即 npm install ）时并不会触发；而 yarn 则在这两种情况下都会触发该钩子命令。这样一来，如果想通过该钩子命令去限制 npm 的使用者，就无法达到预期效果了。
+
+preinstall 的执行是在 npm install 之后，这样提示我换用其他 pm 之前，其实已经安装完成了.
+
+目前只能在开发中暂时使用 node v14 的 LTS，对应 npm版本 < 7来解决。
