@@ -71,6 +71,7 @@ TypeScript 是完全兼容 JavaScript 的，它不会修改 JavaScript 运行时
 
 ```shell
 npm install -g typescript
+#or
 yarn global add typescript
 ```
 
