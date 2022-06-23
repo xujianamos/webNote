@@ -26,6 +26,7 @@ $ npm init -y
 $ npm install webpack webpack-cli -g
 # 查看安装webpack的版本号
 $ webpack -v
+
 # 如果输出正确的版本号，则表明安装成功
 
 # 使用默认配置打包文件
