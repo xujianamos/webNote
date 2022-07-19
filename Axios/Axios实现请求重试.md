@@ -49,7 +49,7 @@ axios.interceptors.response.use(null, (err) => {
 
 以上的代码并不会复杂，对应的处理流程如下图所示：
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/d248bd368fd145a0b4e0a8bee7c66541~tplv-k3u1fbpfcp-zoom-1.image)
+![d248bd368fd145a0b4e0a8bee7c66541~tplv-k3u1fbpfcp-zoom-1](./img/d248bd368fd145a0b4e0a8bee7c66541~tplv-k3u1fbpfcp-zoom-1-8244779.png)
 
 # 二、适配器实现请求重试的方案
 
@@ -128,7 +128,7 @@ function retryAdapterEnhancer(adapter, options) {
 
 以上的代码并不会复杂，核心的处理逻辑如下图所示：
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/a7b2d97dde104c01ac025525f65ad6bb~tplv-k3u1fbpfcp-zoom-1.image)
+![a7b2d97dde104c01ac025525f65ad6bb~tplv-k3u1fbpfcp-zoom-1](./img/a7b2d97dde104c01ac025525f65ad6bb~tplv-k3u1fbpfcp-zoom-1-8244815.png)
 
 ## 2.2 使用 retryAdapterEnhancer 函数
 
