@@ -2,11 +2,11 @@
 
 ### 1.1点击主工具栏上的“连接”按钮，然后从列表中选择“MongoDB ...”
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617161542714.png" alt="image-20200617161542714" style="zoom:80%;" />
+![image-20200617161542714](./img/image-20200617161542714-8332763.png)
 
 ### 1.2在“新建连接”对话框的“连接名”字段中输入名称
 
-![image-20200617161727523](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617161727523.png)
+![image-20200617161727523](./img/image-20200617161727523-8332786.png)
 
 你可以点击“测试连接”按钮来测试连接。
 
@@ -23,11 +23,11 @@
 1. 双击连接列表中的连接以打开数据库连接。此时图标由灰色变为红色，表示打开成功。
 2. 接下来，右击连接名，然后选择“创建数据库...”。
 
-![image-20200617162153705](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617162153705.png)
+![image-20200617162153705](./img/image-20200617162153705-8332808.png)
 
 3. 您可以在弹出的对话框中提供数据库名。完成后，点击“确定”按钮关闭对话框并创建新数据库。
 
-![image-20200617162315312](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617162315312.png)
+![image-20200617162315312](./img/image-20200617162315312-8332827.png)
 
 在幕后，Navicat 使用了 MongoDB 的“use”命令来创建数据库。数据库将出现在左侧连接列表中的当前连接下。
 
@@ -39,21 +39,23 @@
 
 1. 如果点击数据库名左侧的箭头展开“数据库”对象，你将看到所有数据库中的对象，包括集合：
 
-![image-20200617162953071](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617162953071.png)
+![image-20200617162953071](./img/image-20200617162953071-8332847.png)
 
 此外，点击“数据库”对象或其任何对象将，可在启用数据库对象工具栏上适用的命令，特别是新建集合、导入向导和导出向导按钮：
 
-![image-20200617163105880](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617163105880.png)
+![image-20200617163105880](./img/image-20200617163105880-8332866.png)
 
 2. 点击“新建集合”按钮。这将出现一个新的无标题集合选项卡：
 
-![image-20200617163202208](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617163202208.png)
+![image-20200617163202208](./img/image-20200617163202208-8332884.png)
 
 3. 点击无标题集合选项卡上的“保存”按钮，然后在提示中输入集合名。新集合将添加到数据库浏览器中“集合”对象下：
 
-![image-20200617163346966](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617163346966.png)
+![image-20200617163346966](./img/image-20200617163346966-8332909.png)
 
-![image-20200617163427976](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617163427976.png)
 
-![image-20200617163447728](https://gitee.com/xuxujian/webNoteImg/raw/master/mongoDB/image-20200617163447728.png)
+
+![image-20200617163427976](./img/image-20200617163427976-8332929.png)
+
+![image-20200617163447728](./img/image-20200617163447728-8332949.png)
 

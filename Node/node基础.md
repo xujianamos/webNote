@@ -9,7 +9,7 @@
 - Webkit：苹果基于KHTML开发、开源的，用于Safari，Google Chrome之前也在使用；
 - Blink：是Webkit的一个分支，Google开发，目前应用于Google Chrome、Edge、Opera等；
 
-![image-20201108205345563](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20201108205345563.png)
+![image-20201108205345563](./img/image-20201108205345563-8331628.png)
 
 但是在这个执行过程中，HTML解析的时候遇到了JavaScript标签，应该怎么办呢？
 
@@ -202,7 +202,7 @@ ccc中的代码只会运行一次。
 - 图结构在遍历的过程中，有深度优先搜索（DFS, depth first search）和广度优先搜索（BFS, breadth first search）；
 - Node采用的是深度优先算法：main -> aaa -> ccc -> ddd -> eee ->bbb
 
-![image-20201108221447785](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20201108221447785.png)
+![image-20201108221447785](./img/image-20201108221447785-8331675.png)
 
 ## 3.前端模块化
 
@@ -256,7 +256,7 @@ sayHello('kobe');
 - bar需要导出自己想要暴露的变量、函数、对象等等；
 - main从bar中导入自己想要使用的变量、函数、对象等等；
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725225243625.png" alt="image-20210725225243625" style="zoom: 80%;" />
+![image-20210725225243625](./img/image-20210725225243625-8331704.png)
 
 #### 3.2.1. exports导出
 
@@ -310,7 +310,7 @@ sayHello('kobe');
 - 所以，bar对象是exports对象的浅拷贝；
 - 浅拷贝的本质就是一种引用的赋值而已；
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725230022536.png" alt="image-20210725230022536" style="zoom:80%;" />
+![image-20210725230022536](./img/image-20210725230022536-8331733.png)
 
 #### 3.2.2. module.exports
 
@@ -334,7 +334,7 @@ sayHello('kobe');
 
 那么，如果我的代码这样修改了：
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725230413971.png" alt="image-20210725230413971" style="zoom:80%;" />
+![image-20210725230413971](./img/image-20210725230413971-8331769.png)
 
 你能猜到内存中会有怎么样的表现吗？
 
@@ -442,7 +442,7 @@ ccc中的代码只会运行一次。
 - 图结构在遍历的过程中，有深度优先搜索（DFS, depth first search）和广度优先搜索（BFS, breadth first search）；
 - Node采用的是深度优先算法：main -> aaa -> ccc -> ddd -> eee ->bbb
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725231027747.png" alt="image-20210725231027747" style="zoom:80%;" />
+![image-20210725231027747](./img/image-20210725231027747-8331802.png)
 
 
 
@@ -508,7 +508,9 @@ index.html中引入两个js文件作为模块：
 
 如果直接在浏览器中运行代码，会报如下错误：
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725231747427.png" alt="image-20210725231747427" style="zoom:80%;" />
+
+
+![image-20210725231747427](./img/image-20210725231747427-8331834.png)
 
 这个在MDN上面有给出解释：
 
@@ -520,7 +522,7 @@ index.html中引入两个js文件作为模块：
 
 - 通过插件运行，可以将我们的代码运行在一个本地服务中；
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725231823416.png" alt="image-20210725231823416" style="zoom:80%;" />
+![image-20210725231823416](./img/image-20210725231823416-8331876.png)
 
 
 
@@ -845,7 +847,7 @@ setTimeout(() => {
 }, 1000);
 ```
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210725235954040.png" alt="image-20210725235954040" style="zoom:80%;" />
+![image-20210725235954040](./img/image-20210725235954040-8331933.png)
 
 思考：如果bar.js中导出的是一个对象，那么main.js中是否可以修改对象中的属性呢？
 
@@ -1505,7 +1507,7 @@ npm init -y # 所有信息使用默认的
   - 比如我们使用axios模块 `const axios = require('axios');`
   - 实际上是找到对应的main属性查找文件的；
 
-![image-20210728123215184](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728123215184.png)
+![image-20210728123215184](./img/image-20210728123215184-8331971.png)
 
 **scripts属性**
 
@@ -1628,7 +1630,7 @@ npm i axios -D
   - 没有lock文件
   - 有lock文件
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728231227747.png" alt="image-20210728231227747" style="zoom:80%;" />
+![image-20210728231227747](./img/image-20210728231227747-8332006.png)
 
 package-lock.json文件：
 
@@ -1840,7 +1842,7 @@ const buffer01 = new Buffer("why");
 console.log(buffer01);
 ```
 
-![image-20210728234811298](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728234811298.png)
+![image-20210728234811298](./img/image-20210728234811298-8332041.png)
 
 当然目前已经不希望我们这样来做了。
 
@@ -1876,7 +1878,7 @@ console.log(str); // �s�~CQ
 
 Buffer的创建方式有很多：
 
-![image-20210728235246632](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210728235246632.png)
+![image-20210728235246632](./img/image-20210728235246632-8332063.png)
 
 来看一下`Buffer.alloc`:
 
@@ -2265,7 +2267,7 @@ writer.on('close', () => {
 - 工厂中里有很多车间，这个车间就是进程；
 - 每个车间可能有一个以上的工人在工厂，这个工人就是线程；
 
-![image-20210729121705308](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210729121705308.png)
+![image-20210729121705308](./img/image-20210729121705308-8332097.png)
 
 操作系统是如何做到同时让多个进程（边听歌、边写代码、边查阅资料）同时工作呢？
 
@@ -2275,7 +2277,7 @@ writer.on('close', () => {
 
 你可以在Mac的活动监视器或者Windows的资源管理器中查看到很多进程：
 
-![image-20210729121927633](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210729121927633.png)
+![image-20210729121927633](./img/image-20210729121927633-8332118.png)
 
 #### 8.1.2浏览器和JavaScript
 
@@ -2354,7 +2356,7 @@ console.log(result);
 - 事实上，setTimeout是调用了web api，在合适的时机，会将timer函数加入到一个事件队列中；
 - 事件队列中的函数，会被放入到调用栈中，在调用栈中被执行；
 
-![image-20210729122733500](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210729122733500.png)
+![image-20210729122733500](./img/image-20210729122733500-8332161.png)
 
 #### 8.1.4宏任务和微任务
 
@@ -2488,7 +2490,7 @@ setTimeout
 - 我们会发现libuv中主要维护了一个EventLoop和worker threads（线程池）；
 - EventLoop负责调用系统的一些其他操作：文件的IO、Network、child-processes等
 
-![image-20210729214333621](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210729214333621.png)
+![image-20210729214333621](./img/image-20210729214333621-8332191.png)
 
 libuv到底是什么呢？
 
@@ -2562,7 +2564,7 @@ libuv提供了一个线程池（Thread Pool）：
 - **检测**：`setImmediate()` 回调函数在这里执行。
 - **关闭的回调函数**：一些关闭的回调函数，如：`socket.on('close', ...)`。
 
-![image-20210729215225483](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210729215225483.png)
+![image-20210729215225483](./img/image-20210729215225483-8332218.png)
 
 我们会发现从一次事件循环的Tick来说，Node的事件循环更复杂，它也分为微任务和宏任务：
 
@@ -2730,7 +2732,7 @@ int uv__next_timeout(const uv_loop_t* loop) {
 
 当应用程序（客户端）需要某一个资源时，可以向一个台服务器，通过Http请求获取到这个资源；提供服务的这个服务器，就是一个Web服务器；
 
-![image-20210729232259537](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210729232259537.png)
+![image-20210729232259537](./img/image-20210729232259537-8332247.png)
 
 
 
@@ -3056,7 +3058,7 @@ Http状态码（Http Status Code）是用来表示Http响应状态的数字代�
 - Http状态码非常多，可以根据不同的情况，给客户端返回不同的状态码；
 - 常见的状态码是下面这些（后续项目中，也会用到其中的状态码）；
 
-![image-20210730000504217](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730000504217.png)
+![image-20210730000504217](./img/image-20210730000504217-8332279.png)
 
 设置状态码常见的有两种方式：
 
@@ -3090,7 +3092,7 @@ Header设置 `Content-Type`有什么作用呢？
 res.end('<h2>Hello World</h2>')
 ```
 
-![image-20210730000644453](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730000644453.png)
+![image-20210730000644453](./img/image-20210730000644453-8332299.png)
 
 
 
@@ -3101,7 +3103,7 @@ res.setHeader("Content-Type", "text/html;charset=utf8");
 res.end('<h2>Hello World</h2>')
 ```
 
-![image-20210730000717357](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730000717357.png)
+![image-20210730000717357](./img/image-20210730000717357-8332320.png)
 
 如果我们希望返回一段JSON数据，应该怎么做呢？
 
@@ -3417,7 +3419,7 @@ Express是一个路由和中间件的Web框架，它本身的功能非常少：
 
 中间件函数调用的元素：
 
-![image-20210730123124234](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730123124234.png)
+![image-20210730123124234](./img/image-20210730123124234-8332366.png)
 
 #### 10.5.2应用中间件
 
@@ -3535,7 +3537,7 @@ app.get('/home', homeMiddleware1, homeMiddleware2, homeHandle);
 
 我们这里先使用json传递给服务器body：
 
-![image-20210730155150019](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730155150019.png)
+![image-20210730155150019](./img/image-20210730155150019-8332524.png)
 
 不进行解析时的操作：
 
@@ -3586,7 +3588,7 @@ app.post('/login', (req, res, next) => {
 
 如果我们解析的是 `application/x-www-form-urlencoded`：
 
-![image-20210730155233279](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730155233279.png)
+![image-20210730155233279](./img/image-20210730155233279-8332398.png)
 
 我们可以使用express自带的 `urlencoded`函数来作为中间件：
 
@@ -3680,7 +3682,7 @@ app.use('/upload', upload.array('files'), (req, res, next) => {
 
 - 请求如下：
 
-![image-20210730155445306](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730155445306.png)
+![image-20210730155445306](./img/image-20210730155445306-8332429.png)
 
 ```js
 app.use(upload.any());
@@ -4052,7 +4054,7 @@ app.use((ctx, next) => {
 
 body是x-www-form-urlencoded格式：
 
-![image-20210730220807750](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730220807750.png)
+![image-20210730220807750](./img/image-20210730220807750-8332556.png)
 
 获取json数据：(和json是一致的)
 
@@ -4074,7 +4076,7 @@ app.use((ctx, next) => {
 
 body是form-data格式：
 
-![image-20210730220849070](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20210730220849070.png)
+![image-20210730220849070](./img/image-20210730220849070-8332458.png)
 
 解析body中的数据，我们需要使用multer
 

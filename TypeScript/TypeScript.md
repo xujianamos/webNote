@@ -1237,13 +1237,13 @@ let q: YX;
 p = { c: 6, d: "d", e: "e" }; 
 ```
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/1bcfd462827046f1a4a5574de30780b2~tplv-k3u1fbpfcp-zoom-1.image)
+![1bcfd462827046f1a4a5574de30780b2~tplv-k3u1fbpfcp-zoom-1](./img/1bcfd462827046f1a4a5574de30780b2~tplv-k3u1fbpfcp-zoom-1-8331030.png)
 
 ```ts
 q = { c: "c", d: "d", e: "e" }; 
 ```
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/1d4f87c84ea647308cac5393fdfa958a~tplv-k3u1fbpfcp-zoom-1.image)
+![1d4f87c84ea647308cac5393fdfa958a~tplv-k3u1fbpfcp-zoom-1](./img/1d4f87c84ea647308cac5393fdfa958a~tplv-k3u1fbpfcp-zoom-1-8331066.png)
 
 为什么接口 X 和接口 Y 混入后，成员 c 的类型会变成 `never` 呢？这是因为混入后成员 c 的类型为 `string & number`，即成员 c 的类型既可以是 `string` 类型又可以是 `number` 类型。很明显这种类型是不存在的，所以混入后成员 c 的类型为 `never`。
 
@@ -1275,7 +1275,7 @@ console.log('abc:', abc);
 
 以上代码成功运行后，控制台会输出以下结果：
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/9c7f386c9857412e8e464f13492d4068~tplv-k3u1fbpfcp-zoom-1.image)
+![9c7f386c9857412e8e464f13492d4068~tplv-k3u1fbpfcp-zoom-1](./img/9c7f386c9857412e8e464f13492d4068~tplv-k3u1fbpfcp-zoom-1-8331102.png)
 
 由上图可知，在混入多个类型时，若存在相同的成员，且成员类型为非基本数据类型，那么是可以成功合并。
 
@@ -2016,7 +2016,7 @@ console.log(demo2.name);
 
 继承是一种 [is-a ](https://zh.wikipedia.org/wiki/Is-a)关系：
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/3c5e414249974e59a7486aa8beaf6746~tplv-k3u1fbpfcp-zoom-1.image)
+![3c5e414249974e59a7486aa8beaf6746~tplv-k3u1fbpfcp-zoom-1](./img/3c5e414249974e59a7486aa8beaf6746~tplv-k3u1fbpfcp-zoom-1-8331196.png)
 
 在 TypeScript 中，我们可以通过 `extends` 关键字来实现继承：
 
@@ -2142,7 +2142,7 @@ productService.getProducts(); // 获取所有的产品信息
 
 对于刚接触 TypeScript 泛型的读者来说，首次看到 `<T>` 语法会感到陌生。其实它没有什么特别，就像传递参数一样，我们传递了我们想要用于特定函数调用的类型。
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/f295fd4930824a3ea0f015c81aa568e7~tplv-k3u1fbpfcp-zoom-1.image)
+![f295fd4930824a3ea0f015c81aa568e7~tplv-k3u1fbpfcp-zoom-1](./img/f295fd4930824a3ea0f015c81aa568e7~tplv-k3u1fbpfcp-zoom-1-8331232.png)
 
 参考上面的图片，当我们调用 ` identity<Number>(1)` ，`Number` 类型就像参数 `1` 一样，它将在出现 `T` 的任何位置填充该类型。图中 `<T>` 内部的 `T` 被称为**类型变量**，它是我们希望传递给 identity 函数的**类型占位符**，同时它被分配给 `value` 参数用来代替它的类型：此时 `T` 充当的是类型，而不是特定的 Number 类型。
 
@@ -2163,7 +2163,7 @@ function identity <T, U>(value: T, message: U) : T {
 console.log(identity<Number, string>(68, "Semlinker"));
 ```
 
-![img](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/8c01377aef194da9bbf05e7cf6910a30~tplv-k3u1fbpfcp-zoom-1.image)
+![8c01377aef194da9bbf05e7cf6910a30~tplv-k3u1fbpfcp-zoom-1](./img/8c01377aef194da9bbf05e7cf6910a30~tplv-k3u1fbpfcp-zoom-1-8331266.png)
 
 除了为类型变量显式设定值之外，一种更常见的做法是使编译器自动选择这些类型，从而使代码更简洁。我们可以完全省略尖括号，比如：
 

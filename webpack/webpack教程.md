@@ -258,7 +258,7 @@ Entrypoint main = main.js
 
 此时`dist`目录下生成了1个文件：
 
-![image-20200813112830416](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813112830416.png)
+![image-20200813112830416](./img/image-20200813112830416-8328319.png)
 
 ## 2.2数组语法
 
@@ -305,7 +305,7 @@ Entrypoint main = main.js
 
 此时`dist`目录下生成了1个文件：
 
-![image-20200813113032120](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813113032120.png)
+![image-20200813113032120](./img/image-20200813113032120-8328584.png)
 
 ## 2.3对象语法
 
@@ -352,7 +352,7 @@ Entrypoint index = index.js
 
 此时`dist`目录下生成了两个文件：
 
-![image-20200813112632202](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813112632202.png)
+![image-20200813112632202](./img/image-20200813112632202-8328697.png)
 
 ## 2.4单页应用程序
 
@@ -494,7 +494,7 @@ Entrypoint main = main.bundle.js
 Entrypoint index = index.bundle.js
 ```
 
-![image-20200813135532469](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813135532469.png)
+![image-20200813135532469](./img/image-20200813135532469-8329236.png)
 
 **（2）使用内部 `chunk id`:**
 
@@ -527,7 +527,7 @@ Entrypoint main = main.e8f77d56163515053f38.bundle.js
 Entrypoint index = index.e8f77d56163515053f38.bundle.js
 ```
 
-![image-20200813140036425](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813140036425.png)
+![image-20200813140036425](./img/image-20200813140036425-8329259.png)
 
 **（4）使用基于每个 `chunk` 内容的 `hash`：**
 
@@ -554,7 +554,7 @@ Entrypoint index = 089a5654d56f6f28f211.bundle.js
 [./src/main.js] 214 bytes {main} [built]
 ```
 
-![image-20200813135757208](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813135757208.png)
+![image-20200813135757208](./img/image-20200813135757208-8329279-8329692.png)
 
 ## 3.4打包输出时自动在html文件的script中添加`cdn`地址
 
@@ -682,7 +682,7 @@ npm install --save-dev file-loader
 }
 ```
 
-![image-20200813143600033](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143600033.png)
+![image-20200813143600033](./img/image-20200813143600033-8329948.png)
 
 **3.图片重命名：**
 
@@ -718,7 +718,7 @@ npm install --save-dev file-loader
 
 例如图片名字为：`logo.png`，则打包后图片名字为：`logo_hash值.png`
 
-![image-20200813143947047](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813143947047.png)
+![image-20200813143947047](./img/image-20200813143947047-8329992.png)
 
 **4.配置打包后文件的存放位置：**
 
@@ -736,7 +736,7 @@ npm install --save-dev file-loader
        }
 ```
 
-![image-20200813144427221](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200813144427221.png)
+![image-20200813144427221](./img/image-20200813144427221-8330013.png)
 
 **5.使用`file-loader`打包字体文件:**
 
@@ -1105,7 +1105,7 @@ module.exports=config
 
 此时打包输出的`dist`文件夹下自动生成了`index.html`文件。并且`index.html`文件中自动引入了打包输出的两个js文件。
 
-![image-20200815182902267](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200815182902267.png)
+![image-20200815182902267](./img/image-20200815182902267-8330048.png)
 
 ```html
 <!DOCTYPE html>
@@ -1264,7 +1264,7 @@ const htmlWebpackPlugin = new HtmlWebpackPlugin({
 
 注：**生成文件的根路径为`ouput.path`的目录**，也就是在filename配置的路径都是在 `output.path` 目录下生成文件和文件夹。
 
-![image-20200815225416149](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200815225416149.png)
+![image-20200815225416149](./img/image-20200815225416149-8330126.png)
 
 补充：
 
@@ -1364,7 +1364,7 @@ module.exports = {
 
 此时在`dist`目录下会生成两个html文件，分别是`index.html`和`login.html`
 
-![image-20200816000435213](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816000435213.png)
+![image-20200816000435213](./img/image-20200816000435213-8330148.png)
 
 打包生成的`index.html`：
 
@@ -1682,11 +1682,11 @@ module.exports = {
 
 控制台报错信息图：
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816004350038.png" alt="image-20200816004350038" style="zoom:50%;" />
+![image-20200816004350038](./img/image-20200816004350038-8330248.png)
 
 点右上角`main.js:9`:
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816004508362.png" alt="image-20200816004508362" style="zoom:50%;" />
+![image-20200816004508362](./img/image-20200816004508362-8330284.png)
 
 由上图可以看出，自动跳转到打包后的错误信息处，而不能直接跳转到源代码错误处。
 
@@ -1704,13 +1704,11 @@ module.exports={
 
 此时打包后生成一个`main.js`文件，并且还会有一个`main.js.map`文件,这个文件是源代码与打包的main.js之间的映射关系。
 
-![image-20200816005053890](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816005053890.png)
+![image-20200816005053890](./img/image-20200816005053890-8330311.png)
 
 此时点开控制台错误信息就会显示源代码的第几行出错了，而不是打包后的文件第几行出错。
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816005201868.png" alt="image-20200816005201868" style="zoom:50%;" />
-
-
+![image-20200816005201868](./img/image-20200816005201868-8330334.png)
 
 ## 6.2inline-source-map
 
@@ -2124,7 +2122,7 @@ if (module.hot) {
 
 在页面上counter的值加到30：
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816171501240.png" alt="image-20200816171501240" style="zoom:50%;" />
+![image-20200816171501240](./img/image-20200816171501240-8330378.png)
 
 然后修改 `number.js` 中的值
 
@@ -2140,7 +2138,7 @@ export default function number() {
 
 此时页面显示：
 
-![image-20200907102833005](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200907102833005.png)
+![image-20200907102833005](./img/image-20200907102833005-8330412.png)
 
 可以看出，只有变化的文件才重新加载了，而没修改的文件不会重新加载。
 
@@ -2781,7 +2779,7 @@ add();
 
 注意，我们**并未从 `src/index.js` 模块中 `import` 导入 `sub` 方法**。这个功能是所谓的“未引用代码(dead code)”，也就是说，应该删除掉未被引用的 `export`。现在让我们运行我们的npm 脚本 `npm run build`，并检查输出的 bundle：
 
-![image-20200817135208039](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200817135208039.png)
+![image-20200817135208039](./img/image-20200817135208039-8330467.png)
 
 > 注意：上面的 `exports provided` 注释。如果你看下面的代码，你会注意到 `sub` 没有被导入，但是，它仍然被包含在 bundle 中。
 
@@ -2846,7 +2844,7 @@ module.exports={
 
 现在让我们运行我们的npm 脚本 `npm run build`，并检查输出的 bundle：
 
-![image-20200817140935872](https://gitee.com/xuxujian/webNoteImg/raw/master/allimg/image-20200817140935872.png)
+![image-20200817140935872](./img/image-20200817140935872-8330492.png)
 
 注意看上面的`exports used:`注释。只导出了使用的add方法，而sub方法没有被打包。
 
@@ -3252,7 +3250,7 @@ module.exports = merge(commonConfig, prodConfig);
 
 在项目根目录新建`build`文件夹，然后将webpack配置文件移入此文件夹。
 
-![image-20200816234851588](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200816234851588.png)
+![image-20200816234851588](./img/image-20200816234851588-8330525.png)
 
 此时需要修改webpack公共代码:
 
@@ -3621,17 +3619,15 @@ document.addEventListener("click", () => {
 
 此时打包生成的文件：
 
-
-
-![image-20200817232341498](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200817232341498.png)
+![image-20200817232341498](./img/image-20200817232341498-8330588.png)
 
 此时打开浏览器的network:
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200817232517020.png" alt="image-20200817232517020" style="zoom:50%;" />
+![image-20200817232517020](./img/image-20200817232517020-8330621.png)
 
 只加载了两个文件。当我们点击页面时：
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200817232605082.png" alt="image-20200817232605082" style="zoom:50%;" />
+![image-20200817232605082](./img/image-20200817232605082-8330643.png)
 
 当我们执行某个模块时，才加载某个文件。从而减少了首屏渲染的时间。
 
@@ -3649,8 +3645,6 @@ document.getElementById('btn').onclick = function() {
 };
 
 ```
-
-
 
 ## 3.5css处理
 
@@ -3901,7 +3895,7 @@ main_1a7499.js.map    4.59 KiB       0  [emitted] [dev]        main
 Entrypoint main = main.css main_1a7499.js main.css.map main_1a7499.js.map
 ```
 
-![image-20200818001820001](https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818001820001.png)
+![image-20200818001820001](./img/image-20200818001820001-8330680.png)
 
 同时也会自动引入到html文件中：
 
@@ -4248,9 +4242,7 @@ changeColor();
 
 打包代码，并打开html查看页面：
 
-
-
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818220926506.png" alt="image-20200818220926506" style="zoom:50%;" />
+![image-20200818220926506](./img/image-20200818220926506-8330716.png)
 
 报错原因：
 
@@ -4269,7 +4261,7 @@ export function changeColor() {
 
 此时重新进行打包，并打开浏览器：
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818221343879.png" alt="image-20200818221343879" style="zoom:50%;" />
+![image-20200818221343879](./img/image-20200818221343879-8330741.png)
 
 控制台没报错，并且样式正常显示。
 
@@ -4316,7 +4308,7 @@ export function changeColor() {
 
 重新打包，并打开浏览器：
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200818222724808.png" alt="image-20200818222724808" style="zoom:50%;" />
+![image-20200818222724808](./img/image-20200818222724808-8330762.png)
 
 此时没有任何报错，并能正常显示。
 
@@ -4343,8 +4335,6 @@ module.exports = {
   ],
 }
 ```
-
-
 
 ### 3.6.3模块中的this
 
@@ -4384,12 +4374,6 @@ module.exports = {
 ```
 
 表示：遇到js文件时，先使用`imports-loader`将模块中this指向window，然后在使用`babel-loader`做编译。
-
-
-
-
-
-
 
 ## 3.7环境变量
 
@@ -5047,7 +5031,7 @@ workbox-468c4d03.js.map   71.4 KiB          [emitted]
 Entrypoint main = runtime_b15356.js vendors~main_37f034.js main_e0a185.js
 ```
 
-<img src="https://gitee.com/xuxujian/webNoteImg/raw/master/webpack/image-20200819220857796.png" alt="image-20200819220857796" style="zoom:50%;" />
+![image-20200819220857796](./img/image-20200819220857796-8330820.png)
 
 
 
