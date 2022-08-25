@@ -1,6 +1,6 @@
-## 1.简介
+# 1.简介
 
-### 1.1类型系统
+## 1.1类型系统
 
 从 TypeScript 的名字就可以看出来，「类型」是其最核心的特性。
 
@@ -13,7 +13,7 @@
 
 而 TypeScript 的类型系统，在很大程度上弥补了 JavaScript 的缺点。
 
-### 1.2TypeScript 是静态类型
+## 1.2TypeScript 是静态类型
 
 类型系统按照「类型检查的时机」来分类，可以分为动态类型和静态类型。
 
@@ -48,7 +48,7 @@ foo.split(' ');
 // 编译时会报错（数字没有 split 方法），无法通过编译
 ```
 
-### 1.3TypeScript 是弱类型
+## 1.3TypeScript 是弱类型
 
 类型系统按照「是否允许隐式类型转换」来分类，可以分为强类型和弱类型。
 
@@ -63,9 +63,9 @@ TypeScript 是完全兼容 JavaScript 的，它不会修改 JavaScript 运行时
 
 这样的类型系统体现了 TypeScript 的核心设计理念：在完整保留 JavaScript 运行时行为的基础上，通过引入静态类型系统来提高代码的可维护性，减少可能出现的 bug。
 
-## 2.安装
+# 2.安装
 
-### 2.1安装typescript
+## 2.1安装typescript
 
 全局安装：
 
@@ -93,7 +93,7 @@ tsc demo1.ts
 
 我们约定使用 TypeScript 编写的文件以 `.ts` 为后缀，用 TypeScript 编写 React 时，以 `.tsx` 为后缀。
 
-### 2.2安装ts-node
+## 2.2安装ts-node
 
 直接使用`ts-node`运行ts文件，而无需再转换运行。
 
@@ -108,7 +108,7 @@ npm install -g ts-node
 $ ts-node Demo1.ts
 ```
 
-## 3.快速开始
+# 3.快速开始
 
 我们从一个简单的例子开始。
 
@@ -190,9 +190,9 @@ console.log(sayHello(user));
 
 如果要在报错的时候终止 js 文件的生成，可以在 `tsconfig.json` 中配置 `noEmitOnError` 即可。
 
-## 4.TypeScript 基础类型
+# 4.TypeScript 基础类型
 
-### 4.1布尔值
+## 4.1布尔值
 
 布尔值是最基础的数据类型，在 TypeScript 中，使用 `boolean` 定义布尔值类型：
 
@@ -225,7 +225,7 @@ let createdByBoolean: boolean = Boolean(1);
 
 在 TypeScript 中，`boolean` 是 JavaScript 中的基本类型，而 `Boolean` 是 JavaScript 中的构造函数。其他基本类型（除了 `null` 和 `undefined`）一样，不再赘述。
 
-### 4.2数值
+## 4.2数值
 
 使用 `number` 定义数值类型：
 
@@ -255,7 +255,7 @@ var infinityNumber = Infinity;
 
 其中 `0b1010` 和 `0o744` 是 ES6 中的二进制和八进制表示法，它们会被编译为十进制数字。
 
-### 4.3字符串
+## 4.3字符串
 
 使用 `string` 定义字符串类型：
 
@@ -278,7 +278,7 @@ var sentence = "Hello, my name is " + myName + ".
 I'll be " + (myAge + 1) + " years old next month.";
 ```
 
-### 4.4Symbol 类型
+## 4.4Symbol 类型
 
 ```ts
 const sym = Symbol();
@@ -289,7 +289,7 @@ let obj = {
 console.log(obj[sym]); // semlinker 
 ```
 
-### 4.5Array 类型
+## 4.5Array 类型
 
 ```ts
 // 第一种定义方法
@@ -301,11 +301,11 @@ let list: Array<number> = [1, 2, 3]; // Array<number>泛型语法
 // ES5：var list = [1,2,3];
 ```
 
-### 4.6Enum 枚举类型
+## 4.6Enum 枚举类型
 
-**使用枚举我们可以定义一些带名字的常量**。TypeScript 支持数字的和基于字符串的枚举。
+使用枚举我们可以定义一些带名字的常量。TypeScript 支持数字的和基于字符串的枚举。
 
-**使用场景：当某一个状态为固定的几种值（类型）时，就可以使用枚举**
+> 使用场景：当某一个状态为固定的几种值（类型）时，就可以使用枚举。
 
 ```ts
 // js中使用对象定义值的几种类型
@@ -335,7 +335,7 @@ function getResult(status) {
 const result = getResult(1);
 ```
 
-#### 4.6.1数字枚举
+### 4.6.1数字枚举
 
 ```ts
 enum Direction {
@@ -371,7 +371,7 @@ var Direction;
 var dir = Direction.NORTH;
 ````
 
-#### 4.6.2字符串枚举
+### 4.6.2字符串枚举
 
 在 TypeScript 2.4 版本，允许我们使用字符串枚举。在一个字符串枚举里，每个成员都必须用字符串字面量，或另外一个字符串枚举成员进行初始化。
 
@@ -411,9 +411,9 @@ let dirName = Direction[0]; // NORTH
 let dirVal = Direction["NORTH"]; // 0
 ```
 
-**另外，对于纯字符串枚举，我们不能省略任何初始化程序。而数字枚举如果没有显式设置值时，则会使用默认规则进行初始化。**
+> 对于纯字符串枚举，我们不能省略任何初始化程序。而数字枚举如果没有显式设置值时，则会使用默认规则进行初始化。
 
-#### 4.6.3常量枚举
+### 4.6.3常量枚举
 
 除了数字枚举和字符串枚举之外，还有一种特殊的枚举 —— 常量枚举。它是使用 `const` 关键字修饰的枚举，常量枚举会使用内联语法，不会为枚举类型编译生成任何 JavaScript。为了更好地理解这句话，我们来看一个具体的例子：
 
@@ -435,7 +435,7 @@ let dir: Direction = Direction.NORTH;
 var dir = 0 /* NORTH */;
 ```
 
-#### 4.6.4异构枚举
+### 4.6.4异构枚举
 
 异构枚举的成员值是数字和字符串的混合：
 
@@ -472,7 +472,7 @@ console.log(Enum.A) //输出：0
 console.log(Enum[0]) // 输出：A
 ```
 
-#### 4.6.5枚举值设置
+### 4.6.5枚举值设置
 
 默认第一个值是从0开始的，如果需要从指定的值开始，则需要进行设置。
 
@@ -500,7 +500,7 @@ enum Status {
 }
 ```
 
-#### 4.6.6反向读取枚举类型
+### 4.6.6反向读取枚举类型
 
 正向可以读取枚举值，反向也可以读取枚举类型。
 
@@ -516,7 +516,7 @@ console.log(Status.OFFLINE);
 console.log(Status[0]);
 ```
 
-### 4.7空值void
+## 4.7空值void
 
 JavaScript 没有空值（Void）的概念，在 TypeScript 中，**可以用 `void` 表示没有任何返回值的函数**：
 
@@ -533,7 +533,7 @@ let unusable: void = undefined;
 let unusable: void = null;
 ```
 
-### 4.8Null 和 Undefined
+## 4.8Null 和 Undefined
 
 在 TypeScript 中，可以使用 `null` 和 `undefined` 来定义这两个原始数据类型：
 
@@ -561,11 +561,11 @@ let num: number = u;
 // Type 'void' is not assignable to type 'number'.
 ```
 
-### 4.9任意值Any
+## 4.9任意值Any
 
 任意值（Any）用来表示允许赋值为任意类型。
 
-#### 4.9.1什么是任意值类型
+### 4.9.1什么是任意值类型
 
 如果是一个普通类型，在赋值过程中改变类型是不被允许的：
 
@@ -583,7 +583,7 @@ let myFavoriteNumber: any = 'seven';
 myFavoriteNumber = 7;
 ```
 
-#### 4.9.2任意值的属性和方法
+### 4.9.2任意值的属性和方法
 
 在任意值上访问任何属性都是允许的：
 
@@ -604,9 +604,9 @@ anyThing.myName.setFirstName('Cat');
 
 可以认为，**声明一个变量为任意值之后，对它的任何操作，返回的内容的类型都是任意值**。
 
-#### 4.9.3未声明类型的变量
+### 4.9.3未声明类型的变量
 
-**变量如果在声明的时候，未指定其类型，那么它会被识别为任意值类型**：
+变量如果在声明的时候，未指定其类型，那么它会被识别为任意值类型：
 
 ```ts
 let something;
@@ -626,7 +626,7 @@ something = 7;
 something.setName('Tom');
 ```
 
-### 4.10Unknown 类型
+## 4.10Unknown 类型
 
 就像所有类型都可以赋值给 `any`，所有类型也都可以赋值给 `unknown`。这使得 `unknown` 成为 TypeScript 类型系统的另一种顶级类型（另一种是 `any`）。
 
@@ -677,9 +677,11 @@ value[0][1]; // Error
 
 将 `value` 变量类型设置为 `unknown` 后，这些操作都不再被认为是类型正确的。通过将 `any` 类型改变为 `unknown` 类型，我们已将允许所有更改的默认设置，更改为禁止任何更改。
 
-### 4.11元祖：tuple
+## 4.11元祖：tuple
 
-**众所周知，数组一般由同种类型的值组成，但有时我们需要在单个变量中存储不同类型的值，这时候我们就可以使用元组**。在 JavaScript 中是没有元组的，元组是 TypeScript 中特有的类型，其工作方式类似于数组。
+众所周知，数组一般由同种类型的值组成，但有时我们需要在单个变量中存储不同类型的值，这时候我们就可以使用元组。在 
+
+JavaScript 中是没有元组的，元组是 TypeScript 中特有的类型，其工作方式类似于数组。
 
 元组可用于定义具有有限数量的未命名属性的类型。每个属性都有一个关联的类型。**使用元组时，必须提供每个属性的值**。
 
@@ -728,9 +730,9 @@ const techerINFO: [string,string,number] = ['x','x',18]
 const teacherList: [string, string, number][] = [['dell', 'male', 19], ['sun', 'female', 26], ['jeny', 'female', 38]];
 ```
 
-### 4.12object, Object 和 {} 类型
+## 4.12object, Object 和 {} 类型
 
-#### 4.12.1object 类型
+### 4.12.1object 类型
 
 object 类型是：TypeScript 2.2 引入的新类型，它用于表示非原始类型。
 
@@ -751,7 +753,7 @@ Object.create(true);      // Error
 Object.create("oops");    // Error
 ```
 
-#### 4.12.2Object 类型
+### 4.12.2Object 类型
 
 Object 类型：它是所有 Object 类的实例的类型，它由以下两个接口来定义：
 
@@ -789,7 +791,7 @@ declare var Object: ObjectConstructor;
 
 Object 类的所有实例都继承了 Object 接口中的所有属性。
 
-#### 4.12.3{} 类型
+### 4.12.3{} 类型
 
 {} 类型描述了一个没有成员的对象。当你试图访问这样一个对象的任意属性时，TypeScript 会产生一个编译时错误。
 
@@ -811,9 +813,11 @@ const obj = {};
 obj.toString();
 ```
 
-### 4.13Never 类型
+## 4.13Never 类型
 
-`never` 类型表示的是那些永不存在的值的类型。 例如，`never` 类型是那些总是会抛出异常或根本就不会有返回值的函数表达式或箭头函数表达式的返回值类型。
+`never` 类型表示的是那些永不存在的值的类型。 例如，`never` 类型是那些总是会抛出异常或根本就不会有返回值的函数表
+
+达式或箭头函数表达式的返回值类型。
 
 ```typescript
 // 返回never的函数必须存在无法达到的终点
@@ -853,33 +857,33 @@ type Foo = string | number | boolean;
 
 `controlFlowAnalysisWithNever` 方法总是穷尽了 Foo 的所有可能类型。 通过这个示例，我们可以得出一个结论：**使用 never 避免出现新增了联合类型没有对应的实现，目的就是写出类型绝对安全的代码。**
 
-## 5.TypeScript 断言
+# 5.TypeScript 断言
 
-### 5.1类型断言
+## 5.1类型断言
 
 类型断言好比其他语言里的类型转换，但是不进行特殊的数据检查和解构。**它没有运行时的影响，只是在编译阶段起作用**。
 
 类型断言有两种形式：
 
-#### 5.1.1“尖括号” 语法
+### 5.1.1“尖括号” 语法
 
 ```ts
 let someValue: any = "this is a string";
 let strLength: number = (<string>someValue).length;
 ```
 
-#### 5.1.2as 语法
+### 5.1.2as 语法
 
 ```ts
 let someValue: any = "this is a string";
 let strLength: number = (someValue as string).length;
 ```
 
-### 5.2非空断言
+## 5.2非空断言
 
 在上下文中当类型检查器无法断定类型时，一个新的后缀表达式操作符 `!` 可以用于断言操作对象是非 null 和非 undefined 类型。**具体而言，x! 将从 x 值域中排除 null 和 undefined 。**
 
-#### 5.2.1忽略 undefined 和 null 类型
+### 5.2.1忽略 undefined 和 null 类型
 
 ```ts
 function myFunc(maybeString: string | undefined | null) {
@@ -891,7 +895,7 @@ function myFunc(maybeString: string | undefined | null) {
 }
 ```
 
-#### 5.2.2调用函数时忽略 undefined 类型
+### 5.2.2调用函数时忽略 undefined 类型
 
 ```ts
 type NumGenerator = () => number;
@@ -923,7 +927,7 @@ console.log(b);
 
 虽然在 TS 代码中，我们使用了非空断言，使得 `const b: number = a!;` 语句可以通过 TypeScript 类型检查器的检查。但在生成的 ES5 代码中，`!` 非空断言操作符被移除了，所以在浏览器中执行以上代码，在控制台会输出 `undefined`。
 
-### 5.3确定赋值断言
+## 5.3确定赋值断言
 
 在 TypeScript 2.7 版本中引入了确定赋值断言，即允许在实例属性和变量声明后面放置一个 `!` 号，从而告诉 TypeScript 该属性会被明确地赋值。为了更好地理解它的作用，我们来看个具体的例子：
 
@@ -952,11 +956,15 @@ function initialize() {
 
 通过 `let x!: number;` 确定赋值断言，TypeScript 编译器就会知道该属性会被明确地赋值。
 
-## 6.类型守卫
+# 6.类型守卫
 
-**类型保护是可执行运行时检查的一种表达式，用于确保该类型在一定的范围内。** 换句话说，类型保护可以保证一个字符串是一个字符串，尽管它的值也可以是一个数值。类型保护与特性检测并不是完全不同，其主要思想是尝试检测属性、方法或原型，以确定如何处理值。目前主要有四种的方式来实现类型保护：
+类型保护是可执行运行时检查的一种表达式，用于确保该类型在一定的范围内。换句话说，类型保护可以保证一个字符串是一
 
-### 6.1in 关键字
+个字符串，尽管它的值也可以是一个数值。类型保护与特性检测并不是完全不同，其主要思想是尝试检测属性、方法或原型，
+
+以确定如何处理值。目前主要有四种的方式来实现类型保护：
+
+## 6.1in 关键字
 
 ```ts
 interface Admin {
@@ -1038,7 +1046,7 @@ function isString(x: any): x is string {
 }
 ```
 
-## 7.联合类型和类型别名
+# 7.联合类型和类型别名
 
 ### 7.1联合类型
 
@@ -1193,7 +1201,7 @@ let greet = (message: Message) => {
 };
 ```
 
-## 8.交叉类型
+# 8.交叉类型
 
 在 TypeScript 中交叉类型是将多个类型合并为一个类型。通过 `&` 运算符可以将现有的多种类型叠加到一起成为一种类型，它包含了所需的所有类型的特性。
 
@@ -1279,7 +1287,7 @@ console.log('abc:', abc);
 
 由上图可知，在混入多个类型时，若存在相同的成员，且成员类型为非基本数据类型，那么是可以成功合并。
 
-## 9.TypeScript 函数
+# 9.TypeScript 函数
 
 ### 9.1参数类型和返回类型
 
@@ -1389,7 +1397,7 @@ const result = calculator.add('Semlinker', ' Kakuqo');
 
 这里需要注意的是，当 TypeScript 编译器处理函数重载时，它会查找重载列表，尝试使用第一个重载定义。 如果匹配的话就使用这个。 因此，**在定义重载的时候，一定要把最精确的定义放在最前面**。另外在 Calculator 类中，`add(a: Combinable, b: Combinable){ }` 并不是重载列表的一部分，因此对于 add 成员方法来说，我们只定义了四个重载方法。
 
-## 10.TypeScript 数组
+# 10.TypeScript 数组
 
 数组基本使用：
 
@@ -1451,7 +1459,7 @@ for (let i of colors) {
 }
 ```
 
-## 11.TypeScript 对象
+# 11.TypeScript 对象
 
 ### 11.1对象解构
 
@@ -1480,7 +1488,7 @@ let personWithAge = { ...person, age: 33 };
 let { name, ...rest } = person;
 ```
 
-## 12.TypeScript 接口
+# 12.TypeScript 接口
 
 在面向对象语言中，接口是一个很重要的概念，它是对行为的抽象，而具体如何行动需要由类去实现。
 
@@ -1790,7 +1798,7 @@ interface Point { y: number; }
 const point: Point = { x: 1, y: 2 };
 ```
 
-## 13.TypeScript 类
+# 13.TypeScript 类
 
 ### 13.1类的属性与方法
 
@@ -2130,7 +2138,7 @@ productService.getProducts(666); // 获取id为 666 的产品信息
 productService.getProducts(); // 获取所有的产品信息 
 ```
 
-## 14.TypeScript 泛型
+# 14.TypeScript 泛型
 
 设计泛型的关键目的是在成员之间提供有意义的约束，这些成员可以是：类的实例成员、类的方法、函数参数和函数返回值。
 
@@ -2495,7 +2503,7 @@ const todo2 = updateTodo(todo1, {
 }
 ```
 
-## 15.TypeScript 装饰器
+# 15.TypeScript 装饰器
 
 ### 15.1装饰器是什么
 
@@ -2766,11 +2774,11 @@ class Greeter {
 
 
 
-## 16.TypeScript 4.0 新特性
+# 16.TypeScript 4.0 新特性
 
 
 
-## 17.编译上下文
+# 17.编译上下文
 
 
 
@@ -3994,7 +4002,7 @@ tom.run();
 
 通过给 `getCacheData` 函数添加了一个泛型 `<T>`，我们可以更加规范的实现对 `getCacheData` 返回值的约束，这也同时去除掉了代码中的 `any`，是最优的一个解决方案。
 
-## typescript配置文件
+# typescript配置文件
 
 ### 1.1生成配置文件
 
