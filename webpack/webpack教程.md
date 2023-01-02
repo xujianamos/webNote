@@ -1,8 +1,8 @@
 # 一.webpack基本使用
 
-在开始使用webpack之前，请确保安装了 Node.js 的最新版本。推荐使用 Node.js 最新的长期支持版本(LTS - Long Term Support)。
+在开始使用 webpack 之前，请确保安装了 Node.js 的最新版本。推荐使用 Node.js 最新的长期支持版本(LTS - Long Term Support)。
 
-查看node和npm版本:
+查看 node 和 npm 版本:
 
 ```bash
 # 查看node版本
@@ -69,7 +69,7 @@ $ npx webpack -v
 $ npx webpack index.js(入口文件)
 ```
 
-**注意：**此时使用`webpack -v`查看版本号时，无法查看。因为执行webpack命令时，nodejs会尝试去**全局环境**查找webpack，而我们是在项目中安装的webpack，因此会查找失败。此时只能使用`npx webpack -v`查看版本号。
+> 注意：此时使用`webpack -v`查看版本号时，无法查看。因为执行webpack命令时，nodejs会尝试去全局环境查找webpack，而我们是在项目中安装的webpack，因此会查找失败。此时只能使用`npx webpack -v`查看版本号。
 
 通常，webpack 通过运行一个或多个 `npm scripts`，会在本地 node_modules 目录中查找安装的 webpack：
 
@@ -125,7 +125,7 @@ const path =require('path')
 
 module.exports = {
   // 打包模式
-  mode:'development',//打包模式，默认的打包模式是production
+  mode:'development',// 打包模式，默认的打包模式是production
   // 打包入口文件
   entry:'./src/index.js',
   // 打包出口文件
@@ -216,13 +216,12 @@ module.exports = {
 };
 ```
 
-> **注意：**
+> 注意：webpack默认会以 `./src/index.js`为打包的入口文件。即如果不指定entry，则webpack打包时默认会在项目的src下查找`index.js`文件，如果有这个文件则打包成功，如果没有此文件，则报找不到入口错误。
 >
-> - webpack默认会以 `./src/index.js`为打包的入口文件。即如果不指定entry，则webpack打包时默认会在项目的src下查找`index.js`文件，如果有这个文件则打包成功，如果没有此文件，则报找不到入口错误。
 
 ## 2.1字符串语法
 
-属性值为**字符串**形式。
+属性值为字符串形式。
 
 ```js
 // webpack.config.js
@@ -231,7 +230,7 @@ module.exports={
 }
 ```
 
-`entry` 属性的单个入口语法，是下面的简写：
+entry 属性的单个入口语法，是下面的简写：
 
 ```js
 //webpack.config.js
@@ -271,7 +270,7 @@ module.exports = {
 }
 ```
 
-`entry` 属性的数组语法，是下面的简写：
+entry 属性的数组语法，是下面的简写：
 
 ```js
 //webpack.config.js
@@ -282,7 +281,7 @@ module.exports={
 }
 ```
 
-向 `entry` 属性传入**文件路径数组**将创建**多个主入口**。在你想要多个依赖文件一起注入，并且将它们的依赖输出到一个`chunk`时，传入数组的方式就很有用。
+向 `entry` 属性传入文件路径数组将创建多个主入口。在你想要多个依赖文件一起注入，并且将它们的依赖输出到一个`chunk`时，传入数组的方式就很有用。
 
 打包输出信息：
 
@@ -309,7 +308,7 @@ Entrypoint main = main.js
 
 ## 2.3对象语法
 
-属性值为**对象**形式。这个是**最完整的entry配置**，其他形式只是它的简化形式而已。
+属性值为对象形式。这个是最完整的 entry 配置，其他形式只是它的简化形式而已。
 
 ```js
 //webpack.config.js
@@ -326,9 +325,8 @@ module.exports = {
 }
 ```
 
-> **注意：**
+> 注意：如果存在多个入口文件的情况下，则必须自定义配置`output`配置项，并且output的`filename`要使用`[name]`占位符，根据入口的`key`作为输出文件的名字动态输出。如果不配置`output`配置项，打包时，控制台会报错，并且只会打包出一个文件。
 >
-> - 如果存在多个入口文件的情况下，则必须自定义配置`output`配置项，并且output的`filename`要使用`[name]`占位符，根据入口的`key`作为输出文件的名字动态输出。如果不配置`output`配置项，打包时，控制台会报错，并且只会打包出一个文件。
 
 打包输出信息：
 
@@ -354,7 +352,83 @@ Entrypoint index = index.js
 
 ![image-20200813112632202](./img/image-20200813112632202-8328697.png)
 
-## 2.4单页应用程序
+### 2.3.1描述入口的对象
+
+用于描述入口的对象。你可以使用如下属性：
+
+- `dependOn`: 当前入口所依赖的入口。它们必须在该入口被加载前被加载。
+- `filename`: 指定要输出的文件名称。
+- `import`: 启动时需加载的模块。
+- `library`: 指定 library 选项，为当前 entry 构建一个 library。
+- `runtime`: 运行时 chunk 的名字。如果设置了，就会创建一个新的运行时 chunk。在 webpack 5.43.0 之后可将其设为 `false` 以避免一个新的运行时 chunk。
+
+**webpack.config.js**
+
+```javascript
+module.exports = {
+  entry: {
+    a2: 'dependingfile.js',
+    b2: {
+      dependOn: 'a2',
+      import: './src/app.js',
+    },
+  },
+};
+```
+
+`runtime` 和 `dependOn` 不应在同一个入口上同时使用，所以如下配置无效，并且会抛出错误：
+
+**webpack.config.js**
+
+```javascript
+module.exports = {
+  entry: {
+    a2: './a',
+    b2: {
+      runtime: 'x2',
+      dependOn: 'a2',
+      import: './b',
+    },
+  },
+};
+```
+
+确保 `runtime` 不能指向已存在的入口名称，例如下面配置会抛出一个错误：
+
+```javascript
+module.exports = {
+  entry: {
+    a1: './a',
+    b1: {
+      runtime: 'a1',
+      import: './b',
+    },
+  },
+};
+```
+
+另外 `dependOn` 不能是循环引用的，下面的例子也会出现错误：
+
+```javascript
+module.exports = {
+  entry: {
+    a3: {
+      import: './a',
+      dependOn: 'b3',
+    },
+    b3: {
+      import: './b',
+      dependOn: 'a3',
+    },
+  },
+};
+```
+
+
+
+## 2.4常见场景
+
+### 2.4.1单页应用程序
 
 ```js
 //webpack.config.js
@@ -374,7 +448,7 @@ module.exports = config;
 
 此时打包输出的js文件只有一个`bundle.js`。
 
-## 2.5多页面应用程序
+### 2.4.2多页面应用程序
 
 配置了几个入口，打包就输出多少个js文件。此时必须将`output`配置项的`filename`字段配置使用占位符`[name].js`
 
@@ -398,14 +472,14 @@ module.exports = config;
 
 # 三. output
 
-**output** 属性告诉 webpack 在哪里输出它所创建的 `bundles`，以及如何命名这些文件。
+output 属性告诉 webpack 在哪里输出它所创建的 `bundles`，以及如何命名这些文件。
 
 基本上，整个应用程序结构，都会被编译到你指定的输出路径的文件夹中。
 
-> **注意：**
+> 注意：
 >
-> 1. 即使可以存在多个`入口`起点，但只能指定一个`输出`配置。
-> 2. 如果没有配置`output`，此时输出会使用output默认配置。也就是输出到`根目录`的`./dist`文件下。
+> 1. 即使可以存在多个入口起点，但只能指定一个输出配置。
+> 2. 如果没有配置output，此时输出会使用output默认配置。也就是输出到根目录的`./dist`文件下。
 
 ## 3.1单个入口
 
@@ -414,7 +488,7 @@ module.exports = config;
 - `filename`： 用于输出文件的文件名和目录。
 - `path`：输出文件目录（将来所有资源输出的公共目录）。
 
-对于**单个入口**起点，`filename` 会是一个静态名称。
+对于单个入口起点，filename 会是一个静态名称。
 
 ```js
 //webpack.config.js
@@ -444,7 +518,7 @@ Entrypoint main = bundle.js
 
 ## 3.2多个入口
 
-如果配置创建了多个单独的 `chunk`（例如，使用多个入口起点或使用像 `CommonsChunkPlugin `这样的插件），则应该使用**占位符**来确保每个文件具有唯一的名称。
+如果配置创建了多个单独的 `chunk`（例如，使用多个入口起点或使用像 `CommonsChunkPlugin `这样的插件），则应该使用占位符来确保每个文件具有唯一的名称。
 
 ```js
 module.exports={
@@ -472,7 +546,7 @@ Conflict: Multiple chunks emit assets to the same filename bundle.js (chunks ind
 
 即多个文件资源有相同的文件名称。此时需要使用`占位符` 来确保每一个输出的文件都有唯一的名称。
 
-## 3.3`filename`配置项
+## 3.3filename配置项
 
 **（1）使用入口key作为输出文件名：**
 
@@ -597,7 +671,7 @@ module.exports = config;
 </html>
 ```
 
-> **注意：**在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。 
+> 注意：在编译时不知道最终输出文件的 `publicPath` 的情况下，`publicPath` 可以留空，并且在入口起点文件运行时动态设置。 
 
 ## 3.5chunkFilename
 
@@ -607,7 +681,7 @@ module.exports = config;
 output:{
   	filename:'[name].js',
     chunkFilename:'[name].chunk.js'
- 	path:path.resolve(__dirname,'dist')
+ 	  path:path.resolve(__dirname,'dist')
 }
 ```
 
@@ -615,11 +689,9 @@ output:{
 
 webpack默认只能打包以`.js`结尾的文件，如果需要打包图片，css等文件时，就需要使用loader告诉webpack怎么去打包。
 
-`loader`让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解 JavaScript）。loader 可以将所有类型的
+`loader`让 webpack 能够去处理那些非 JavaScript 文件（webpack 自身只理解 JavaScript）。loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack 的打包能力，对它们进行处理。
 
-文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack 的打包能力，对它们进行处理。
-
-> **注意:**webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
+> 注意:webpack 不会更改代码中除 `import` 和 `export` 语句以外的部分。如果你在使用其它 ES2015 特性，请确保你在 webpack 的 loader 系统中使用了一个像是 Babel的转译器。
 
 ## 4.1loader基本配置
 
@@ -787,7 +859,7 @@ npm install --save-dev url-loader file-loader
 
 推荐：如果图片过大，建议使用`file-loader`,加载js文件就会很快。如果图片很小，建议使用`url-loader`,减少http请求。
 
-> **注意：**url-loader只能处理背景引入的图片，不能处理html标签(img标签)中引入的图片。**处理html中的图片需要使用html-loader**
+> 注意：url-loader只能处理背景引入的图片，不能处理html标签(img标签)中引入的图片。处理html中的图片需要使用html-loader
 
 ## 4.4html-loader
 
@@ -977,12 +1049,12 @@ module.exports = {
 };
 ```
 
-## 4.9打包scss文件
+## 4.9sass-loader
 
 安装：
 
 ```bash
-npm install sass-loader node-sass  --save-dev
+npm install sass-loader sass  --save-dev
 ```
 
 配置：
@@ -1101,7 +1173,7 @@ const config = {
 module.exports=config
 ```
 
-如果你有多个 webpack 入口点， 他们都会在生成的HTML文件中的 `script` 标签内。
+如果你有多个 webpack 入口点，他们都会在生成的HTML文件中的 `script` 标签内。
 
 此时打包输出的`dist`文件夹下自动生成了`index.html`文件。并且`index.html`文件中自动引入了打包输出的两个js文件。
 
@@ -1122,7 +1194,7 @@ module.exports=config
 </html>
 ```
 
-> **注：**如果你有任何CSS assets 在webpack的输出中（例如， 利用`ExtractTextPlugin`提取CSS）， 那么这些将被包含在HTML head中的`<link>`标签内。
+> 注：如果你有任何CSS assets 在webpack的输出中（例如， 利用`ExtractTextPlugin`提取CSS）， 那么这些将被包含在HTML head中的`<link>`标签内。
 
 ### 5.1.1配置html模版
 
@@ -1530,7 +1602,7 @@ const webpackConfig = {
 module.exports =webpackConfig
 ```
 
-**注意：**默认要删除的是output.path
+> 注意：默认要删除的是output.path
 
 ## 5.3extract-text-webpack-plugin
 
@@ -1797,7 +1869,7 @@ module.exports={
 
 现在，你可以在命令行中运行 `npm run watch`，就会看到 webpack 编译代码，然而却不会退出命令行。这是因为 script 脚本还在观察文件。
 
-**缺点：**为了看到修改后的实际效果，你需要刷新浏览器
+**缺点：**为了看到修改后的实际效果，你需要刷新浏览器。
 
 ## 7.2使用webpackdevserver
 
@@ -2058,7 +2130,7 @@ module.exports = {
   };
 ```
 
-**注意**：我们还添加了 `NamedModulesPlugin`，以便更容易查看要修补(patch)的依赖。
+> 注意：我们还添加了 `NamedModulesPlugin`，以便更容易查看要修补(patch)的依赖。
 
 项目结构：
 

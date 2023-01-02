@@ -1,6 +1,6 @@
-# 1.简介
+# 1. 简介
 
-## 1.1类型系统
+## 1.1 类型系统
 
 从 TypeScript 的名字就可以看出来，「类型」是其最核心的特性。
 
@@ -13,7 +13,7 @@
 
 而 TypeScript 的类型系统，在很大程度上弥补了 JavaScript 的缺点。
 
-## 1.2TypeScript 是静态类型
+## 1.2 TypeScript 是静态类型
 
 类型系统按照「类型检查的时机」来分类，可以分为动态类型和静态类型。
 
@@ -48,7 +48,7 @@ foo.split(' ');
 // 编译时会报错（数字没有 split 方法），无法通过编译
 ```
 
-## 1.3TypeScript 是弱类型
+## 1.3 TypeScript 是弱类型
 
 类型系统按照「是否允许隐式类型转换」来分类，可以分为强类型和弱类型。
 
@@ -63,9 +63,9 @@ TypeScript 是完全兼容 JavaScript 的，它不会修改 JavaScript 运行时
 
 这样的类型系统体现了 TypeScript 的核心设计理念：在完整保留 JavaScript 运行时行为的基础上，通过引入静态类型系统来提高代码的可维护性，减少可能出现的 bug。
 
-# 2.安装
+# 2. 安装
 
-## 2.1安装typescript
+## 2.1 安装typescript
 
 全局安装：
 
@@ -93,7 +93,7 @@ tsc demo1.ts
 
 我们约定使用 TypeScript 编写的文件以 `.ts` 为后缀，用 TypeScript 编写 React 时，以 `.tsx` 为后缀。
 
-## 2.2安装ts-node
+## 2.2 安装ts-node
 
 直接使用`ts-node`运行ts文件，而无需再转换运行。
 
@@ -108,7 +108,7 @@ npm install -g ts-node
 $ ts-node Demo1.ts
 ```
 
-# 3.快速开始
+# 3. 快速开始
 
 我们从一个简单的例子开始。
 
@@ -139,13 +139,13 @@ var user = 'Tom';
 console.log(sayHello(user));
 ```
 
-> **在 TypeScript 中，我们使用 `:` 指定变量的类型，`:` 的前后有没有空格都可以。**
+> 在 TypeScript 中，我们使用 `:` 指定变量的类型，`:` 的前后有没有空格都可以。
 
 上述例子中，我们用 `:` 指定 `person` 参数类型为 `string`。但是编译为 js 之后，并没有什么检查的代码被插入进来。
 
 这是因为 **TypeScript 只会在编译时对类型进行静态检查，如果发现有错误，编译的时候就会报错**。而在运行时，与普通的 JavaScript 文件一样，不会对类型进行检查。
 
-> 如果我们需要保证运行时的参数类型，还是得手动对类型进行判断：
+> 如果我们需要保证运行时的参数类型，还是得手动对类型进行判断
 
 ```ts
 function sayHello(person: string) {
@@ -190,9 +190,9 @@ console.log(sayHello(user));
 
 如果要在报错的时候终止 js 文件的生成，可以在 `tsconfig.json` 中配置 `noEmitOnError` 即可。
 
-# 4.TypeScript 基础类型
+# 4. TypeScript 基础类型
 
-## 4.1布尔值
+## 4.1 布尔值
 
 布尔值是最基础的数据类型，在 TypeScript 中，使用 `boolean` 定义布尔值类型：
 
